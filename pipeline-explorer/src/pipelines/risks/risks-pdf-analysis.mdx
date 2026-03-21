@@ -1,0 +1,32 @@
+# PDF keyword extraction
+
+Searches corporate PDFs for AI-related keywords and extracts surrounding context paragraphs (2000 chars) for downstream LLM classification.
+
+Part of the <NodeLink id="orgrev-orglist">airi-orgrev-orglist</NodeLink> repo.
+
+## Links
+
+- [GitHub repo](https://github.com/MIT-FutureTech/airi-orgrev-orglist)
+- Entry point: `pdf_analysis/` scripts
+
+## Tech
+
+Python, PDF text extraction
+
+## Inputs
+
+- Corporate PDFs downloaded from companies in **Airtable Base 3** (Companies)
+- Validated documents from "Included Documents" table (Annual Reports, ESG Reports, SEC filings)
+
+## Outputs
+
+- CSV (`pdf_analysis/output/pdf_ai_mentions.csv`) with ~7,000+ keyword mention rows
+- Each row: company, filename, doc_type, matched keyword(s), keyword count, context paragraph
+
+## How it runs
+
+CLI scripts in the `pdf_analysis/` directory. Searches each PDF end-to-end for AI-related keywords, captures the surrounding paragraph context for each match.
+
+## Notes
+
+- Output feeds into both <NodeLink id="risks-classifier">risk classification</NodeLink> and <NodeLink id="mitigations-classifier">mitigation classification</NodeLink>

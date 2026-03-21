@@ -13,6 +13,9 @@ import Greylitsearcher from "./document-processing/greylitsearcher.mdx";
 import OrgDocClassifier from "./document-processing/org-doc-classifier.mdx";
 import OrgrevOrglist from "./document-processing/orgrev-orglist.mdx";
 import ScreeningOrchestrator from "./document-processing/screening-orchestrator.mdx";
+// Risks pipeline
+import RisksClassifier from "./risks/risks-classifier.mdx";
+import RisksPdfAnalysis from "./risks/risks-pdf-analysis.mdx";
 
 const nodeContent: Record<string, ComponentType> = {
   // Document Processing
@@ -26,6 +29,10 @@ const nodeContent: Record<string, ComponentType> = {
   // Actors
   "actors-classifier": ActorsClassifier,
   "actors-logo-processor": ActorsLogoProcessor,
+
+  // Risks
+  "risks-pdf-analysis": RisksPdfAnalysis,
+  "risks-classifier": RisksClassifier,
 };
 
 export function getNodeContent(nodeId: string): ComponentType | null {

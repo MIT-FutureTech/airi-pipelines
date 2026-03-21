@@ -1,0 +1,55 @@
+# LLM risk classification
+
+Classifies AI risk mentions from corporate documents into a 24-code taxonomy across 7 risk domains. Uses a two-stage approach: a risk gate determines relevance, then a subdomain classifier assigns taxonomy codes.
+
+Part of the <NodeLink id="orgrev-orglist">airi-orgrev-orglist</NodeLink> repo. See also the <NodeLink id="mitigations-classifier">mitigation classification</NodeLink> function in the same repo.
+
+## Links
+
+- [GitHub repo](https://github.com/MIT-FutureTech/airi-orgrev-orglist)
+- Entry point: `llm_classification/classify.py`
+
+## Tech
+
+Python, OpenRouter (Gemini 2.5 Flash Lite), structured JSON output
+
+## Inputs
+
+- CSV of keyword mentions extracted from corporate PDFs (`pdf_analysis/output/pdf_ai_mentions.csv`)
+- Each row has: company, filename, doc_type, keyword, 2000-char context paragraph
+
+## Outputs
+
+- Per-mention JSON files in `llm_classification/output/risk/classifications/`
+- Assembled CSV (`classified.csv`) with one row per classification
+- Fields: `has_risk`, `subdomain` (e.g., "6_4"), `subdomain_name`, `mention_type` (explicit/implicit), `evidence_quote`, `confidence` (high/medium/low)
+
+## Risk taxonomy (7 domains, 24 codes)
+
+| Domain | Codes |
+|--------|-------|
+| 1. Discrimination & Toxicity | 1.1 Unfair discrimination, 1.2 Toxic content, 1.3 Unequal performance |
+| 2. Privacy & Security | 2.1 Privacy compromise, 2.2 Security vulnerabilities |
+| 3. Misinformation | 3.1 False/misleading info, 3.2 Information ecosystem pollution |
+| 4. Malicious Actors | 4.1 Disinformation at scale, 4.2 Cyberattacks/weapons, 4.3 Fraud/manipulation |
+| 5. Human-Computer Interaction | 5.1 Overreliance, 5.2 Loss of agency |
+| 6. Socioeconomic & Environmental | 6.1 Power centralization, 6.2 Inequality, 6.3 Devaluation of human effort, 6.4 Competitive dynamics, 6.5 Governance failure, 6.6 Environmental harm |
+| 7. AI System Safety | 7.1 Misaligned goals, 7.2 Dangerous capabilities, 7.3 Lack of robustness, 7.4 Lack of transparency, 7.5 AI welfare, 7.6 Multi-agent risks |
+
+## How it runs
+
+CLI: `python -m llm_classification.classify -i input.csv -p prompts/risk_prompt_v0.4.md --type risk -w 20 --assemble`
+
+Supports parallel workers (up to 40), auto-resume (skips already-classified mentions), and budget tracking ($10 default limit).
+
+## Classification logic
+
+**Stage 1 — Risk gate:** Does the passage frame AI as a source of harm, threat, or vulnerability? Extensive rejection criteria filter out false positives (product descriptions, mitigation-only content, generic business risks).
+
+**Stage 2 — Subdomain classification:** For each distinct risk, assigns a taxonomy code, mention type (explicit vs implicit), evidence quote, and confidence level.
+
+## Notes
+
+- Default model: `google/gemini-2.5-flash-lite-preview` (free tier via OpenRouter)
+- Temperature: 0.1 for reproducible results
+- The prompt (v0.4) includes inline boundary disambiguation (e.g., bias → 1.1 not 7.3)
