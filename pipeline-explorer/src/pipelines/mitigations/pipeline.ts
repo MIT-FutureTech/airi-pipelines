@@ -27,7 +27,7 @@ export const pipeline: PipelineDefinition = {
     },
     {
       id: "mitigations-review",
-      label: "mitigations_review",
+      label: "Systematic literature review",
       type: "processor",
     },
     {
@@ -37,7 +37,7 @@ export const pipeline: PipelineDefinition = {
     },
     {
       id: "mitigations-classifier",
-      label: "airi-mitrev-classifier",
+      label: "Mitigation taxonomy classifier",
       type: "processor",
     },
     {

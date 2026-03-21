@@ -9,12 +9,12 @@ export const pipeline: PipelineDefinition = {
   nodes: [
     {
       id: "actors-classifier",
-      label: "ai-actor-classifier",
+      label: "AI actor role classification",
       type: "processor",
     },
     {
       id: "actors-logo-processor",
-      label: "airi-orgreview-logoprocessing",
+      label: "Logo processing",
       type: "processor",
     },
     {

@@ -20,22 +20,34 @@ export const pipeline: PipelineDefinition = {
     },
 
     // --- Processors ---
-    { id: "greylitsearcher", label: "greylitsearcher", type: "processor" },
-    { id: "orgrev-orglist", label: "airi-orgrev-orglist", type: "processor" },
+    {
+      id: "greylitsearcher",
+      label: "Grey literature search",
+      type: "processor",
+    },
+    {
+      id: "orgrev-orglist",
+      label: "Company scraping",
+      type: "processor",
+    },
     {
       id: "fulltext-extractor",
-      label: "airi-orgreview-fulltext",
+      label: "Full-text extraction",
       type: "processor",
     },
     {
       id: "screening-orchestrator",
-      label: "airi-llm-screening-orchestrator",
+      label: "LLM relevance screening",
       type: "processor",
     },
-    { id: "agentic-framework", label: "agentic-framework", type: "proposed" },
+    {
+      id: "agentic-framework",
+      label: "Agentic screening (prototype)",
+      type: "proposed",
+    },
     {
       id: "org-doc-classifier",
-      label: "org-doc-classifier",
+      label: "Document type classification",
       type: "processor",
     },
 
