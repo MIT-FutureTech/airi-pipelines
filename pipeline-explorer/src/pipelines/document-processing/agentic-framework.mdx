@@ -1,0 +1,35 @@
+# agentic-framework
+
+Prototype replacement for `airi-llm-screening-orchestrator`. Uses a LangGraph-based agent with RAG-enhanced few-shot examples and organization-specific context for improved screening accuracy.
+
+## Links
+
+- [GitHub repo](https://github.com/MIT-FutureTech/agentic-framework)
+
+## Tech
+
+Python 3.11+, LangGraph, LangChain, ChromaDB (vector DB), sentence-transformers, scikit-learn (NLP classifier), OpenRouter, pyairtable, pydantic
+
+## Status
+
+**Phase 1 prototype — read-only.** Does not write to Airtable. All outputs go to local files for evaluation against the production orchestrator.
+
+## How it differs from the orchestrator
+
+- Retrieves RAG-enhanced few-shot examples from ChromaDB
+- Loads organization-specific context for better classification
+- Dynamically routes between a fast NLP classifier (TF-IDF + RandomForest) and LLM
+- Achieves ~93–95% accuracy vs ~84% for the orchestrator baseline (on a 57-document test set)
+- ~44% reduction in token usage
+
+## Outputs (local only)
+
+- Screening results: include/exclude, doc_type, confidence, reasoning
+- Trained NLP classifier model (`models/nlp_classifier_v1.pkl`)
+- ChromaDB embeddings (`data/chroma_db/`)
+- Evaluation reports and workflow logs
+
+## Notes
+
+- Default model: `google/gemini-2.5-flash-lite-preview` via OpenRouter (same as orchestrator)
+- Future phases: meta-learning agent, Airtable write integration, self-hosted LLM support

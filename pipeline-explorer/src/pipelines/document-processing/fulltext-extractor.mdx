@@ -1,0 +1,39 @@
+# airi-orgreview-fulltext
+
+Extracts full-text content from web pages and PDF documents, converting them to clean Markdown for downstream LLM screening.
+
+## Links
+
+- [GitHub repo](https://github.com/MIT-FutureTech/airi-orgreview-fulltext)
+
+## Tech
+
+Python 3.10+, trafilatura, readability-lxml, html2text (HTML extraction cascade), pymupdf4llm, pymupdf, pdfplumber (PDF extraction cascade), pyairtable, pydantic
+
+## Inputs
+
+- **Airtable Base 1**, `raw_results` table — reads records where `extraction_status` is empty or "pending"
+- Also supports CSV input for offline/batch processing
+
+## Outputs
+
+- Updates the same Airtable records with:
+  - `fulltext` — extracted content in Markdown format with metadata header
+  - `extraction_status` — "success", "error", or "skipped"
+  - `extraction_method` — which extractor succeeded (e.g., "trafilatura", "pymupdf4llm")
+  - `content_length`, `content_type`
+
+## How it runs
+
+CLI: `python main.py` with options for `--limit`, `--dry-run`, `--test-url`, `--verbose`.
+
+Processes records in batches (default 50). Respects a 1-second politeness delay between requests to the same domain. Retries with exponential backoff on failures.
+
+## Notes
+
+- Uses a cascading fallback strategy: tries the best extractor first, falls back to alternatives if it fails
+- HTML cascade: trafilatura → readability-lxml → html2text
+- PDF cascade: pymupdf4llm → pymupdf → pdfplumber
+- No JavaScript rendering — JS-heavy pages will fail
+- No OCR — scanned PDFs return minimal/no text
+- Expected success rate ~60% on mixed content
