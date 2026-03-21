@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, type ComponentType } from "react";
+import { useCallback, type ComponentType } from "react";
 
 interface NodeDetailPanelProps {
   nodeId: string;
@@ -16,13 +16,12 @@ export function NodeDetailPanel({
   content: Content,
   onClose,
 }: NodeDetailPanelProps) {
-  useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
       if (e.key === "Escape") onClose();
-    }
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [onClose]);
+    },
+    [onClose],
+  );
 
   return (
     <>
@@ -30,7 +29,11 @@ export function NodeDetailPanel({
       <div className="fixed inset-0 z-40" onClick={onClose} />
 
       {/* Panel */}
-      <div className="fixed top-0 right-0 h-full w-[480px] max-w-full z-50 bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 shadow-xl overflow-y-auto">
+      <div
+        ref={(el) => el?.focus()}
+        tabIndex={-1}
+        onKeyDown={handleKeyDown}
+        className="fixed top-0 right-0 h-full w-[480px] max-w-full z-50 bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 shadow-xl overflow-y-auto outline-none">
         <div className="sticky top-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   ReactFlow,
   Background,
@@ -93,52 +93,57 @@ function buildNodesAndEdges(pipelines: PipelineDefinition[]) {
   return { allNodes, allEdges };
 }
 
-function findNodeData(
+interface SelectedNode {
+  id: string;
+  label: string;
+  nodeType: string;
+}
+
+function findNodeInPipelines(
   nodeId: string,
-  allNodes: Node[],
-): { id: string; label: string; nodeType: string } | null {
-  const node = allNodes.find((n) => n.id === nodeId);
-  if (!node || node.id.endsWith("-label")) return null;
-  const data = node.data as { label: string; nodeType: string };
-  return { id: node.id, label: data.label, nodeType: data.nodeType };
+  pipelines: PipelineDefinition[],
+): SelectedNode | null {
+  for (const p of pipelines) {
+    const node = p.nodes.find((n) => n.id === nodeId);
+    if (node) return { id: node.id, label: node.label, nodeType: node.type };
+  }
+  return null;
+}
+
+function getInitialNode(
+  pipelines: PipelineDefinition[],
+): SelectedNode | null {
+  const nodeId = new URLSearchParams(window.location.search).get("node");
+  if (!nodeId) return null;
+  return findNodeInPipelines(nodeId, pipelines);
+}
+
+function updateUrl(node: SelectedNode | null) {
+  const url = node
+    ? `${window.location.pathname}?node=${node.id}`
+    : window.location.pathname;
+  window.history.replaceState({}, "", url);
 }
 
 export function PipelineGraph({ pipelines }: PipelineGraphProps) {
-  const [selectedNode, setSelectedNode] = useState<{
-    id: string;
-    label: string;
-    nodeType: string;
-  } | null>(null);
+  const [selectedNode, setSelectedNode] = useState<SelectedNode | null>(() =>
+    getInitialNode(pipelines),
+  );
 
   const { allNodes, allEdges } = useMemo(
     () => buildNodesAndEdges(pipelines),
     [pipelines],
   );
 
-  // Read ?node= param on mount
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const nodeId = params.get("node");
-    if (nodeId) {
-      const found = findNodeData(nodeId, allNodes);
-      if (found) setSelectedNode(found);
-    }
-  }, [allNodes]);
-
-  // Sync selected node → URL
-  useEffect(() => {
-    const url = selectedNode
-      ? `${window.location.pathname}?node=${selectedNode.id}`
-      : window.location.pathname;
-    window.history.replaceState({}, "", url);
-  }, [selectedNode]);
-
   const selectNodeById = useCallback(
     (nodeId: string) => {
-      const found = findNodeData(nodeId, allNodes);
-      if (found) setSelectedNode(found);
+      const found = findNodeInPipelines(nodeId, pipelines);
+      if (found) {
+        setSelectedNode(found);
+        updateUrl(found);
+      }
     },
-    [allNodes],
+    [pipelines],
   );
 
   const onNodeClick: NodeMouseHandler = useCallback(
@@ -149,7 +154,10 @@ export function PipelineGraph({ pipelines }: PipelineGraphProps) {
     [selectNodeById],
   );
 
-  const handleClosePanel = useCallback(() => setSelectedNode(null), []);
+  const handleClosePanel = useCallback(() => {
+    setSelectedNode(null);
+    updateUrl(null);
+  }, []);
 
   return (
     <NodeSelectionProvider value={selectNodeById}>
