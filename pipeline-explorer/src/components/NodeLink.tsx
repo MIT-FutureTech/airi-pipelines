@@ -17,7 +17,7 @@ export function NodeLink({ id, children }: NodeLinkProps) {
         e.preventDefault();
         selectNode(id);
       }}
-      className="text-blue-600 dark:text-blue-400 underline cursor-pointer hover:text-blue-800 dark:hover:text-blue-300"
+      className="text-accent underline underline-offset-2 decoration-accent/30 cursor-pointer hover:text-accent-hover hover:decoration-accent-hover transition-colors"
     >
       {children}
     </a>

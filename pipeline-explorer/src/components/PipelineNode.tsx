@@ -10,39 +10,59 @@ interface PipelineNodeData {
   [key: string]: unknown;
 }
 
-const stylesByType: Record<NodeType, string> = {
-  processor: "border-blue-500 bg-blue-50 dark:bg-blue-950",
-  datastore: "border-amber-500 bg-amber-50 dark:bg-amber-950 rounded-xl",
-  "external-service":
-    "border-gray-400 bg-gray-50 dark:bg-gray-900 border-dashed",
-  "manual-step":
-    "border-gray-400 bg-gray-50 dark:bg-gray-900 border-dotted opacity-75",
-  proposed: "border-gray-300 bg-gray-50 dark:bg-gray-900 opacity-50",
-};
-
-const labelsByType: Record<NodeType, string> = {
-  processor: "Processor",
-  datastore: "Data Store",
-  "external-service": "External",
-  "manual-step": "Manual",
-  proposed: "Proposed",
+const stylesByType: Record<
+  NodeType,
+  { card: string; badge: string; badgeLabel: string }
+> = {
+  processor: {
+    card: "border-blue-200 bg-white ring-1 ring-blue-100",
+    badge: "bg-blue-50 text-blue-700",
+    badgeLabel: "Processor",
+  },
+  datastore: {
+    card: "border-amber-200 bg-white ring-1 ring-amber-100 rounded-xl",
+    badge: "bg-amber-50 text-amber-700",
+    badgeLabel: "Data Store",
+  },
+  "external-service": {
+    card: "border-slate-200 bg-white ring-1 ring-slate-100 border-dashed",
+    badge: "bg-slate-50 text-slate-600",
+    badgeLabel: "External",
+  },
+  "manual-step": {
+    card: "border-slate-200 bg-slate-50/50 ring-1 ring-slate-100 border-dashed",
+    badge: "bg-slate-100 text-slate-500",
+    badgeLabel: "Manual",
+  },
+  proposed: {
+    card: "border-dashed border-slate-200 bg-slate-50/30 ring-1 ring-slate-50 opacity-60",
+    badge: "bg-slate-50 text-slate-400",
+    badgeLabel: "Proposed",
+  },
 };
 
 export function PipelineNodeComponent({ data }: NodeProps) {
   const nodeData = data as PipelineNodeData;
-  const typeStyle = stylesByType[nodeData.nodeType] ?? stylesByType.processor;
-  const typeLabel = labelsByType[nodeData.nodeType];
+  const style = stylesByType[nodeData.nodeType] ?? stylesByType.processor;
 
   return (
     <>
-      <Handle type="target" position={Position.Top} className="!bg-gray-400" />
+      <Handle
+        type="target"
+        position={Position.Top}
+        className="!bg-slate-300 !w-2 !h-2 !border-white !border-2"
+      />
       <div
-        className={`border-2 px-4 py-3 rounded-lg shadow-sm min-w-[160px] text-center cursor-pointer hover:shadow-md transition-shadow ${typeStyle}`}
+        className={`border-2 px-4 py-3 rounded-lg shadow-sm min-w-[160px] text-center cursor-pointer hover:shadow-md hover:-translate-y-px transition-all duration-150 ${style.card}`}
       >
-        <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">
-          {typeLabel}
+        <div className="mb-1.5">
+          <span
+            className={`inline-block text-[10px] font-medium uppercase tracking-wider px-1.5 py-0.5 rounded ${style.badge}`}
+          >
+            {style.badgeLabel}
+          </span>
         </div>
-        <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+        <div className="text-sm font-medium text-text-primary leading-snug">
           {nodeData.label}
         </div>
         {nodeData.link && (
@@ -51,7 +71,7 @@ export function PipelineNodeComponent({ data }: NodeProps) {
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="text-xs text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 underline mt-1 inline-block"
+            className="text-[11px] text-accent hover:text-accent-hover underline underline-offset-2 decoration-accent/30 hover:decoration-accent mt-1.5 inline-block transition-colors"
           >
             {nodeData.link.label} ↗
           </a>
@@ -60,7 +80,7 @@ export function PipelineNodeComponent({ data }: NodeProps) {
       <Handle
         type="source"
         position={Position.Bottom}
-        className="!bg-gray-400"
+        className="!bg-slate-300 !w-2 !h-2 !border-white !border-2"
       />
     </>
   );

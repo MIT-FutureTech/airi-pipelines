@@ -2,6 +2,7 @@
 
 import {
   Background,
+  BackgroundVariant,
   Controls,
   type NodeMouseHandler,
   type NodeTypes,
@@ -82,7 +83,12 @@ export function PipelineGraph({ pipelines, sharedNodes }: PipelineGraphProps) {
           maxZoom={2}
           proOptions={{ hideAttribution: true }}
         >
-          <Background gap={20} size={1} />
+          <Background
+            gap={24}
+            size={1.5}
+            variant={BackgroundVariant.Dots}
+            color="#cbd5e1"
+          />
           <Controls />
         </ReactFlow>
 
