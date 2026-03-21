@@ -11,11 +11,19 @@ export const pipeline: PipelineDefinition = {
       id: "actors-classifier",
       label: "AI actor role classification",
       type: "processor",
+      link: {
+        url: "https://github.com/MIT-FutureTech/ai-actor-classifier",
+        label: "ai-actor-classifier",
+      },
     },
     {
       id: "actors-logo-processor",
       label: "Logo processing",
       type: "processor",
+      link: {
+        url: "https://github.com/MIT-FutureTech/airi-orgreview-logoprocessing",
+        label: "airi-orgreview-logoprocessing",
+      },
     },
     {
       id: "actors-output",

@@ -15,4 +15,8 @@ export const corporatePdfAnalysis: PipelineNode = {
   id: "corporate-pdf-analysis",
   label: "PDF keyword extraction",
   type: "processor",
+  link: {
+    url: "https://github.com/MIT-FutureTech/airi-orgrev-orglist/tree/main/pdf_analysis",
+    label: "airi-orgrev-orglist/pdf_analysis",
+  },
 };

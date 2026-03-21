@@ -186,7 +186,7 @@ function buildPipelineGroup(
       data: {
         label: node.label,
         nodeType: node.type,
-        url: node.url,
+        link: node.link,
       },
     };
   });
@@ -205,7 +205,7 @@ function toFlowNode(
     data: {
       label: node.label,
       nodeType: node.type,
-      url: node.url,
+      link: node.link,
     },
   };
 }

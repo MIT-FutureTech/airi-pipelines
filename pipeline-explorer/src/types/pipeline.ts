@@ -9,7 +9,7 @@ export interface PipelineNode {
   id: string;
   label: string;
   type: NodeType;
-  url?: string;
+  link?: { url: string; label: string };
 }
 
 export interface PipelineEdge {

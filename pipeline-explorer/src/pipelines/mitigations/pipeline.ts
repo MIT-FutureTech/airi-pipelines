@@ -12,6 +12,10 @@ export const pipeline: PipelineDefinition = {
       id: "mitigations-corp-classifier",
       label: "LLM mitigation classification (corporate)",
       type: "processor",
+      link: {
+        url: "https://github.com/MIT-FutureTech/airi-orgrev-orglist/tree/main/llm_classification",
+        label: "airi-orgrev-orglist/llm_classification",
+      },
     },
     {
       id: "mitigations-corp-output",
@@ -29,6 +33,10 @@ export const pipeline: PipelineDefinition = {
       id: "mitigations-review",
       label: "Systematic literature review",
       type: "processor",
+      link: {
+        url: "https://github.com/MIT-FutureTech/mitigations_review",
+        label: "mitigations_review",
+      },
     },
     {
       id: "airtable-mitigations",
@@ -39,6 +47,10 @@ export const pipeline: PipelineDefinition = {
       id: "mitigations-classifier",
       label: "Mitigation taxonomy classifier",
       type: "processor",
+      link: {
+        url: "https://github.com/MIT-FutureTech/airi-mitrev-classifier",
+        label: "airi-mitrev-classifier",
+      },
     },
     {
       id: "airtable-mitigations-classified",

@@ -24,31 +24,55 @@ export const pipeline: PipelineDefinition = {
       id: "greylitsearcher",
       label: "Grey literature search",
       type: "processor",
+      link: {
+        url: "https://github.com/MIT-FutureTech/greylitsearcher",
+        label: "greylitsearcher",
+      },
     },
     {
       id: "orgrev-orglist",
       label: "Company scraping",
       type: "processor",
+      link: {
+        url: "https://github.com/MIT-FutureTech/airi-orgrev-orglist",
+        label: "airi-orgrev-orglist",
+      },
     },
     {
       id: "fulltext-extractor",
       label: "Full-text extraction",
       type: "processor",
+      link: {
+        url: "https://github.com/MIT-FutureTech/airi-orgreview-fulltext",
+        label: "airi-orgreview-fulltext",
+      },
     },
     {
       id: "screening-orchestrator",
       label: "LLM relevance screening",
       type: "processor",
+      link: {
+        url: "https://github.com/MIT-FutureTech/airi-llm-screening-orchestrator",
+        label: "airi-llm-screening-orchestrator",
+      },
     },
     {
       id: "agentic-framework",
       label: "Agentic screening (prototype)",
       type: "proposed",
+      link: {
+        url: "https://github.com/MIT-FutureTech/agentic-framework",
+        label: "agentic-framework",
+      },
     },
     {
       id: "org-doc-classifier",
       label: "Document type classification",
       type: "processor",
+      link: {
+        url: "https://github.com/MIT-FutureTech/org-doc-classifier",
+        label: "org-doc-classifier",
+      },
     },
 
     // --- Pipeline-specific data stores ---
@@ -61,7 +85,10 @@ export const pipeline: PipelineDefinition = {
       id: "airtable-classified",
       label: "Airtable: classified docs",
       type: "datastore",
-      url: "https://airtable.com/appHrhJQHkZz4c82U/tblb9eEVPpV4Qqo4u",
+      link: {
+        url: "https://airtable.com/appHrhJQHkZz4c82U/tblb9eEVPpV4Qqo4u",
+        label: "Open in Airtable",
+      },
     },
   ],
   shared: [airtableCompanies],

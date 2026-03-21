@@ -11,6 +11,10 @@ export const pipeline: PipelineDefinition = {
       id: "risks-classifier",
       label: "LLM risk classification",
       type: "processor",
+      link: {
+        url: "https://github.com/MIT-FutureTech/airi-orgrev-orglist/tree/main/llm_classification",
+        label: "airi-orgrev-orglist/llm_classification",
+      },
     },
     {
       id: "risks-output",
