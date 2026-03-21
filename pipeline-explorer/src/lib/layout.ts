@@ -97,7 +97,7 @@ function runDagreLayout(
   pipelines: PipelineDefinition[],
   sharedNodes: PipelineNode[],
 ) {
-  const g = new dagre.graphlib.Graph();
+  const g = new dagre.graphlib.Graph({ compound: true });
   g.setGraph({ rankdir: "TB", nodesep: 60, ranksep: 80 });
   g.setDefaultEdgeLabel(() => ({}));
 
@@ -105,8 +105,10 @@ function runDagreLayout(
     g.setNode(node.id, { width: NODE_WIDTH, height: NODE_HEIGHT });
   }
   for (const pipeline of pipelines) {
+    g.setNode(pipeline.id, {});
     for (const node of pipeline.nodes) {
       g.setNode(node.id, { width: NODE_WIDTH, height: NODE_HEIGHT });
+      g.setParent(node.id, pipeline.id);
     }
     for (const edge of pipeline.edges) {
       g.setEdge(edge.source, edge.target);
@@ -116,8 +118,12 @@ function runDagreLayout(
   dagre.layout(g);
 
   // Dagre returns center coordinates. Convert to top-left.
+  const pipelineIds = new Set(pipelines.map((p) => p.id));
   const positions = new Map<string, { x: number; y: number }>();
   for (const nodeId of g.nodes()) {
+    if (pipelineIds.has(nodeId)) {
+      continue;
+    }
     const n = g.node(nodeId);
     positions.set(nodeId, {
       x: n.x - NODE_WIDTH / 2,
