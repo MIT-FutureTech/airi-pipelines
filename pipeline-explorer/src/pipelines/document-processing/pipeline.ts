@@ -19,8 +19,8 @@ export const pipeline: PipelineDefinition = {
     },
 
     // --- Scrapers ---
-    { id: "greylitsearcher", label: "greylitsearcher", type: "repo" },
-    { id: "orgrev-orglist", label: "airi-orgrev-orglist", type: "repo" },
+    { id: "greylitsearcher", label: "greylitsearcher", type: "processor" },
+    { id: "orgrev-orglist", label: "airi-orgrev-orglist", type: "processor" },
 
     // --- Data stores ---
     {
@@ -38,15 +38,15 @@ export const pipeline: PipelineDefinition = {
     {
       id: "fulltext-extractor",
       label: "airi-orgreview-fulltext",
-      type: "repo",
+      type: "processor",
     },
     {
       id: "screening-orchestrator",
       label: "airi-llm-screening-orchestrator",
-      type: "repo",
+      type: "processor",
     },
     { id: "agentic-framework", label: "agentic-framework", type: "proposed" },
-    { id: "org-doc-classifier", label: "org-doc-classifier", type: "repo" },
+    { id: "org-doc-classifier", label: "org-doc-classifier", type: "processor" },
 
     // --- Output ---
     {

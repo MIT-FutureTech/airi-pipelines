@@ -11,7 +11,7 @@ interface PipelineNodeData {
 }
 
 const stylesByType: Record<NodeType, string> = {
-  repo: "border-blue-500 bg-blue-50 dark:bg-blue-950",
+  processor: "border-blue-500 bg-blue-50 dark:bg-blue-950",
   datastore: "border-amber-500 bg-amber-50 dark:bg-amber-950 rounded-xl",
   "external-service": "border-gray-400 bg-gray-50 dark:bg-gray-900 border-dashed",
   "manual-step": "border-gray-400 bg-gray-50 dark:bg-gray-900 border-dotted opacity-75",
@@ -19,7 +19,7 @@ const stylesByType: Record<NodeType, string> = {
 };
 
 const labelsByType: Record<NodeType, string> = {
-  repo: "Repo",
+  processor: "Processor",
   datastore: "Data Store",
   "external-service": "External",
   "manual-step": "Manual",
@@ -28,7 +28,7 @@ const labelsByType: Record<NodeType, string> = {
 
 export function PipelineNodeComponent({ data }: NodeProps) {
   const nodeData = data as PipelineNodeData;
-  const typeStyle = stylesByType[nodeData.nodeType] ?? stylesByType.repo;
+  const typeStyle = stylesByType[nodeData.nodeType] ?? stylesByType.processor;
   const typeLabel = labelsByType[nodeData.nodeType];
 
   return (

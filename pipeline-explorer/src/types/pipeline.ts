@@ -1,5 +1,5 @@
 export type NodeType =
-  | "repo"
+  | "processor"
   | "datastore"
   | "external-service"
   | "manual-step"
