@@ -60,7 +60,9 @@ export function buildNodesAndEdges(
   for (const pipeline of pipelines) {
     for (const edge of pipeline.edges) {
       const edgeKey = `${edge.source}-${edge.target}`;
-      if (seenEdges.has(edgeKey)) continue;
+      if (seenEdges.has(edgeKey)) {
+        continue;
+      }
       seenEdges.add(edgeKey);
       allEdges.push({
         id: edgeKey,
@@ -83,12 +85,15 @@ export function findNode(
   sharedNodes: PipelineNode[],
 ): SelectedNode | null {
   for (const node of sharedNodes) {
-    if (node.id === nodeId)
+    if (node.id === nodeId) {
       return { id: node.id, label: node.label, nodeType: node.type };
+    }
   }
   for (const p of pipelines) {
     const node = p.nodes.find((n) => n.id === nodeId);
-    if (node) return { id: node.id, label: node.label, nodeType: node.type };
+    if (node) {
+      return { id: node.id, label: node.label, nodeType: node.type };
+    }
   }
   return null;
 }

@@ -31,7 +31,9 @@ const nodeTypes: NodeTypes = {
 export function PipelineGraph({ pipelines, sharedNodes }: PipelineGraphProps) {
   const [selectedNode, setSelectedNode] = useState(() => {
     const nodeId = new URLSearchParams(window.location.search).get("node");
-    if (!nodeId) return null;
+    if (!nodeId) {
+      return null;
+    }
     return findNode(nodeId, pipelines, sharedNodes);
   });
 
@@ -53,7 +55,9 @@ export function PipelineGraph({ pipelines, sharedNodes }: PipelineGraphProps) {
 
   const onNodeClick: NodeMouseHandler = useCallback(
     (_event, node) => {
-      if (node.id.endsWith("-group")) return;
+      if (node.id.endsWith("-group")) {
+        return;
+      }
       selectNodeById(node.id);
     },
     [selectNodeById],

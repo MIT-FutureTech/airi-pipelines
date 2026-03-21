@@ -30,6 +30,7 @@
         "noReactSpecificProps": "off"
       },
       "style": {
+        "useBlockStatements": "error",
         // Allow acronyms like MDX, URL in camelCase/PascalCase identifiers
         "useNamingConvention": {
           "level": "error",

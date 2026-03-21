@@ -18,7 +18,9 @@ export function NodeDetailPanel({
 }: NodeDetailPanelProps) {
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") {
+        onClose();
+      }
     },
     [onClose],
   );
