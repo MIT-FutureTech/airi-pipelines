@@ -2,6 +2,17 @@ import dagre from "@dagrejs/dagre";
 import type { Edge, Node } from "@xyflow/react";
 import type { PipelineDefinition, PipelineNode } from "@/types/pipeline";
 
+function getPosition(
+  map: Map<string, { x: number; y: number }>,
+  id: string,
+): { x: number; y: number } {
+  const pos = map.get(id);
+  if (pos === undefined) {
+    throw new Error(`Missing position for node "${id}"`);
+  }
+  return pos;
+}
+
 /** Estimated node dimensions for dagre layout */
 const NODE_WIDTH = 220;
 const NODE_HEIGHT = 60;
@@ -42,7 +53,7 @@ export function buildNodesAndEdges(
   }
 
   for (const node of sharedNodes) {
-    allNodes.push(toFlowNode(node, absPositions.get(node.id)!));
+    allNodes.push(toFlowNode(node, getPosition(absPositions, node.id)));
   }
 
   for (const pipeline of pipelines) {
@@ -121,7 +132,7 @@ function buildPipelineGroup(
   let maxX = -Infinity;
   let maxY = -Infinity;
   for (const node of pipeline.nodes) {
-    const pos = absPositions.get(node.id)!;
+    const pos = getPosition(absPositions, node.id);
     minX = Math.min(minX, pos.x);
     minY = Math.min(minY, pos.y);
     maxX = Math.max(maxX, pos.x);
@@ -147,7 +158,7 @@ function buildPipelineGroup(
   };
 
   const childNodes: Node[] = pipeline.nodes.map((node) => {
-    const pos = absPositions.get(node.id)!;
+    const pos = getPosition(absPositions, node.id);
     return {
       id: node.id,
       type: "pipeline",

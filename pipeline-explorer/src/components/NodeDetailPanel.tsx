@@ -26,10 +26,16 @@ export function NodeDetailPanel({
   return (
     <>
       {/* Backdrop */}
-      <div className="fixed inset-0 z-40" onClick={onClose} />
+      <button
+        type="button"
+        className="fixed inset-0 z-40 appearance-none bg-transparent border-none cursor-default"
+        onClick={onClose}
+        aria-label="Close panel"
+      />
 
       {/* Panel */}
       <div
+        role="dialog"
         ref={(el) => el?.focus()}
         tabIndex={-1}
         onKeyDown={handleKeyDown}
@@ -45,6 +51,7 @@ export function NodeDetailPanel({
             </span>
           </div>
           <button
+            type="button"
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xl leading-none"
           >
