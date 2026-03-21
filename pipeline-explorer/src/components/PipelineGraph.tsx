@@ -9,7 +9,6 @@ import {
   ReactFlow,
 } from "@xyflow/react";
 import { useCallback, useMemo, useState } from "react";
-import "@xyflow/react/dist/style.css";
 
 import { buildNodesAndEdges, findNode, type SelectedNode } from "@/lib/layout";
 import { getNodeContent } from "@/pipelines/node-content";

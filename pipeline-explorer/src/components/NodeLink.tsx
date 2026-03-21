@@ -1,5 +1,6 @@
 "use client";
 
+import styles from "./NodeLink.module.css";
 import { useSelectNode } from "./NodeSelectionContext";
 
 interface NodeLinkProps {
@@ -17,7 +18,7 @@ export function NodeLink({ id, children }: NodeLinkProps) {
         e.preventDefault();
         selectNode(id);
       }}
-      className="text-accent underline underline-offset-2 decoration-accent/30 cursor-pointer hover:text-accent-hover hover:decoration-accent-hover transition-colors"
+      className={styles.link}
     >
       {children}
     </a>

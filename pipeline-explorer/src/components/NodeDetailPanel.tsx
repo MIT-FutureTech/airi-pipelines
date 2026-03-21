@@ -1,6 +1,7 @@
 "use client";
 
 import { type ComponentType, useCallback } from "react";
+import styles from "./NodeDetailPanel.module.css";
 
 interface NodeDetailPanelProps {
   nodeId: string;
@@ -27,35 +28,29 @@ export function NodeDetailPanel({
 
   return (
     <>
-      {/* Backdrop */}
       <button
         type="button"
-        className="fixed inset-0 z-40 appearance-none bg-black/5 backdrop-blur-[2px] border-none cursor-default animate-fade-in"
+        className={styles.backdrop}
         onClick={onClose}
         aria-label="Close panel"
       />
 
-      {/* Panel */}
       <div
         role="dialog"
         ref={(el) => el?.focus()}
         tabIndex={-1}
         onKeyDown={handleKeyDown}
-        className="fixed top-0 right-0 h-full w-[480px] max-w-full z-50 bg-surface-elevated border-l border-border shadow-2xl overflow-y-auto outline-none animate-slide-in-right"
+        className={styles.panel}
       >
-        <div className="sticky top-0 bg-surface-elevated/95 backdrop-blur-sm border-b border-border px-6 py-4 flex items-center justify-between z-10">
+        <div className={styles.header}>
           <div>
-            <h2 className="text-base font-semibold text-text-primary tracking-tight">
-              {nodeLabel}
-            </h2>
-            <span className="text-xs text-text-muted font-medium">
-              {nodeType}
-            </span>
+            <h2 className={styles.title}>{nodeLabel}</h2>
+            <span className={styles.type}>{nodeType}</span>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="text-text-muted hover:text-text-primary w-8 h-8 flex items-center justify-center rounded-md hover:bg-surface-secondary transition-colors text-lg leading-none"
+            className={styles.closeButton}
           >
             &times;
           </button>
@@ -65,7 +60,7 @@ export function NodeDetailPanel({
           {Content ? (
             <Content />
           ) : (
-            <p className="text-text-muted italic">
+            <p className={styles.emptyState}>
               No additional details available for this node.
             </p>
           )}

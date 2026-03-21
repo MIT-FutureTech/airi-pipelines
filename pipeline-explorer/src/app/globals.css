@@ -1,3 +1,4 @@
+@import "@xyflow/react/dist/style.css" layer(xyflow);
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
@@ -25,12 +26,16 @@ body {
 }
 
 /* ReactFlow overrides */
+
 .react-flow__background {
-  background-color: var(--color-surface-secondary) !important;
+  background-color: var(--color-surface-secondary);
 }
 
-.react-flow__background pattern line {
-  stroke: #cbd5e1 !important;
+.react-flow__handle {
+  width: 8px;
+  height: 8px;
+  background: #cbd5e1;
+  border: 2px solid white;
 }
 
 .react-flow__controls {
@@ -43,29 +48,29 @@ body {
 }
 
 .react-flow__controls-button {
-  background-color: var(--color-surface) !important;
-  border-color: var(--color-border) !important;
-  color: var(--color-text-secondary) !important;
-  width: 32px !important;
-  height: 32px !important;
+  background-color: var(--color-surface);
+  border-color: var(--color-border);
+  color: var(--color-text-secondary);
+  width: 32px;
+  height: 32px;
 }
 
 .react-flow__controls-button:hover {
-  background-color: var(--color-surface-secondary) !important;
-  color: var(--color-text-primary) !important;
+  background-color: var(--color-surface-secondary);
+  color: var(--color-text-primary);
 }
 
 .react-flow__controls-button svg {
-  fill: currentColor !important;
+  fill: currentColor;
 }
 
 .react-flow__edge-path {
-  stroke: #94a3b8 !important;
-  stroke-width: 1.5 !important;
+  stroke: #94a3b8;
+  stroke-width: 1.5;
 }
 
 .react-flow__edge.animated .react-flow__edge-path {
-  stroke-dasharray: 5 !important;
+  stroke-dasharray: 5;
 }
 
 .react-flow__minimap {
@@ -77,34 +82,8 @@ body {
     0 4px 12px rgba(0, 0, 0, 0.04);
 }
 
-/* Detail panel slide-in */
-@keyframes slide-in-right {
-  from {
-    transform: translateX(100%);
-  }
-  to {
-    transform: translateX(0);
-  }
-}
-
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.animate-slide-in-right {
-  animation: slide-in-right 0.2s ease-out;
-}
-
-.animate-fade-in {
-  animation: fade-in 0.15s ease-out;
-}
-
 /* Prose overrides for detail panel */
+
 .prose h1,
 .prose h2,
 .prose h3,
