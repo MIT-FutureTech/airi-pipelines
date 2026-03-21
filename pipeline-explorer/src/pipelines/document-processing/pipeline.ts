@@ -11,41 +11,27 @@ export const pipeline: PipelineDefinition = {
       id: "google-custom-search",
       label: "Google Custom Search",
       type: "external-service",
-      position: { x: 0, y: 0 },
     },
     {
       id: "companiesmarketcap",
       label: "companiesmarketcap.com",
       type: "external-service",
-      position: { x: 450, y: 0 },
     },
 
     // --- Scrapers ---
-    {
-      id: "greylitsearcher",
-      label: "greylitsearcher",
-      type: "repo",
-      position: { x: 0, y: 150 },
-    },
-    {
-      id: "orgrev-orglist",
-      label: "airi-orgrev-orglist",
-      type: "repo",
-      position: { x: 450, y: 150 },
-    },
+    { id: "greylitsearcher", label: "greylitsearcher", type: "repo" },
+    { id: "orgrev-orglist", label: "airi-orgrev-orglist", type: "repo" },
 
     // --- Data stores ---
     {
       id: "airtable-grey-lit",
       label: "Airtable: Grey Literature",
       type: "datastore",
-      position: { x: 0, y: 350 },
     },
     {
       id: "airtable-companies",
       label: "Airtable: Companies",
       type: "datastore",
-      position: { x: 450, y: 350 },
     },
 
     // --- Processing ---
@@ -53,33 +39,20 @@ export const pipeline: PipelineDefinition = {
       id: "fulltext-extractor",
       label: "airi-orgreview-fulltext",
       type: "repo",
-      position: { x: 0, y: 550 },
     },
     {
       id: "screening-orchestrator",
       label: "airi-llm-screening-orchestrator",
       type: "repo",
-      position: { x: 0, y: 750 },
     },
-    {
-      id: "agentic-framework",
-      label: "agentic-framework",
-      type: "proposed",
-      position: { x: 350, y: 750 },
-    },
-    {
-      id: "org-doc-classifier",
-      label: "org-doc-classifier",
-      type: "repo",
-      position: { x: 0, y: 950 },
-    },
+    { id: "agentic-framework", label: "agentic-framework", type: "proposed" },
+    { id: "org-doc-classifier", label: "org-doc-classifier", type: "repo" },
 
     // --- Output ---
     {
       id: "airtable-classified",
       label: "Airtable: classified docs",
       type: "datastore",
-      position: { x: 0, y: 1150 },
       url: "https://airtable.com/appHrhJQHkZz4c82U/tblb9eEVPpV4Qqo4u",
     },
   ],

@@ -10,6 +10,7 @@ import {
   type NodeTypes,
   type NodeMouseHandler,
 } from "@xyflow/react";
+import dagre from "@dagrejs/dagre";
 import "@xyflow/react/dist/style.css";
 
 import type { PipelineDefinition } from "@/types/pipeline";
@@ -28,20 +29,51 @@ const nodeTypes: NodeTypes = {
   pipelineGroup: PipelineGroupNode,
 };
 
-/** Horizontal spacing between pipeline groups */
-const PIPELINE_GAP = 100;
-/** Estimated node dimensions for bounding-box calculation */
+/** Estimated node dimensions for dagre layout */
 const NODE_WIDTH = 220;
 const NODE_HEIGHT = 60;
+/** Spacing between pipeline groups */
+const PIPELINE_GAP = 100;
 /** Padding inside the group box around the outermost nodes */
 const GROUP_PADDING = 30;
 /** Space reserved at top of group for the label */
 const GROUP_LABEL_HEIGHT = 36;
 
 /**
+ * Use dagre to compute positions for a single pipeline's nodes,
+ * then wrap them in a React Flow group node.
+ */
+function layoutPipeline(pipeline: PipelineDefinition) {
+  const g = new dagre.graphlib.Graph();
+  g.setGraph({ rankdir: "TB", nodesep: 60, ranksep: 80 });
+  g.setDefaultEdgeLabel(() => ({}));
+
+  for (const node of pipeline.nodes) {
+    g.setNode(node.id, { width: NODE_WIDTH, height: NODE_HEIGHT });
+  }
+  for (const edge of pipeline.edges) {
+    g.setEdge(edge.source, edge.target);
+  }
+
+  dagre.layout(g);
+
+  // Dagre returns center coordinates — convert to top-left
+  const positions = new Map<string, { x: number; y: number }>();
+  for (const node of pipeline.nodes) {
+    const dagreNode = g.node(node.id);
+    positions.set(node.id, {
+      x: dagreNode.x - NODE_WIDTH / 2,
+      y: dagreNode.y - NODE_HEIGHT / 2,
+    });
+  }
+
+  return positions;
+}
+
+/**
  * Lay out all pipelines side by side on a single canvas.
- * Each pipeline becomes a React Flow group node, with children
- * positioned relative to it.
+ * Each pipeline becomes a React Flow group node with dagre-computed
+ * child positions.
  */
 function buildNodesAndEdges(pipelines: PipelineDefinition[]) {
   const allNodes: Node[] = [];
@@ -49,12 +81,19 @@ function buildNodesAndEdges(pipelines: PipelineDefinition[]) {
   let xOffset = 0;
 
   for (const pipeline of pipelines) {
-    const xs = pipeline.nodes.map((n) => n.position.x);
-    const ys = pipeline.nodes.map((n) => n.position.y);
-    const minX = Math.min(...xs);
-    const minY = Math.min(...ys);
-    const maxX = Math.max(...xs);
-    const maxY = Math.max(...ys);
+    const positions = layoutPipeline(pipeline);
+
+    // Compute bounding box of laid-out nodes
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+    for (const pos of positions.values()) {
+      minX = Math.min(minX, pos.x);
+      minY = Math.min(minY, pos.y);
+      maxX = Math.max(maxX, pos.x);
+      maxY = Math.max(maxY, pos.y);
+    }
 
     const groupWidth = maxX - minX + NODE_WIDTH + GROUP_PADDING * 2;
     const groupHeight =
@@ -74,14 +113,15 @@ function buildNodesAndEdges(pipelines: PipelineDefinition[]) {
     });
 
     for (const node of pipeline.nodes) {
+      const pos = positions.get(node.id)!;
       allNodes.push({
         id: node.id,
         type: "pipeline",
         parentId: groupId,
         extent: "parent" as const,
         position: {
-          x: node.position.x - minX + GROUP_PADDING,
-          y: node.position.y - minY + GROUP_PADDING + GROUP_LABEL_HEIGHT,
+          x: pos.x - minX + GROUP_PADDING,
+          y: pos.y - minY + GROUP_PADDING + GROUP_LABEL_HEIGHT,
         },
         data: {
           label: node.label,

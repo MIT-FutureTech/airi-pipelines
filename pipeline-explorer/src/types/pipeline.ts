@@ -9,7 +9,6 @@ export interface PipelineNode {
   id: string;
   label: string;
   type: NodeType;
-  position: { x: number; y: number };
   url?: string;
 }
 
