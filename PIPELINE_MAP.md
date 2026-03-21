@@ -73,7 +73,7 @@ The diagram below shows all components and their data flows. Pipeline membership
  ║  ai-actor-classifier    ║  ║  airi-orgrev-orglist       ║  ║       │                    │                 ║║
  ║  (GPT-5.2 + web search  ║  ║  (PDF keyword extraction   ║  ║       │                    ▼                 ║║
  ║   classifies Developer, ║  ║   + LLM risk classif.      ║  ║       │          mitigations_review          ║║
- ║   Deployer, Infra, etc.)║  ║   22-code taxonomy,        ║  ║       │          (systematic lit review,     ║║
+ ║   Deployer, Infra, etc.)║  ║   24-code taxonomy,        ║  ║       │          (systematic lit review,     ║║
  ║      │                  ║  ║   7 risk domains)          ║  ║       │           screens with Gemini)       ║║
  ║      ▼                  ║  ║      │                     ║  ║       │                    │                 ║║
  ║  Airtable Base 3        ║  ║      ▼                     ║  ║       ▼                    ▼                 ║║
@@ -150,11 +150,14 @@ Classifies organizations by their role in the AI ecosystem (Developer, Deployer,
 
 ### Risks
 
-Classifies AI risk mentions from corporate documents into a 22-code taxonomy across 7 risk domains.
+Classifies AI risk mentions from corporate documents into a 24-code taxonomy across 7 risk domains: Discrimination & Toxicity, Privacy & Security, Misinformation, Malicious Actors, Human-Computer Interaction, Socioeconomic & Environmental, and AI System Safety.
+
+Two-step process: PDF keyword extraction finds AI-related mentions with surrounding context, then LLM classification applies a risk gate and assigns taxonomy codes.
 
 | Repo | Role | Language | Trigger | Status |
 |------|------|----------|---------|--------|
-| [airi-orgrev-orglist](https://github.com/MIT-FutureTech/airi-orgrev-orglist) | PDF keyword extraction + LLM risk classification | Python + OpenRouter | CLI scripts | Active |
+| [airi-orgrev-orglist](https://github.com/MIT-FutureTech/airi-orgrev-orglist) (`pdf_analysis/`) | PDF keyword extraction — searches corporate PDFs for AI-related keywords, captures 2000-char context paragraphs | Python | CLI scripts | Active |
+| [airi-orgrev-orglist](https://github.com/MIT-FutureTech/airi-orgrev-orglist) (`llm_classification/`) | LLM risk classification — two-stage gate + subdomain classifier into 24-code taxonomy | Python + OpenRouter (Gemini 2.5 Flash Lite) | CLI scripts | Active |
 
 ### Mitigations
 
@@ -261,4 +264,4 @@ The MIT-FutureTech org contains many repos unrelated to the AIRI pipeline:
 | mitigations_review | Not mentioned | Active — feeds the mitigation classifier |
 | airi-orgrev-orglist | Simple list generator | Full pipeline: company scraping + PDF analysis + risk/mitigation classification |
 | airi-orgrev-companylist | Company list generator | Empty repo (absorbed into airi-orgrev-orglist) |
-| airi-orgrev-orglist scope | Not in prior art classification diagram | Classifies both risks (22-code) AND mitigations (44-code) from corporate docs |
+| airi-orgrev-orglist scope | Not in prior art classification diagram | Classifies both risks (24-code) AND mitigations (44-code) from corporate docs |
