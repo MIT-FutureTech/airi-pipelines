@@ -1,5 +1,5 @@
-import type { Node, Edge } from "@xyflow/react";
 import dagre from "@dagrejs/dagre";
+import type { Edge, Node } from "@xyflow/react";
 import type { PipelineDefinition, PipelineNode } from "@/types/pipeline";
 
 /** Estimated node dimensions for dagre layout */

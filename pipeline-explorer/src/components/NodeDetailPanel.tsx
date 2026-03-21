@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, type ComponentType } from "react";
+import { type ComponentType, useCallback } from "react";
 
 interface NodeDetailPanelProps {
   nodeId: string;

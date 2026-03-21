@@ -1,22 +1,22 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
 import {
-  ReactFlow,
   Background,
   Controls,
-  type NodeTypes,
   type NodeMouseHandler,
+  type NodeTypes,
+  ReactFlow,
 } from "@xyflow/react";
+import { useCallback, useMemo, useState } from "react";
 import "@xyflow/react/dist/style.css";
 
-import type { PipelineDefinition, PipelineNode } from "@/types/pipeline";
-import { buildNodesAndEdges, findNode, SelectedNode } from "@/lib/layout";
+import { buildNodesAndEdges, findNode, type SelectedNode } from "@/lib/layout";
 import { getNodeContent } from "@/pipelines/node-content";
-import { PipelineNodeComponent } from "./PipelineNode";
-import { PipelineGroupNode } from "./PipelineGroupNode";
+import type { PipelineDefinition, PipelineNode } from "@/types/pipeline";
 import { NodeDetailPanel } from "./NodeDetailPanel";
 import { NodeSelectionProvider } from "./NodeSelectionContext";
+import { PipelineGroupNode } from "./PipelineGroupNode";
+import { PipelineNodeComponent } from "./PipelineNode";
 
 interface PipelineGraphProps {
   pipelines: PipelineDefinition[];

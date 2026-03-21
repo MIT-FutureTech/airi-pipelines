@@ -1,6 +1,6 @@
 import type { PipelineNode } from "@/types/pipeline";
-import { pipeline as documentProcessing } from "./document-processing/pipeline";
 import { pipeline as actors } from "./actors/pipeline";
+import { pipeline as documentProcessing } from "./document-processing/pipeline";
 
 export const allPipelines = [documentProcessing, actors];
 
