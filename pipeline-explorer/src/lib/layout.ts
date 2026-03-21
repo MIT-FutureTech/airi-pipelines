@@ -34,7 +34,10 @@ export function buildNodesAndEdges(
   const allEdges: Edge[] = [];
 
   for (const pipeline of pipelines) {
-    const { groupNode, childNodes } = buildPipelineGroup(pipeline, absPositions);
+    const { groupNode, childNodes } = buildPipelineGroup(
+      pipeline,
+      absPositions,
+    );
     allNodes.push(groupNode, ...childNodes);
   }
 

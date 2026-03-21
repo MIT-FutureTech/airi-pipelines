@@ -4,8 +4,7 @@ import dynamic from "next/dynamic";
 import type { PipelineDefinition, PipelineNode } from "@/types/pipeline";
 
 const PipelineGraph = dynamic(
-  () =>
-    import("@/components/PipelineGraph").then((mod) => mod.PipelineGraph),
+  () => import("@/components/PipelineGraph").then((mod) => mod.PipelineGraph),
   { ssr: false },
 );
 

@@ -13,8 +13,10 @@ interface PipelineNodeData {
 const stylesByType: Record<NodeType, string> = {
   processor: "border-blue-500 bg-blue-50 dark:bg-blue-950",
   datastore: "border-amber-500 bg-amber-50 dark:bg-amber-950 rounded-xl",
-  "external-service": "border-gray-400 bg-gray-50 dark:bg-gray-900 border-dashed",
-  "manual-step": "border-gray-400 bg-gray-50 dark:bg-gray-900 border-dotted opacity-75",
+  "external-service":
+    "border-gray-400 bg-gray-50 dark:bg-gray-900 border-dashed",
+  "manual-step":
+    "border-gray-400 bg-gray-50 dark:bg-gray-900 border-dotted opacity-75",
   proposed: "border-gray-300 bg-gray-50 dark:bg-gray-900 opacity-50",
 };
 

@@ -33,7 +33,11 @@ export const pipeline: PipelineDefinition = {
       type: "processor",
     },
     { id: "agentic-framework", label: "agentic-framework", type: "proposed" },
-    { id: "org-doc-classifier", label: "org-doc-classifier", type: "processor" },
+    {
+      id: "org-doc-classifier",
+      label: "org-doc-classifier",
+      type: "processor",
+    },
 
     // --- Pipeline-specific data stores ---
     {
