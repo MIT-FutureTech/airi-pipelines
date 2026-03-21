@@ -22,6 +22,10 @@ export interface PipelineDefinition {
   id: string;
   name: string;
   description: string;
+  /** Nodes owned by this pipeline: displayed inside its group box */
   nodes: PipelineNode[];
+  /** Shared nodes this pipeline connects to */
+  shared: PipelineNode[];
+  /** Edges involving this pipeline's own and shared nodes */
   edges: PipelineEdge[];
 }

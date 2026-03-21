@@ -13,7 +13,7 @@ import {
 import dagre from "@dagrejs/dagre";
 import "@xyflow/react/dist/style.css";
 
-import type { PipelineDefinition } from "@/types/pipeline";
+import type { PipelineDefinition, PipelineNode } from "@/types/pipeline";
 import { getNodeContent } from "@/pipelines/node-content";
 import { PipelineNodeComponent } from "./PipelineNode";
 import { PipelineGroupNode } from "./PipelineGroupNode";
@@ -22,6 +22,7 @@ import { NodeSelectionProvider } from "./NodeSelectionContext";
 
 interface PipelineGraphProps {
   pipelines: PipelineDefinition[];
+  sharedNodes: PipelineNode[];
 }
 
 const nodeTypes: NodeTypes = {
@@ -32,63 +33,72 @@ const nodeTypes: NodeTypes = {
 /** Estimated node dimensions for dagre layout */
 const NODE_WIDTH = 220;
 const NODE_HEIGHT = 60;
-/** Spacing between pipeline groups */
-const PIPELINE_GAP = 100;
 /** Padding inside the group box around the outermost nodes */
 const GROUP_PADDING = 30;
 /** Space reserved at top of group for the label */
 const GROUP_LABEL_HEIGHT = 36;
 
 /**
- * Use dagre to compute positions for a single pipeline's nodes,
- * then wrap them in a React Flow group node.
+ * Build the full graph from all pipelines + shared nodes.
+ *
+ * 1. Feed every node and edge into a single dagre layout
+ * 2. Compute group boxes from each pipeline's owned-node positions
+ * 3. Convert owned nodes to relative positions inside their group
+ * 4. Shared nodes stay at absolute positions (no group parent)
  */
-function layoutPipeline(pipeline: PipelineDefinition) {
+function buildNodesAndEdges(
+  pipelines: PipelineDefinition[],
+  sharedNodes: PipelineNode[],
+) {
+  // --- Step 1: Run dagre on the full graph ---
   const g = new dagre.graphlib.Graph();
   g.setGraph({ rankdir: "TB", nodesep: 60, ranksep: 80 });
   g.setDefaultEdgeLabel(() => ({}));
 
-  for (const node of pipeline.nodes) {
+  // Add shared nodes
+  for (const node of sharedNodes) {
     g.setNode(node.id, { width: NODE_WIDTH, height: NODE_HEIGHT });
   }
-  for (const edge of pipeline.edges) {
-    g.setEdge(edge.source, edge.target);
+
+  // Add all pipeline-owned nodes and edges
+  for (const pipeline of pipelines) {
+    for (const node of pipeline.nodes) {
+      g.setNode(node.id, { width: NODE_WIDTH, height: NODE_HEIGHT });
+    }
+    for (const edge of pipeline.edges) {
+      g.setEdge(edge.source, edge.target);
+    }
   }
 
   dagre.layout(g);
 
-  // Dagre returns center coordinates — convert to top-left
-  const positions = new Map<string, { x: number; y: number }>();
-  for (const node of pipeline.nodes) {
-    const dagreNode = g.node(node.id);
-    positions.set(node.id, {
-      x: dagreNode.x - NODE_WIDTH / 2,
-      y: dagreNode.y - NODE_HEIGHT / 2,
-    });
+  // Read back absolute positions (dagre returns center → convert to top-left)
+  const absPositions = new Map<string, { x: number; y: number }>();
+  for (const nodeId of g.nodes()) {
+    const n = g.node(nodeId);
+    absPositions.set(nodeId, { x: n.x - NODE_WIDTH / 2, y: n.y - NODE_HEIGHT / 2 });
   }
 
-  return positions;
-}
-
-/**
- * Lay out all pipelines side by side on a single canvas.
- * Each pipeline becomes a React Flow group node with dagre-computed
- * child positions.
- */
-function buildNodesAndEdges(pipelines: PipelineDefinition[]) {
+  // --- Step 2: Build React Flow nodes ---
   const allNodes: Node[] = [];
   const allEdges: Edge[] = [];
-  let xOffset = 0;
 
+  // Build a lookup from node ID → PipelineNode data (for label, type, url)
+  const nodeDataMap = new Map<string, PipelineNode>();
+  for (const node of sharedNodes) nodeDataMap.set(node.id, node);
   for (const pipeline of pipelines) {
-    const positions = layoutPipeline(pipeline);
+    for (const node of pipeline.nodes) nodeDataMap.set(node.id, node);
+  }
 
-    // Compute bounding box of laid-out nodes
+  // Create group nodes per pipeline, then add owned nodes as children
+  for (const pipeline of pipelines) {
+    // Compute bounding box of this pipeline's owned nodes
     let minX = Infinity;
     let minY = Infinity;
     let maxX = -Infinity;
     let maxY = -Infinity;
-    for (const pos of positions.values()) {
+    for (const node of pipeline.nodes) {
+      const pos = absPositions.get(node.id)!;
       minX = Math.min(minX, pos.x);
       minY = Math.min(minY, pos.y);
       maxX = Math.max(maxX, pos.x);
@@ -98,22 +108,22 @@ function buildNodesAndEdges(pipelines: PipelineDefinition[]) {
     const groupWidth = maxX - minX + NODE_WIDTH + GROUP_PADDING * 2;
     const groupHeight =
       maxY - minY + NODE_HEIGHT + GROUP_PADDING * 2 + GROUP_LABEL_HEIGHT;
-
     const groupId = `${pipeline.id}-group`;
 
-    // Group node — must appear before its children in the array
+    // Group node — must appear before its children
     allNodes.push({
       id: groupId,
       type: "pipelineGroup",
-      position: { x: xOffset, y: 0 },
+      position: { x: minX - GROUP_PADDING, y: minY - GROUP_PADDING - GROUP_LABEL_HEIGHT },
       data: { label: pipeline.name },
       selectable: false,
       draggable: false,
       style: { width: groupWidth, height: groupHeight },
     });
 
+    // Owned nodes — relative to group
     for (const node of pipeline.nodes) {
-      const pos = positions.get(node.id)!;
+      const pos = absPositions.get(node.id)!;
       allNodes.push({
         id: node.id,
         type: "pipeline",
@@ -130,7 +140,25 @@ function buildNodesAndEdges(pipelines: PipelineDefinition[]) {
         },
       });
     }
+  }
 
+  // Shared nodes — absolute positions, no group parent
+  for (const node of sharedNodes) {
+    const pos = absPositions.get(node.id)!;
+    allNodes.push({
+      id: node.id,
+      type: "pipeline",
+      position: pos,
+      data: {
+        label: node.label,
+        nodeType: node.type,
+        url: node.url,
+      },
+    });
+  }
+
+  // --- Step 3: Build edges ---
+  for (const pipeline of pipelines) {
     for (const edge of pipeline.edges) {
       allEdges.push({
         id: `${pipeline.id}-${edge.source}-${edge.target}`,
@@ -142,8 +170,6 @@ function buildNodesAndEdges(pipelines: PipelineDefinition[]) {
         labelStyle: { fontSize: 11, fill: "#9ca3af" },
       });
     }
-
-    xOffset += groupWidth + PIPELINE_GAP;
   }
 
   return { allNodes, allEdges };
@@ -155,23 +181,19 @@ interface SelectedNode {
   nodeType: string;
 }
 
-function findNodeInPipelines(
+function findNode(
   nodeId: string,
   pipelines: PipelineDefinition[],
+  sharedNodes: PipelineNode[],
 ): SelectedNode | null {
+  for (const node of sharedNodes) {
+    if (node.id === nodeId) return { id: node.id, label: node.label, nodeType: node.type };
+  }
   for (const p of pipelines) {
     const node = p.nodes.find((n) => n.id === nodeId);
     if (node) return { id: node.id, label: node.label, nodeType: node.type };
   }
   return null;
-}
-
-function getInitialNode(
-  pipelines: PipelineDefinition[],
-): SelectedNode | null {
-  const nodeId = new URLSearchParams(window.location.search).get("node");
-  if (!nodeId) return null;
-  return findNodeInPipelines(nodeId, pipelines);
 }
 
 function updateUrl(node: SelectedNode | null) {
@@ -181,25 +203,27 @@ function updateUrl(node: SelectedNode | null) {
   window.history.replaceState({}, "", url);
 }
 
-export function PipelineGraph({ pipelines }: PipelineGraphProps) {
-  const [selectedNode, setSelectedNode] = useState<SelectedNode | null>(() =>
-    getInitialNode(pipelines),
-  );
+export function PipelineGraph({ pipelines, sharedNodes }: PipelineGraphProps) {
+  const [selectedNode, setSelectedNode] = useState<SelectedNode | null>(() => {
+    const nodeId = new URLSearchParams(window.location.search).get("node");
+    if (!nodeId) return null;
+    return findNode(nodeId, pipelines, sharedNodes);
+  });
 
   const { allNodes, allEdges } = useMemo(
-    () => buildNodesAndEdges(pipelines),
-    [pipelines],
+    () => buildNodesAndEdges(pipelines, sharedNodes),
+    [pipelines, sharedNodes],
   );
 
   const selectNodeById = useCallback(
     (nodeId: string) => {
-      const found = findNodeInPipelines(nodeId, pipelines);
+      const found = findNode(nodeId, pipelines, sharedNodes);
       if (found) {
         setSelectedNode(found);
         updateUrl(found);
       }
     },
-    [pipelines],
+    [pipelines, sharedNodes],
   );
 
   const onNodeClick: NodeMouseHandler = useCallback(

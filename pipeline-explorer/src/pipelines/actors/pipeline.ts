@@ -1,4 +1,5 @@
 import type { PipelineDefinition } from "@/types/pipeline";
+import { airtableCompanies } from "../shared/nodes";
 
 export const pipeline: PipelineDefinition = {
   id: "actors",
@@ -6,11 +7,6 @@ export const pipeline: PipelineDefinition = {
   description:
     "Classifies organizations by their role in the AI ecosystem (Developer, Deployer, Infrastructure Provider, etc.).",
   nodes: [
-    {
-      id: "actors-company-list",
-      label: "Airtable: Companies",
-      type: "datastore",
-    },
     {
       id: "actors-classifier",
       label: "ai-actor-classifier",
@@ -27,8 +23,9 @@ export const pipeline: PipelineDefinition = {
       type: "datastore",
     },
   ],
+  shared: [airtableCompanies],
   edges: [
-    { source: "actors-company-list", target: "actors-classifier" },
+    { source: "airtable-companies", target: "actors-classifier" },
     { source: "actors-classifier", target: "actors-logo-processor" },
     { source: "actors-logo-processor", target: "actors-output" },
   ],

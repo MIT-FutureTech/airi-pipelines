@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import type { PipelineDefinition } from "@/types/pipeline";
+import type { PipelineDefinition, PipelineNode } from "@/types/pipeline";
 
 const PipelineGraph = dynamic(
   () =>
@@ -11,9 +11,10 @@ const PipelineGraph = dynamic(
 
 interface ClientShellProps {
   pipelines: PipelineDefinition[];
+  sharedNodes: PipelineNode[];
 }
 
-export function ClientShell({ pipelines }: ClientShellProps) {
+export function ClientShell({ pipelines, sharedNodes }: ClientShellProps) {
   return (
     <div className="flex flex-col h-full">
       <header className="border-b border-gray-200 dark:border-gray-700 px-6 py-4 shrink-0">
@@ -26,7 +27,7 @@ export function ClientShell({ pipelines }: ClientShellProps) {
         </p>
       </header>
       <main className="flex-1 min-h-0">
-        <PipelineGraph pipelines={pipelines} />
+        <PipelineGraph pipelines={pipelines} sharedNodes={sharedNodes} />
       </main>
     </div>
   );

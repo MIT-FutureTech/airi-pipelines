@@ -1,4 +1,5 @@
 import type { PipelineDefinition } from "@/types/pipeline";
+import { airtableCompanies } from "../shared/nodes";
 
 export const pipeline: PipelineDefinition = {
   id: "document-processing",
@@ -18,23 +19,9 @@ export const pipeline: PipelineDefinition = {
       type: "external-service",
     },
 
-    // --- Scrapers ---
+    // --- Processors ---
     { id: "greylitsearcher", label: "greylitsearcher", type: "processor" },
     { id: "orgrev-orglist", label: "airi-orgrev-orglist", type: "processor" },
-
-    // --- Data stores ---
-    {
-      id: "airtable-grey-lit",
-      label: "Airtable: Grey Literature",
-      type: "datastore",
-    },
-    {
-      id: "airtable-companies",
-      label: "Airtable: Companies",
-      type: "datastore",
-    },
-
-    // --- Processing ---
     {
       id: "fulltext-extractor",
       label: "airi-orgreview-fulltext",
@@ -48,7 +35,12 @@ export const pipeline: PipelineDefinition = {
     { id: "agentic-framework", label: "agentic-framework", type: "proposed" },
     { id: "org-doc-classifier", label: "org-doc-classifier", type: "processor" },
 
-    // --- Output ---
+    // --- Pipeline-specific data stores ---
+    {
+      id: "airtable-grey-lit",
+      label: "Airtable: Grey Literature",
+      type: "datastore",
+    },
     {
       id: "airtable-classified",
       label: "Airtable: classified docs",
@@ -56,6 +48,7 @@ export const pipeline: PipelineDefinition = {
       url: "https://airtable.com/appHrhJQHkZz4c82U/tblb9eEVPpV4Qqo4u",
     },
   ],
+  shared: [airtableCompanies],
   edges: [
     // Input paths
     { source: "google-custom-search", target: "greylitsearcher" },
