@@ -80,6 +80,7 @@ export const pipeline: PipelineDefinition = {
       label: "Airtable: classified docs",
       type: "datastore",
       position: { x: 0, y: 1150 },
+      url: "https://airtable.com/appHrhJQHkZz4c82U/tblb9eEVPpV4Qqo4u",
     },
   ],
   edges: [

@@ -10,6 +10,7 @@ export interface PipelineNode {
   label: string;
   type: NodeType;
   position: { x: number; y: number };
+  url?: string;
 }
 
 export interface PipelineEdge {

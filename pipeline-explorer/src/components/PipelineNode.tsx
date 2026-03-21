@@ -6,6 +6,7 @@ import type { NodeType } from "@/types/pipeline";
 interface PipelineNodeData {
   label: string;
   nodeType: NodeType;
+  url?: string;
   [key: string]: unknown;
 }
 
@@ -42,6 +43,17 @@ export function PipelineNodeComponent({ data }: NodeProps) {
         <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
           {nodeData.label}
         </div>
+        {nodeData.url && (
+          <a
+            href={nodeData.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="text-xs text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 underline mt-1 inline-block"
+          >
+            Open in Airtable ↗
+          </a>
+        )}
       </div>
       <Handle
         type="source"
