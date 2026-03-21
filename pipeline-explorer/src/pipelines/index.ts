@@ -1,9 +1,10 @@
 import type { PipelineNode } from "@/types/pipeline";
 import { pipeline as actors } from "./actors/pipeline";
 import { pipeline as documentProcessing } from "./document-processing/pipeline";
+import { pipeline as mitigations } from "./mitigations/pipeline";
 import { pipeline as risks } from "./risks/pipeline";
 
-export const allPipelines = [documentProcessing, actors, risks];
+export const allPipelines = [documentProcessing, actors, risks, mitigations];
 
 export const allSharedNodes: PipelineNode[] = (() => {
   const seen = new Map<string, PipelineNode>();

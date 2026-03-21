@@ -1,0 +1,34 @@
+# LLM mitigation classification (corporate docs)
+
+Classifies AI risk mitigation mentions from corporate documents into the 44-code mitigation taxonomy. Uses the same two-stage approach as <NodeLink id="risks-classifier">risk classification</NodeLink>: a relevance gate followed by taxonomy classification.
+
+Part of the <NodeLink id="orgrev-orglist">airi-orgrev-orglist</NodeLink> repo.
+
+## Links
+
+- [GitHub repo](https://github.com/MIT-FutureTech/airi-orgrev-orglist)
+- Entry point: `llm_classification/classify.py`
+
+## Tech
+
+Python, OpenRouter (Gemini 2.5 Flash Lite), structured JSON output
+
+## Inputs
+
+- CSV of keyword mentions from <NodeLink id="corporate-pdf-analysis">PDF keyword extraction</NodeLink>
+- Same input as risk classification — the two classifiers run independently on the same data
+
+## Outputs
+
+- Per-mention JSON files in `llm_classification/output/mitigation/classifications/`
+- Assembled CSV (`classified.csv`) with 44-code taxonomy classifications
+- Combined CSV joining risk + mitigation results by match_id
+
+## How it runs
+
+CLI: `python -m llm_classification.classify -i input.csv -p prompts/mitigation_prompt_v0.x.md --type mitigation -w 20 --assemble`
+
+## Notes
+
+- Shares the 44-code taxonomy with <NodeLink id="mitigations-classifier">airi-mitrev-classifier</NodeLink> (research papers path)
+- Default model: `google/gemini-2.5-flash-lite-preview` (free tier via OpenRouter)

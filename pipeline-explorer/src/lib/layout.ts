@@ -56,10 +56,14 @@ export function buildNodesAndEdges(
     allNodes.push(toFlowNode(node, getPosition(absPositions, node.id)));
   }
 
+  const seenEdges = new Set<string>();
   for (const pipeline of pipelines) {
     for (const edge of pipeline.edges) {
+      const edgeKey = `${edge.source}-${edge.target}`;
+      if (seenEdges.has(edgeKey)) continue;
+      seenEdges.add(edgeKey);
       allEdges.push({
-        id: `${pipeline.id}-${edge.source}-${edge.target}`,
+        id: edgeKey,
         source: edge.source,
         target: edge.target,
         label: edge.label,

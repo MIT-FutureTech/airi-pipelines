@@ -1,5 +1,5 @@
 import type { PipelineDefinition } from "@/types/pipeline";
-import { airtableCompanies } from "../shared/nodes";
+import { airtableCompanies, corporatePdfAnalysis } from "../shared/nodes";
 
 export const pipeline: PipelineDefinition = {
   id: "risks",
@@ -7,11 +7,6 @@ export const pipeline: PipelineDefinition = {
   description:
     "Classifies AI risk mentions from corporate documents into a 24-code taxonomy across 7 risk domains.",
   nodes: [
-    {
-      id: "risks-pdf-analysis",
-      label: "PDF keyword extraction",
-      type: "processor",
-    },
     {
       id: "risks-classifier",
       label: "LLM risk classification",
@@ -23,15 +18,15 @@ export const pipeline: PipelineDefinition = {
       type: "datastore",
     },
   ],
-  shared: [airtableCompanies],
+  shared: [airtableCompanies, corporatePdfAnalysis],
   edges: [
     {
       source: "airtable-companies",
-      target: "risks-pdf-analysis",
+      target: "corporate-pdf-analysis",
       label: "corporate PDFs",
     },
     {
-      source: "risks-pdf-analysis",
+      source: "corporate-pdf-analysis",
       target: "risks-classifier",
       label: "keyword mentions",
     },

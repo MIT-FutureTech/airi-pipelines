@@ -1,0 +1,52 @@
+# airi-mitrev-classifier
+
+Classifies AI risk mitigations from screened research papers into a hierarchical 3-level, 44-code taxonomy. Polls Airtable for unclassified records and writes back structured classification results.
+
+## Links
+
+- [GitHub repo](https://github.com/MIT-FutureTech/airi-mitrev-classifier)
+
+## Tech
+
+Python, OpenRouter (Gemini 2.5 Flash Lite), pyairtable, tenacity, rich (optional terminal UI)
+
+## Inputs
+
+- **Airtable Base 2** (Mitigations V2) — records where `Status = "llm_todo"`
+- Fields: `Mitigation_Name`, `Mitigation_Description`, `Mitigation_AdditionalEvidence`
+- Prompts loaded from `llm_prompts` table (supports versioning)
+
+## Outputs
+
+- Updates Airtable records with:
+  - `llm_classification` — taxonomy code (e.g., "2.3.4")
+  - `llm_reasoning` — brief explanation (max 500 chars)
+  - `llm_version`, `llm_datetime`
+  - `Status` → "llm_classified"
+
+## Mitigation taxonomy (3 levels, 44 codes)
+
+| L1 | L2 subcategories |
+|----|-----------------|
+| **1. AI System** | 1.1 Model (training data, objectives, architecture), 1.2 Non-Model (guardrails, runtime, monitoring, security, provenance) |
+| **2. Organisation** | 2.1 Oversight & Accountability, 2.2 Risk & Assurance, 2.3 Operations & Security, 2.4 Engineering & Development |
+| **3. Ecosystem** | 3.1 Legal & Regulatory, 3.2 Shared Infrastructure, 3.3 Voluntary & Cooperative |
+| **99. Other** | Unclassifiable |
+
+Each L2 category has 3–5 L3 fine-grained codes (44 total).
+
+## How it runs
+
+CLI: `python run_local.py [--continuous] [--workers 20] [--rich]`
+
+- **Single run**: process all pending records once
+- **Continuous mode**: poll Airtable every 60s for new records
+- Supports up to 40 parallel workers
+
+## Notes
+
+- Default model: `google/gemini-2.5-flash-lite-preview` (free tier via OpenRouter)
+- Temperature: 0.0 for reproducible results
+- XML response format: `<classification>2.3.4</classification><reasoning>...</reasoning>`
+- Shares the 44-code taxonomy with <NodeLink id="mitigations-corp-classifier">corporate mitigation classification</NodeLink>
+- Also supports taxonomy validation mode for comparing human vs LLM classifications
