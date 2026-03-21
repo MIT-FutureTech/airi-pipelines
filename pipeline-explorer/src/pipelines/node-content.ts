@@ -11,6 +11,10 @@ import ScreeningOrchestrator from "./document-processing/screening-orchestrator.
 import AgenticFramework from "./document-processing/agentic-framework.mdx";
 import OrgDocClassifier from "./document-processing/org-doc-classifier.mdx";
 
+// Actors pipeline
+import ActorsClassifier from "./actors/actors-classifier.mdx";
+import ActorsLogoProcessor from "./actors/actors-logo-processor.mdx";
+
 const nodeContent: Record<string, ComponentType> = {
   // Document Processing
   greylitsearcher: Greylitsearcher,
@@ -19,6 +23,10 @@ const nodeContent: Record<string, ComponentType> = {
   "screening-orchestrator": ScreeningOrchestrator,
   "agentic-framework": AgenticFramework,
   "org-doc-classifier": OrgDocClassifier,
+
+  // Actors
+  "actors-classifier": ActorsClassifier,
+  "actors-logo-processor": ActorsLogoProcessor,
 };
 
 export function getNodeContent(nodeId: string): ComponentType | null {

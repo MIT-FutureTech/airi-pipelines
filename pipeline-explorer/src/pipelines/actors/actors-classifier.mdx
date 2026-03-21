@@ -1,0 +1,50 @@
+# ai-actor-classifier
+
+Classifies companies by their role in the AI ecosystem using GPT-5.2 with live web search for evidence gathering. Each classification includes structured evidence, confidence levels, and source attribution.
+
+## Links
+
+- [GitHub repo](https://github.com/MIT-FutureTech/ai-actor-classifier)
+
+## Tech
+
+Python, OpenRouter (GPT-5.2 with web search), optional Anthropic Claude batch API
+
+## Inputs
+
+- Company list CSV (~200 companies ranked by market cap)
+- Each company is researched via live web search during classification
+
+## Outputs
+
+- JSON files per company in `results/` directory
+- Fields: `primary_role`, `secondary_roles`, per-role `determination` (YES/NO/UNCLEAR), `confidence` (HIGH/MEDIUM/LOW), `scale` (EXTENSIVE/MODERATE/MINIMAL), `justification`, `evidence` with source URLs
+- Optionally pushed to **Airtable Base 3** (Companies table)
+
+## Classification taxonomy
+
+8 AI actor roles:
+
+| Role | Example |
+|------|---------|
+| AI Developer (General-purpose) | OpenAI, Anthropic, Google DeepMind |
+| AI Developer (Specialized) | Tesla (FSD), Bloomberg (BloombergGPT) |
+| AI Deployer | Netflix, Apple (Siri), Shopify |
+| AI Infrastructure Provider | NVIDIA, AWS, Hugging Face |
+| AI User | Organizations using AI as-is |
+| AI Governance Actor | Standards bodies, policy-setting firms |
+| Affected Stakeholder | Communities impacted by AI decisions |
+
+Companies get one primary role and zero or more secondary roles (only MODERATE+ scale).
+
+## How it runs
+
+CLI: `python classify.py --input companies.csv --workers 3 --airtable`
+
+Supports single-company testing (`--company "Apple"`), batch processing with parallelization (1–30 workers), and direct Airtable upload.
+
+## Notes
+
+- ~2–3 minutes per company (web search adds latency)
+- ~$0.18–0.25 per company via OpenRouter
+- The company list comes from <NodeLink id="orgrev-orglist">airi-orgrev-orglist</NodeLink> in the Document Processing pipeline
