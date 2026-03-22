@@ -1,0 +1,55 @@
+[project]
+name = "airi-pipelines"
+version = "0.1.0"
+readme = "README.md"
+requires-python = ">=3.12"
+
+[dependency-groups]
+dev = [
+    "basedpyright>=1.38",
+    "pytest>=9",
+    "ruff>=0.15",
+]
+
+[tool.uv.workspace]
+members = []
+
+[tool.basedpyright]
+pythonVersion = "3.12"
+typeCheckingMode = "recommended"
+
+[tool.ruff]
+src = []
+target-version = "py312"
+
+[tool.ruff.lint]
+select = [
+    "A",     # builtin shadowing
+    "ARG",   # unused arguments
+    "B",     # bugbear
+    "C4",    # comprehension flaws
+    "DTZ",   # naive datetime usage
+    "E",     # pycodestyle errors
+    "F",     # pyflakes
+    "I",     # isort
+    "N",     # pep8-naming
+    "PLC",   # pylint convention
+    "PLE",   # pylint errors
+    "PLW",   # pylint warnings
+    "PT",    # pytest style
+    "PTH",   # pathlib preference
+    "RET",   # return style
+    "RUF",   # ruff-specific rules
+    "SIM",   # simplify
+    "T20",   # print statements
+    "UP",    # pyupgrade
+    "W",     # pycodestyle warnings
+]
+
+[tool.pytest]
+addopts = [
+    "--import-mode=importlib",
+]
+strict = true
+testpaths = []
+xfail_strict = true
