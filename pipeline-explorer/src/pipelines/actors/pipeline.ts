@@ -8,7 +8,7 @@ export const pipeline: PipelineDefinition = {
     "Classifies organizations by their role in the AI ecosystem (Developer, Deployer, Infrastructure Provider, etc.).",
   nodes: [
     {
-      id: "actors-classifier",
+      id: "actor-role-classification",
       label: "AI actor role classification",
       type: "processor",
       link: {
@@ -17,7 +17,7 @@ export const pipeline: PipelineDefinition = {
       },
     },
     {
-      id: "actors-logo-processor",
+      id: "logo-processing",
       label: "Logo processing",
       type: "processor",
       link: {
@@ -33,8 +33,8 @@ export const pipeline: PipelineDefinition = {
   ],
   shared: [airtableCompanies],
   edges: [
-    { source: "airtable-companies", target: "actors-classifier" },
-    { source: "actors-classifier", target: "actors-logo-processor" },
-    { source: "actors-logo-processor", target: "actors-output" },
+    { source: "airtable-companies", target: "actor-role-classification" },
+    { source: "actor-role-classification", target: "logo-processing" },
+    { source: "logo-processing", target: "actors-output" },
   ],
 };

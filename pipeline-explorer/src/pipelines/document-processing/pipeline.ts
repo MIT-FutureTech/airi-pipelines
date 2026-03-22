@@ -21,7 +21,7 @@ export const pipeline: PipelineDefinition = {
 
     // --- Processors ---
     {
-      id: "greylitsearcher",
+      id: "grey-lit-search",
       label: "Grey literature search",
       type: "processor",
       link: {
@@ -30,7 +30,7 @@ export const pipeline: PipelineDefinition = {
       },
     },
     {
-      id: "orgrev-orglist",
+      id: "company-scraping",
       label: "Company scraping",
       type: "processor",
       link: {
@@ -39,7 +39,7 @@ export const pipeline: PipelineDefinition = {
       },
     },
     {
-      id: "fulltext-extractor",
+      id: "fulltext-extraction",
       label: "Full-text extraction",
       type: "processor",
       link: {
@@ -48,7 +48,7 @@ export const pipeline: PipelineDefinition = {
       },
     },
     {
-      id: "screening-orchestrator",
+      id: "relevance-screening",
       label: "LLM relevance screening",
       type: "processor",
       link: {
@@ -57,7 +57,7 @@ export const pipeline: PipelineDefinition = {
       },
     },
     {
-      id: "agentic-framework",
+      id: "agentic-screening",
       label: "Agentic screening (prototype)",
       type: "proposed",
       link: {
@@ -66,7 +66,7 @@ export const pipeline: PipelineDefinition = {
       },
     },
     {
-      id: "org-doc-classifier",
+      id: "doc-type-classification",
       label: "Document type classification",
       type: "processor",
       link: {
@@ -94,26 +94,26 @@ export const pipeline: PipelineDefinition = {
   shared: [airtableCompanies],
   edges: [
     // Input paths
-    { source: "google-custom-search", target: "greylitsearcher" },
-    { source: "companiesmarketcap", target: "orgrev-orglist" },
+    { source: "google-custom-search", target: "grey-lit-search" },
+    { source: "companiesmarketcap", target: "company-scraping" },
 
     // Scrapers → data stores
-    { source: "greylitsearcher", target: "airtable-grey-lit" },
-    { source: "orgrev-orglist", target: "airtable-companies" },
+    { source: "grey-lit-search", target: "airtable-grey-lit" },
+    { source: "company-scraping", target: "airtable-companies" },
 
     // Processing chain
-    { source: "airtable-grey-lit", target: "fulltext-extractor" },
-    { source: "fulltext-extractor", target: "screening-orchestrator" },
+    { source: "airtable-grey-lit", target: "fulltext-extraction" },
+    { source: "fulltext-extraction", target: "relevance-screening" },
     {
-      source: "screening-orchestrator",
-      target: "org-doc-classifier",
+      source: "relevance-screening",
+      target: "doc-type-classification",
       label: "approved only",
     },
 
     // Agentic framework (proposed replacement — same inputs as orchestrator)
-    { source: "fulltext-extractor", target: "agentic-framework" },
+    { source: "fulltext-extraction", target: "agentic-screening" },
 
     // Output
-    { source: "org-doc-classifier", target: "airtable-classified" },
+    { source: "doc-type-classification", target: "airtable-classified" },
   ],
 };

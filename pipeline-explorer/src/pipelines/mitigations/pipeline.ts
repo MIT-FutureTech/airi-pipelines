@@ -1,5 +1,5 @@
 import type { PipelineDefinition } from "@/types/pipeline";
-import { airtableCompanies, corporatePdfAnalysis } from "../shared/nodes";
+import { airtableCompanies, pdfKeywordExtraction } from "../shared/nodes";
 
 export const pipeline: PipelineDefinition = {
   id: "mitigations",
@@ -9,7 +9,7 @@ export const pipeline: PipelineDefinition = {
   nodes: [
     // --- Corporate docs path ---
     {
-      id: "mitigations-corp-classifier",
+      id: "mitigation-classification-corporate",
       label: "LLM mitigation classification (corporate)",
       type: "processor",
       link: {
@@ -30,7 +30,7 @@ export const pipeline: PipelineDefinition = {
       type: "external-service",
     },
     {
-      id: "mitigations-review",
+      id: "systematic-lit-review",
       label: "Systematic literature review",
       type: "processor",
       link: {
@@ -44,7 +44,7 @@ export const pipeline: PipelineDefinition = {
       type: "datastore",
     },
     {
-      id: "mitigations-classifier",
+      id: "mitigation-taxonomy-classification",
       label: "Mitigation taxonomy classifier",
       type: "processor",
       link: {
@@ -58,34 +58,37 @@ export const pipeline: PipelineDefinition = {
       type: "datastore",
     },
   ],
-  shared: [airtableCompanies, corporatePdfAnalysis],
+  shared: [airtableCompanies, pdfKeywordExtraction],
   edges: [
     // Corporate docs path
     {
       source: "airtable-companies",
-      target: "corporate-pdf-analysis",
+      target: "pdf-keyword-extraction",
       label: "corporate PDFs",
     },
     {
-      source: "corporate-pdf-analysis",
-      target: "mitigations-corp-classifier",
+      source: "pdf-keyword-extraction",
+      target: "mitigation-classification-corporate",
       label: "keyword mentions",
     },
     {
-      source: "mitigations-corp-classifier",
+      source: "mitigation-classification-corporate",
       target: "mitigations-corp-output",
     },
 
     // Research papers path
-    { source: "academic-sources", target: "mitigations-review" },
+    { source: "academic-sources", target: "systematic-lit-review" },
     {
-      source: "mitigations-review",
+      source: "systematic-lit-review",
       target: "airtable-mitigations",
       label: "screened papers",
     },
-    { source: "airtable-mitigations", target: "mitigations-classifier" },
     {
-      source: "mitigations-classifier",
+      source: "airtable-mitigations",
+      target: "mitigation-taxonomy-classification",
+    },
+    {
+      source: "mitigation-taxonomy-classification",
       target: "airtable-mitigations-classified",
     },
   ],

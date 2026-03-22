@@ -21,7 +21,7 @@ Python, Streamlit, Google Custom Search API, pyairtable
 - **Airtable Base 1**, `raw_results` table
 - Fields: `title`, `link`, `snippet`, `source_domain`, `search_query`, `priority`, `scraped_at`, `status` (set to "Todo")
 - Also supports CSV export from the UI
-- Downstream: <NodeLink id="fulltext-extractor">airi-orgreview-fulltext</NodeLink> extracts full text, then <NodeLink id="screening-orchestrator">airi-llm-screening-orchestrator</NodeLink> screens for relevance
+- Downstream: <NodeLink id="fulltext-extraction">airi-orgreview-fulltext</NodeLink> extracts full text, then <NodeLink id="relevance-screening">airi-llm-screening-orchestrator</NodeLink> screens for relevance
 
 ## How it runs
 

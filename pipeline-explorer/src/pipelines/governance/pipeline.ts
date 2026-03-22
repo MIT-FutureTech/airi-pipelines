@@ -12,8 +12,8 @@ export const pipeline: PipelineDefinition = {
       type: "external-service",
     },
     {
-      id: "governance-scraper",
-      label: "governance-scraper",
+      id: "governance-scraping",
+      label: "Governance document scraping",
       type: "proposed",
     },
     {
@@ -22,21 +22,18 @@ export const pipeline: PipelineDefinition = {
       type: "datastore",
     },
     {
-      id: "governance-classifier",
-      label: "governance-classifier",
+      id: "governance-classification",
+      label: "Governance classification",
       type: "proposed",
     },
   ],
   shared: [],
   edges: [
-    { source: "governance-sources", target: "governance-scraper" },
-    {
-      source: "governance-scraper",
-      target: "airtable-governance",
-    },
+    { source: "governance-sources", target: "governance-scraping" },
+    { source: "governance-scraping", target: "airtable-governance" },
     {
       source: "airtable-governance",
-      target: "governance-classifier",
+      target: "governance-classification",
       label: "currently manual",
     },
   ],

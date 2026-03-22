@@ -1,8 +1,8 @@
 # LLM mitigation classification (corporate)
 
-Classifies AI risk mitigation mentions from corporate documents into the hierarchical mitigation taxonomy. Uses the same two-stage approach as <NodeLink id="risks-classifier">risk classification</NodeLink>: a relevance gate followed by taxonomy classification.
+Classifies AI risk mitigation mentions from corporate documents into the hierarchical mitigation taxonomy. Uses the same two-stage approach as <NodeLink id="risk-classification">risk classification</NodeLink>: a relevance gate followed by taxonomy classification.
 
-Part of the <NodeLink id="orgrev-orglist">airi-orgrev-orglist</NodeLink> repo.
+Part of the <NodeLink id="company-scraping">airi-orgrev-orglist</NodeLink> repo.
 
 ## Links
 
@@ -15,7 +15,7 @@ Python, OpenRouter, structured JSON output
 
 ## Inputs
 
-- CSV of keyword mentions from <NodeLink id="corporate-pdf-analysis">PDF keyword extraction</NodeLink>
+- CSV of keyword mentions from <NodeLink id="pdf-keyword-extraction">PDF keyword extraction</NodeLink>
 - Same input as risk classification — the two classifiers run independently on the same data
 
 ## Outputs
@@ -30,5 +30,5 @@ CLI: `python -m llm_classification.classify -i input.csv -p prompts/mitigation_p
 
 ## Notes
 
-- Shares the mitigation taxonomy with <NodeLink id="mitigations-classifier">airi-mitrev-classifier</NodeLink> (research papers path)
+- Shares the mitigation taxonomy with <NodeLink id="mitigation-taxonomy-classification">airi-mitrev-classifier</NodeLink> (research papers path)
 - Default model: Gemini Flash Lite via OpenRouter

@@ -12,8 +12,8 @@ export const pipeline: PipelineDefinition = {
       type: "external-service",
     },
     {
-      id: "incident-scraper",
-      label: "incident-scraper",
+      id: "incident-scraping",
+      label: "Incident scraping",
       type: "proposed",
     },
     {
@@ -22,18 +22,18 @@ export const pipeline: PipelineDefinition = {
       type: "datastore",
     },
     {
-      id: "incident-classifier",
-      label: "incident-classifier",
+      id: "incident-classification",
+      label: "Incident classification",
       type: "proposed",
     },
   ],
   shared: [],
   edges: [
-    { source: "aiid", target: "incident-scraper" },
-    { source: "incident-scraper", target: "airtable-incidents" },
+    { source: "aiid", target: "incident-scraping" },
+    { source: "incident-scraping", target: "airtable-incidents" },
     {
       source: "airtable-incidents",
-      target: "incident-classifier",
+      target: "incident-classification",
       label: "currently manual",
     },
   ],

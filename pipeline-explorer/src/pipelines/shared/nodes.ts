@@ -11,8 +11,8 @@ export const airtableCompanies: PipelineNode = {
   type: "datastore",
 };
 
-export const corporatePdfAnalysis: PipelineNode = {
-  id: "corporate-pdf-analysis",
+export const pdfKeywordExtraction: PipelineNode = {
+  id: "pdf-keyword-extraction",
   label: "PDF keyword extraction",
   type: "processor",
   link: {

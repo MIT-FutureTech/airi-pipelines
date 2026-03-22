@@ -1,37 +1,36 @@
 import type { ComponentType } from "react";
-
-import ActorsClassifier from "./actors/actors-classifier.mdx";
-import ActorsLogoProcessor from "./actors/actors-logo-processor.mdx";
-import AgenticFramework from "./document-processing/agentic-framework.mdx";
-import FulltextExtractor from "./document-processing/fulltext-extractor.mdx";
-import Greylitsearcher from "./document-processing/greylitsearcher.mdx";
-import OrgDocClassifier from "./document-processing/org-doc-classifier.mdx";
-import OrgrevOrglist from "./document-processing/orgrev-orglist.mdx";
-import ScreeningOrchestrator from "./document-processing/screening-orchestrator.mdx";
-import MitigationsClassifier from "./mitigations/mitigations-classifier.mdx";
-import MitigationsCorpClassifier from "./mitigations/mitigations-corp-classifier.mdx";
-import MitigationsReview from "./mitigations/mitigations-review.mdx";
-import RisksClassifier from "./risks/risks-classifier.mdx";
-import CorporatePdfAnalysis from "./shared/corporate-pdf-analysis.mdx";
+import ActorRoleClassification from "./actors/actor-role-classification.mdx";
+import LogoProcessing from "./actors/logo-processing.mdx";
+import AgenticScreening from "./document-processing/agentic-screening.mdx";
+import CompanyScraping from "./document-processing/company-scraping.mdx";
+import DocTypeClassification from "./document-processing/doc-type-classification.mdx";
+import FulltextExtraction from "./document-processing/fulltext-extraction.mdx";
+import GreyLitSearch from "./document-processing/grey-lit-search.mdx";
+import RelevanceScreening from "./document-processing/relevance-screening.mdx";
+import MitigationClassificationCorporate from "./mitigations/mitigation-classification-corporate.mdx";
+import MitigationTaxonomyClassification from "./mitigations/mitigation-taxonomy-classification.mdx";
+import SystematicLitReview from "./mitigations/systematic-lit-review.mdx";
+import RiskClassification from "./risks/risk-classification.mdx";
+import PdfKeywordExtraction from "./shared/pdf-keyword-extraction.mdx";
 
 const nodeContent: Record<string, ComponentType> = {
-  "corporate-pdf-analysis": CorporatePdfAnalysis,
+  "pdf-keyword-extraction": PdfKeywordExtraction,
 
-  greylitsearcher: Greylitsearcher,
-  "orgrev-orglist": OrgrevOrglist,
-  "fulltext-extractor": FulltextExtractor,
-  "screening-orchestrator": ScreeningOrchestrator,
-  "agentic-framework": AgenticFramework,
-  "org-doc-classifier": OrgDocClassifier,
+  "grey-lit-search": GreyLitSearch,
+  "company-scraping": CompanyScraping,
+  "fulltext-extraction": FulltextExtraction,
+  "relevance-screening": RelevanceScreening,
+  "agentic-screening": AgenticScreening,
+  "doc-type-classification": DocTypeClassification,
 
-  "actors-classifier": ActorsClassifier,
-  "actors-logo-processor": ActorsLogoProcessor,
+  "actor-role-classification": ActorRoleClassification,
+  "logo-processing": LogoProcessing,
 
-  "risks-classifier": RisksClassifier,
+  "risk-classification": RiskClassification,
 
-  "mitigations-corp-classifier": MitigationsCorpClassifier,
-  "mitigations-review": MitigationsReview,
-  "mitigations-classifier": MitigationsClassifier,
+  "mitigation-classification-corporate": MitigationClassificationCorporate,
+  "systematic-lit-review": SystematicLitReview,
+  "mitigation-taxonomy-classification": MitigationTaxonomyClassification,
 };
 
 export function getNodeContent(nodeId: string): ComponentType | null {
