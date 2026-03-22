@@ -38,7 +38,7 @@ Dashboard: `streamlit run dashboard.py` — shows classification distribution, c
 
 ## Notes
 
-- Default model: Claude 3.5 Haiku (via Anthropic API)
+- Supports multiple LLM providers, including Anthropic, OpenAI and OpenRouter
 - Uses LLM tool-calling/structured output to force classification into the fixed category set
-- Supports parallel processing (default 20 workers, 500 RPM)
+- Supports parallel processing
 - Auto-creates Airtable fields (`doc_type`, `doc_type_conf`, `doc_type_reason`) if they don't exist

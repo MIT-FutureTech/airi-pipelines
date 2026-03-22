@@ -1,6 +1,6 @@
 # AI actor role classification
 
-Classifies companies by their role in the AI ecosystem using GPT-5.2 with live web search for evidence gathering. Each classification includes structured evidence, confidence levels, and source attribution.
+Classifies companies by their role in the AI ecosystem using an LLM with live web search for evidence gathering. Each classification includes structured evidence, confidence levels, and source attribution.
 
 ## Links
 
@@ -8,11 +8,11 @@ Classifies companies by their role in the AI ecosystem using GPT-5.2 with live w
 
 ## Tech
 
-Python, OpenRouter (GPT-5.2 with web search), optional Anthropic Claude batch API
+Python, OpenRouter (LLM with web search)
 
 ## Inputs
 
-- Company list CSV (~200 companies ranked by market cap)
+- Company list CSV (ranked by market cap)
 - Each company is researched via live web search during classification
 
 ## Outputs
@@ -23,7 +23,7 @@ Python, OpenRouter (GPT-5.2 with web search), optional Anthropic Claude batch AP
 
 ## Classification taxonomy
 
-8 AI actor roles:
+5 AI actor roles:
 
 | Role | Example |
 |------|---------|
@@ -31,9 +31,7 @@ Python, OpenRouter (GPT-5.2 with web search), optional Anthropic Claude batch AP
 | AI Developer (Specialized) | Tesla (FSD), Bloomberg (BloombergGPT) |
 | AI Deployer | Netflix, Apple (Siri), Shopify |
 | AI Infrastructure Provider | NVIDIA, AWS, Hugging Face |
-| AI User | Organizations using AI as-is |
 | AI Governance Actor | Standards bodies, policy-setting firms |
-| Affected Stakeholder | Communities impacted by AI decisions |
 
 Companies get one primary role and zero or more secondary roles (only MODERATE+ scale).
 
@@ -45,6 +43,4 @@ Supports single-company testing (`--company "Apple"`), batch processing with par
 
 ## Notes
 
-- ~2–3 minutes per company (web search adds latency)
-- ~$0.18–0.25 per company via OpenRouter
 - The company list comes from <NodeLink id="orgrev-orglist">airi-orgrev-orglist</NodeLink> in the Document Processing pipeline

@@ -8,7 +8,7 @@ Classifies AI risk mitigations from screened research papers into a hierarchical
 
 ## Tech
 
-Python, OpenRouter (Gemini 2.5 Flash Lite), pyairtable, tenacity, rich (optional terminal UI)
+Python, OpenRouter, pyairtable, tenacity, rich (optional terminal UI)
 
 ## Inputs
 
@@ -45,8 +45,7 @@ CLI: `python run_local.py [--continuous] [--workers 20] [--rich]`
 
 ## Notes
 
-- Default model: `google/gemini-2.5-flash-lite-preview` (free tier via OpenRouter)
-- Temperature: 0.0 for reproducible results
+- Default model: Gemini Flash Lite via OpenRouter
 - XML response format: `<classification>2.3.4</classification><reasoning>...</reasoning>`
-- Shares the 44-code taxonomy with <NodeLink id="mitigations-corp-classifier">corporate mitigation classification</NodeLink>
+- Shares the mitigation taxonomy with <NodeLink id="mitigations-corp-classifier">corporate mitigation classification</NodeLink>
 - Also supports taxonomy validation mode for comparing human vs LLM classifications

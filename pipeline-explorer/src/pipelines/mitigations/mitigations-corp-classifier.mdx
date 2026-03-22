@@ -1,6 +1,6 @@
 # LLM mitigation classification (corporate)
 
-Classifies AI risk mitigation mentions from corporate documents into the 44-code mitigation taxonomy. Uses the same two-stage approach as <NodeLink id="risks-classifier">risk classification</NodeLink>: a relevance gate followed by taxonomy classification.
+Classifies AI risk mitigation mentions from corporate documents into the hierarchical mitigation taxonomy. Uses the same two-stage approach as <NodeLink id="risks-classifier">risk classification</NodeLink>: a relevance gate followed by taxonomy classification.
 
 Part of the <NodeLink id="orgrev-orglist">airi-orgrev-orglist</NodeLink> repo.
 
@@ -11,7 +11,7 @@ Part of the <NodeLink id="orgrev-orglist">airi-orgrev-orglist</NodeLink> repo.
 
 ## Tech
 
-Python, OpenRouter (Gemini 2.5 Flash Lite), structured JSON output
+Python, OpenRouter, structured JSON output
 
 ## Inputs
 
@@ -21,14 +21,14 @@ Python, OpenRouter (Gemini 2.5 Flash Lite), structured JSON output
 ## Outputs
 
 - Per-mention JSON files in `llm_classification/output/mitigation/classifications/`
-- Assembled CSV (`classified.csv`) with 44-code taxonomy classifications
+- Assembled CSV (`classified.csv`) with taxonomy classifications
 - Combined CSV joining risk + mitigation results by match_id
 
 ## How it runs
 
-CLI: `python -m llm_classification.classify -i input.csv -p prompts/mitigation_prompt_v0.x.md --type mitigation -w 20 --assemble`
+CLI: `python -m llm_classification.classify -i input.csv -p prompts/mitigation_prompt.md --type mitigation -w 20 --assemble`
 
 ## Notes
 
-- Shares the 44-code taxonomy with <NodeLink id="mitigations-classifier">airi-mitrev-classifier</NodeLink> (research papers path)
-- Default model: `google/gemini-2.5-flash-lite-preview` (free tier via OpenRouter)
+- Shares the mitigation taxonomy with <NodeLink id="mitigations-classifier">airi-mitrev-classifier</NodeLink> (research papers path)
+- Default model: Gemini Flash Lite via OpenRouter

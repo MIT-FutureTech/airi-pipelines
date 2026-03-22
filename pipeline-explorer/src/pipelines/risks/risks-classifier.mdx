@@ -11,7 +11,7 @@ Part of the <NodeLink id="orgrev-orglist">airi-orgrev-orglist</NodeLink> repo. S
 
 ## Tech
 
-Python, OpenRouter (Gemini 2.5 Flash Lite), structured JSON output
+Python, OpenRouter, structured JSON output
 
 ## Inputs
 
@@ -38,9 +38,9 @@ Python, OpenRouter (Gemini 2.5 Flash Lite), structured JSON output
 
 ## How it runs
 
-CLI: `python -m llm_classification.classify -i input.csv -p prompts/risk_prompt_v0.4.md --type risk -w 20 --assemble`
+CLI: `python -m llm_classification.classify -i input.csv -p prompts/risk_prompt.md --type risk -w 20 --assemble`
 
-Supports parallel workers (up to 40), auto-resume (skips already-classified mentions), and budget tracking ($10 default limit).
+Supports parallel workers, auto-resume (skips already-classified mentions), and budget tracking.
 
 ## Classification logic
 
@@ -50,6 +50,4 @@ Supports parallel workers (up to 40), auto-resume (skips already-classified ment
 
 ## Notes
 
-- Default model: `google/gemini-2.5-flash-lite-preview` (free tier via OpenRouter)
-- Temperature: 0.1 for reproducible results
-- The prompt (v0.4) includes inline boundary disambiguation (e.g., bias → 1.1 not 7.3)
+- Default model: Gemini Flash Lite via OpenRouter

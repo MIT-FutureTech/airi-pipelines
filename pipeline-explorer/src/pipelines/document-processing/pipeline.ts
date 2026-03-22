@@ -105,11 +105,6 @@ export const pipeline: PipelineDefinition = {
     { source: "airtable-grey-lit", target: "fulltext-extractor" },
     { source: "fulltext-extractor", target: "screening-orchestrator" },
     {
-      source: "airtable-companies",
-      target: "screening-orchestrator",
-      label: "actor context",
-    },
-    {
       source: "screening-orchestrator",
       target: "org-doc-classifier",
       label: "approved only",
@@ -117,11 +112,6 @@ export const pipeline: PipelineDefinition = {
 
     // Agentic framework (proposed replacement — same inputs as orchestrator)
     { source: "fulltext-extractor", target: "agentic-framework" },
-    {
-      source: "airtable-companies",
-      target: "agentic-framework",
-      label: "actor context",
-    },
 
     // Output
     { source: "org-doc-classifier", target: "airtable-classified" },

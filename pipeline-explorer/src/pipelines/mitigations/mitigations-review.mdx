@@ -8,7 +8,7 @@ Systematic literature review pipeline that searches academic databases for AI ri
 
 ## Tech
 
-Python, Google Gemini 2.5 Flash (abstract + full-text screening), arxiv API, CrossRef API, Firebase
+Python, Google Gemini (abstract + full-text screening), arxiv API, CrossRef API
 
 ## Inputs
 
@@ -22,17 +22,13 @@ Search query targets papers proposing frameworks, taxonomies, or classifications
 
 ## Outputs
 
-- **Airtable Base 2** (Mitigations V2), `SysRev_Documents` table — screened papers with inclusion decisions
+- Local JSON/CSV files with screened papers and inclusion decisions
 - Audit exports: included/excluded/uncertain papers with reasoning
 - ~300 papers typically pass through to full-text review
 
 ## How it runs
 
-Sequential CLI pipeline:
-1. `01_process_arxiv_full.py` — filter ArXiv metadata dump
-2. `02_main_pipeline.py` — search CrossRef/Scopus, deduplicate, run abstract screening
-3. `03_export_results.py` — export audit trail
-4. `04_export_for_fulltext.py` — export approved papers for downstream classification
+Sequential CLI pipeline that searches academic sources, deduplicates, runs LLM screening, and exports results for downstream classification.
 
 ## Screening logic
 
