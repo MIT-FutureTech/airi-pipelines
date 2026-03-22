@@ -1,0 +1,38 @@
+name: Pipeline Explorer CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "pipeline-explorer/**"
+  pull_request:
+    paths:
+      - "pipeline-explorer/**"
+
+defaults:
+  run:
+    working-directory: pipeline-explorer
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: pipeline-explorer/package-lock.json
+
+      - run: npm ci
+
+      - name: Format
+        run: npx biome format
+
+      - name: Lint
+        run: npx biome lint
+
+      - name: Typecheck
+        run: npx tsc --noEmit

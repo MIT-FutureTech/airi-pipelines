@@ -1,0 +1,44 @@
+# Document type classification
+
+Classifies approved documents into 17 document-type categories using LLM-based structured output. Provides both a CLI for batch classification and a Streamlit dashboard for analysis.
+
+## Links
+
+- [GitHub repo](https://github.com/MIT-FutureTech/org-doc-classifier)
+
+## Tech
+
+Python, Click (CLI), Streamlit (dashboard), Anthropic Claude / OpenAI / OpenRouter, pyairtable, pydantic, plotly
+
+## Inputs
+
+- **Airtable Base 1**, `raw_results` table — records where `include` = "include" and `doc_type` is blank
+- Fields used: `title`, `snippet`, `link`, `source_domain`, `Company Name`
+
+## Outputs
+
+- Updates Airtable records with:
+  - `doc_type` — one of 17 categories
+  - `doc_type_conf` — confidence score (0.0–1.0)
+  - `doc_type_reason` — brief explanation (5–10 words)
+
+## Document categories
+
+**Primary (11):** Annual Report, ESG Report, AI Governance Framework, AI Ethics Principles, Privacy Policy, Investor Materials, Corporate Policy, Press Release, Blog Post, Research Paper, Product Page
+
+**Extended (5):** Job Posting, Event or Webinar, Technical Documentation, Video or Media, Company Overview
+
+**Fallback:** Other
+
+## How it runs
+
+CLI: `python -m src.classifier.main classify` with options for `--limit`, `--dry-run`, `--parallel`, `--workers`, `--claude`/`--openai`/`--openrouter`.
+
+Dashboard: `streamlit run dashboard.py` — shows classification distribution, confidence analysis, company coverage matrix, and per-company breakdowns.
+
+## Notes
+
+- Supports multiple LLM providers, including Anthropic, OpenAI and OpenRouter
+- Uses LLM tool-calling/structured output to force classification into the fixed category set
+- Supports parallel processing
+- Auto-creates Airtable fields (`doc_type`, `doc_type_conf`, `doc_type_reason`) if they don't exist

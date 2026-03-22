@@ -1,0 +1,32 @@
+# Company scraping
+
+Scrapes the top 1,000 companies from companiesmarketcap.com, downloads their corporate PDFs, and runs LLM-based classification for both risks and mitigations. Participates in three pipelines: Document Processing (company scraping), Risks (risk classification), and Mitigations (mitigation classification).
+
+## Links
+
+- [GitHub repo](https://github.com/MIT-FutureTech/airi-orgrev-orglist)
+
+## Tech
+
+Python, Playwright (browser automation), OpenRouter (LLM), pyairtable
+
+## Inputs
+
+- companiesmarketcap.com (scrapes company names and market cap data)
+- Corporate PDF documents (downloaded from company websites)
+
+## Outputs
+
+- **Airtable Base 3**, `Companies` table (company names, metadata, market cap)
+- Risk classification output (CSV) — taxonomy across 7 risk domains
+- Mitigation classification output (CSV) — hierarchical mitigation taxonomy
+
+## How it runs
+
+CLI scripts. Company scraping uses Playwright for browser automation. PDF analysis and LLM classification are run as separate batch scripts.
+
+## Notes
+
+- This is a multi-purpose repo spanning 3 pipelines
+- In the Document Processing context, it provides the company list and corporate documents that feed downstream screening
+- Risk and mitigation classification use keyword extraction from PDFs followed by LLM classification via OpenRouter

@@ -1,0 +1,33 @@
+# Grey literature search
+
+Streamlit web app that searches for grey literature (reports, white papers, technical documents) across multiple websites using the Google Custom Search API.
+
+## Links
+
+- [GitHub repo](https://github.com/MIT-FutureTech/greylitsearcher)
+
+## Tech
+
+Python, Streamlit, Google Custom Search API, pyairtable
+
+## Inputs
+
+- User-provided search queries with advanced operators (AND, OR, NOT, exact phrase)
+- List of website domains to search (one per line)
+- Up to 3 priority-level searches per domain, each fetching up to 40 results
+
+## Outputs
+
+- **Airtable Base 1**, `raw_results` table
+- Fields: `title`, `link`, `snippet`, `source_domain`, `search_query`, `priority`, `scraped_at`, `status` (set to "Todo")
+- Also supports CSV export from the UI
+- Downstream: <NodeLink id="fulltext-extraction">airi-orgreview-fulltext</NodeLink> extracts full text, then <NodeLink id="relevance-screening">airi-llm-screening-orchestrator</NodeLink> screens for relevance
+
+## How it runs
+
+Manual — a researcher opens the Streamlit web UI (password-protected), enters search queries and domains, and triggers the search. Results are displayed in the UI with options to download as CSV or save directly to Airtable.
+
+## Notes
+
+- Uses 3 separate Google API keys to work around the free-tier limit of 100 queries/day per key
+- Results are automatically deduplicated by URL

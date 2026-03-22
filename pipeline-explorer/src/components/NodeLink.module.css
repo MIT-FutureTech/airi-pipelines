@@ -1,0 +1,13 @@
+.link {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-color: rgba(59, 130, 246, 0.3);
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.link:hover {
+  color: var(--color-accent-hover);
+  text-decoration-color: var(--color-accent-hover);
+}

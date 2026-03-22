@@ -1,0 +1,46 @@
+# AI actor role classification
+
+Classifies companies by their role in the AI ecosystem using an LLM with live web search for evidence gathering. Each classification includes structured evidence, confidence levels, and source attribution.
+
+## Links
+
+- [GitHub repo](https://github.com/MIT-FutureTech/ai-actor-classifier)
+
+## Tech
+
+Python, OpenRouter (LLM with web search)
+
+## Inputs
+
+- Company list CSV (ranked by market cap)
+- Each company is researched via live web search during classification
+
+## Outputs
+
+- JSON files per company in `results/` directory
+- Fields: `primary_role`, `secondary_roles`, per-role `determination` (YES/NO/UNCLEAR), `confidence` (HIGH/MEDIUM/LOW), `scale` (EXTENSIVE/MODERATE/MINIMAL), `justification`, `evidence` with source URLs
+- Optionally pushed to **Airtable Base 3** (Companies table)
+
+## Classification taxonomy
+
+5 AI actor roles:
+
+| Role | Example |
+|------|---------|
+| AI Developer (General-purpose) | OpenAI, Anthropic, Google DeepMind |
+| AI Developer (Specialized) | Tesla (FSD), Bloomberg (BloombergGPT) |
+| AI Deployer | Netflix, Apple (Siri), Shopify |
+| AI Infrastructure Provider | NVIDIA, AWS, Hugging Face |
+| AI Governance Actor | Standards bodies, policy-setting firms |
+
+Companies get one primary role and zero or more secondary roles (only MODERATE+ scale).
+
+## How it runs
+
+CLI: `python classify.py --input companies.csv --workers 3 --airtable`
+
+Supports single-company testing (`--company "Apple"`), batch processing with parallelization (1–30 workers), and direct Airtable upload.
+
+## Notes
+
+- The company list comes from <NodeLink id="company-scraping">airi-orgrev-orglist</NodeLink> in the Document Processing pipeline

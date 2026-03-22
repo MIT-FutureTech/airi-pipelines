@@ -1,0 +1,48 @@
+# Systematic literature review
+
+Systematic literature review pipeline that searches academic databases for AI risk mitigation papers, deduplicates results, and screens them for relevance using LLM-based abstract and full-text screening.
+
+## Links
+
+- [GitHub repo](https://github.com/MIT-FutureTech/mitigations_review)
+
+## Tech
+
+Python, Google Gemini (abstract + full-text screening), arxiv API, CrossRef API
+
+## Inputs
+
+Four academic sources searched in parallel:
+- **ArXiv** — full metadata dump, filtered locally (~1000 results)
+- **CrossRef** — journal articles via API (~1000 results)
+- **SSRN** — working papers via CrossRef DOI resolution
+- **Scopus** — pre-exported RIS files (~1000 results)
+
+Search query targets papers proposing frameworks, taxonomies, or classifications of AI risk mitigations.
+
+## Outputs
+
+- Local JSON/CSV files with screened papers and inclusion decisions
+- Audit exports: included/excluded/uncertain papers with reasoning
+- ~300 papers typically pass through to full-text review
+
+## How it runs
+
+Sequential CLI pipeline that searches academic sources, deduplicates, runs LLM screening, and exports results for downstream classification.
+
+## Screening logic
+
+**Inclusion:** Papers proposing cross-cutting frameworks, taxonomies, or structured classifications of AI risk mitigations.
+
+**Exclusion:** Single-sector papers, risk-only papers (no mitigations), papers only citing existing frameworks, book chapters/theses/editorials.
+
+Two-stage LLM screening:
+- **Abstract screening** (ScreenPrompt): ~97.7% sensitivity, 85.2% specificity
+- **Full-text screening** (ISO-ScreenPrompt): ~96.5% sensitivity, 91.2% specificity
+- Target: 95%+ sensitivity (prioritize not missing relevant papers)
+
+## Notes
+
+- ~8,000+ papers retrieved initially, filtered to ~300 for full-text review
+- Processing time: ~26 minutes for abstract screening of 8,000+ papers
+- Uses validated prompt designs from Cao et al. (2025)

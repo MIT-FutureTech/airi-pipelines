@@ -1,0 +1,33 @@
+# Logo processing
+
+Downloads company logos and processes them onto white backgrounds for consistent display in the AIRI Navigator.
+
+## Links
+
+- [GitHub repo](https://github.com/MIT-FutureTech/airi-orgreview-logoprocessing)
+
+## Tech
+
+Python, Pillow (image processing), pyairtable
+
+## Inputs
+
+- **Airtable Base 3**, Companies table — reads the `cmc_logo_url` field
+- Skips records that already have a processed logo (idempotent)
+
+## Outputs
+
+- Processed PNG logos uploaded to Airtable attachment field (`Logo`)
+- White background composited behind transparent areas
+- Automatically compressed if over 5 MB (reduces quality or resizes to max 2000px)
+
+## How it runs
+
+CLI: `python main.py` (all records) or `python main.py --test --count=10` (limited batch).
+
+Processes one image at a time with 0.25s delay between API calls (rate-limited to stay under Airtable's 5 req/sec limit).
+
+## Notes
+
+- Runs after <NodeLink id="actor-role-classification">ai-actor-classifier</NodeLink> has populated the company list
+- Output logos are used by [airi-navigator](https://airisk.mit.edu) for company display

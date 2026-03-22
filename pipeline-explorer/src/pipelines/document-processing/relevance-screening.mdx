@@ -1,0 +1,48 @@
+# LLM relevance screening
+
+Production screening service that uses LLMs to determine whether documents are relevant to the AIRI project. Runs continuously as a systemd service, polling Airtable for new records.
+
+## Links
+
+- [GitHub repo](https://github.com/MIT-FutureTech/airi-llm-screening-orchestrator)
+
+## Tech
+
+Python, Prefect (workflow orchestration), OpenRouter/OpenAI/Claude (LLM providers), pyairtable, tenacity, langdetect
+
+## Inputs
+
+- **Airtable Base 1**, `raw_results` table — records where `screening_status` is blank or not "screened"
+- Fields used: `title`, `snippet`, `link`, `organization`, `full_text` (if available)
+
+## Outputs
+
+- Updates Airtable records with:
+  - `include` — "include" or "exclude"
+  - `confidence_level` — 0.00–1.00
+  - `short_reasoning` — explanation (max 500 chars)
+  - `screening_status` — "screened" or "error"
+  - `screening_model_version`, `screening_prompt_version`, `screened_at`, `text_source`
+
+## How it runs
+
+Continuous polling (default 60s interval) as a systemd service on an OpenStack VM. Can also run one-shot via `python main.py` or in foreground via `python run_continuous.py`.
+
+Uses Prefect for task orchestration with concurrent screening (default 10 parallel tasks) and automatic retries.
+
+## Screening logic
+
+Documents are **included** if they are official organizational documents that discuss AI risks, policies, governance, or mitigation actions the organization itself is taking.
+
+Documents are **excluded** if they are job postings, forums, ads, external advice, third-party articles, technical docs, or press releases without policy content.
+
+Supports multilingual documents — recognizes AI terminology across languages.
+
+## Notes
+
+- Default model: Gemini Flash Lite via OpenRouter
+- Built-in budget tracking with configurable limits (stops processing when exceeded)
+- Prompt versioning via Airtable (`screening_prompts` table)
+- Temperature set to 0.0 for deterministic results
+- <NodeLink id="agentic-screening">agentic-framework</NodeLink> is a prototype replacement with improved accuracy (~93% vs ~84%)
+- Approved documents flow to <NodeLink id="doc-type-classification">org-doc-classifier</NodeLink> for type classification
