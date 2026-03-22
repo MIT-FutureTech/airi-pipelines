@@ -41,5 +41,5 @@ npm run typecheck
 npm run check
 ```
 
-It is recommended to configure your git hooks to run these checks automatically
-before each commit.
+It is recommended to [configure your git hooks](/README.md#git-hooks) to run
+these checks automatically before each commit.

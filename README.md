@@ -11,8 +11,8 @@ pipelines.
 
 ### Git Hooks
 
-Run this command once to [configure git hooks](/README.md#git-hooks) to
-automatically run checks before committing changes.
+Run this command once to configure git hooks to automatically run checks before
+committing changes.
 
 ```bash
 git config core.hooksPath hooks/
