@@ -1,0 +1,17 @@
+# OS files
+.DS_Store
+[Dd]esktop.ini
+
+# Environments
+.env
+.venv/
+
+# IDE
+.vscode
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Node
+node_modules/
