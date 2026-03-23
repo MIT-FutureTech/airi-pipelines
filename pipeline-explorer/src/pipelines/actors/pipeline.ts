@@ -11,6 +11,7 @@ export const pipeline: PipelineDefinition = {
       id: "actor-role-classification",
       label: "AI actor role classification",
       type: "processor",
+      verified: false,
       link: {
         url: "https://github.com/MIT-FutureTech/ai-actor-classifier",
         label: "ai-actor-classifier",
@@ -20,6 +21,7 @@ export const pipeline: PipelineDefinition = {
       id: "logo-processing",
       label: "Logo processing",
       type: "processor",
+      verified: false,
       link: {
         url: "https://github.com/MIT-FutureTech/airi-orgreview-logoprocessing",
         label: "airi-orgreview-logoprocessing",
@@ -29,6 +31,7 @@ export const pipeline: PipelineDefinition = {
       id: "actors-output",
       label: "Airtable: Companies (enriched)",
       type: "datastore",
+      verified: false,
     },
   ],
   shared: [airtableCompanies],

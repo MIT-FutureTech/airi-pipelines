@@ -9,6 +9,7 @@ export interface PipelineNode {
   id: string;
   label: string;
   type: NodeType;
+  verified: boolean;
   link?: { url: string; label: string };
 }
 

@@ -7,6 +7,7 @@ interface NodeDetailPanelProps {
   nodeId: string;
   nodeLabel: string;
   nodeType: string;
+  verified: boolean;
   content: ComponentType | null;
   onClose: () => void;
 }
@@ -14,6 +15,7 @@ interface NodeDetailPanelProps {
 export function NodeDetailPanel({
   nodeLabel,
   nodeType,
+  verified,
   content: Content,
   onClose,
 }: NodeDetailPanelProps) {
@@ -45,7 +47,16 @@ export function NodeDetailPanel({
         <div className={styles.header}>
           <div>
             <h2 className={styles.title}>{nodeLabel}</h2>
-            <span className={styles.type}>{nodeType}</span>
+            <div className={styles.meta}>
+              <span className={styles.type}>{nodeType}</span>
+              <span
+                className={
+                  verified ? styles.verifiedBadge : styles.unverifiedBadge
+                }
+              >
+                {verified ? "\u2713 Verified" : "? Unverified"}
+              </span>
+            </div>
           </div>
           <button
             type="button"

@@ -12,6 +12,7 @@ export const pipeline: PipelineDefinition = {
       id: "mitigation-classification-corporate",
       label: "LLM mitigation classification (corporate)",
       type: "processor",
+      verified: false,
       link: {
         url: "https://github.com/MIT-FutureTech/airi-orgrev-orglist/tree/main/llm_classification",
         label: "airi-orgrev-orglist/llm_classification",
@@ -21,6 +22,7 @@ export const pipeline: PipelineDefinition = {
       id: "mitigations-corp-output",
       label: "Mitigation classifications (CSV)",
       type: "datastore",
+      verified: false,
     },
 
     // --- Research papers path ---
@@ -28,11 +30,13 @@ export const pipeline: PipelineDefinition = {
       id: "academic-sources",
       label: "ArXiv, CrossRef, SSRN, Scopus",
       type: "external-service",
+      verified: false,
     },
     {
       id: "systematic-lit-review",
       label: "Systematic literature review",
       type: "processor",
+      verified: false,
       link: {
         url: "https://github.com/MIT-FutureTech/mitigations_review",
         label: "mitigations_review",
@@ -42,11 +46,13 @@ export const pipeline: PipelineDefinition = {
       id: "airtable-mitigations",
       label: "Airtable: Mitigations V2",
       type: "datastore",
+      verified: false,
     },
     {
       id: "mitigation-taxonomy-classification",
       label: "Mitigation taxonomy classifier",
       type: "processor",
+      verified: false,
       link: {
         url: "https://github.com/MIT-FutureTech/airi-mitrev-classifier",
         label: "airi-mitrev-classifier",
@@ -56,6 +62,7 @@ export const pipeline: PipelineDefinition = {
       id: "airtable-mitigations-classified",
       label: "Airtable: Mitigations (classified)",
       type: "datastore",
+      verified: false,
     },
   ],
   shared: [airtableCompanies, pdfKeywordExtraction],

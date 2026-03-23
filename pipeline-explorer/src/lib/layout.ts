@@ -25,6 +25,7 @@ export interface SelectedNode {
   id: string;
   label: string;
   nodeType: string;
+  verified: boolean;
 }
 
 /**
@@ -86,13 +87,23 @@ export function findNode(
 ): SelectedNode | null {
   for (const node of sharedNodes) {
     if (node.id === nodeId) {
-      return { id: node.id, label: node.label, nodeType: node.type };
+      return {
+        id: node.id,
+        label: node.label,
+        nodeType: node.type,
+        verified: node.verified,
+      };
     }
   }
   for (const p of pipelines) {
     const node = p.nodes.find((n) => n.id === nodeId);
     if (node) {
-      return { id: node.id, label: node.label, nodeType: node.type };
+      return {
+        id: node.id,
+        label: node.label,
+        nodeType: node.type,
+        verified: node.verified,
+      };
     }
   }
   return null;
@@ -186,6 +197,7 @@ function buildPipelineGroup(
       data: {
         label: node.label,
         nodeType: node.type,
+        verified: node.verified,
         link: node.link,
       },
     };
@@ -205,6 +217,7 @@ function toFlowNode(
     data: {
       label: node.label,
       nodeType: node.type,
+      verified: node.verified,
       link: node.link,
     },
   };

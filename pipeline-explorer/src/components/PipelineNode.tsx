@@ -7,6 +7,7 @@ import styles from "./PipelineNode.module.css";
 interface PipelineNodeData {
   label: string;
   nodeType: NodeType;
+  verified: boolean;
   link?: { url: string; label: string };
   [key: string]: unknown;
 }
@@ -50,9 +51,17 @@ export function PipelineNodeComponent({ data }: NodeProps) {
     <>
       <Handle type="target" position={Position.Top} />
       <div className={`${styles.card} ${variant.card}`}>
-        <div className="mb-1.5">
+        <div className="mb-1.5 flex items-center justify-center gap-1.5">
           <span className={`${styles.badge} ${variant.badge}`}>
             {variant.badgeLabel}
+          </span>
+          <span
+            className={
+              nodeData.verified ? styles.verifiedIcon : styles.unverifiedIcon
+            }
+            title={nodeData.verified ? "Verified" : "Unverified"}
+          >
+            {nodeData.verified ? "\u2713" : "?"}
           </span>
         </div>
         <div className={styles.label}>{nodeData.label}</div>

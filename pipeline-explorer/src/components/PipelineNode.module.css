@@ -94,6 +94,34 @@
   color: #555555;
 }
 
+.verifiedIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.unverifiedIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  background: #fef3c7;
+  color: #d97706;
+}
+
 .label {
   font-size: 14px;
   font-weight: 500;

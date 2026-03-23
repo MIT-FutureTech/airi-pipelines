@@ -12,11 +12,13 @@ export const pipeline: PipelineDefinition = {
       id: "google-custom-search",
       label: "Google Custom Search",
       type: "external-service",
+      verified: false,
     },
     {
       id: "companiesmarketcap",
       label: "companiesmarketcap.com",
       type: "external-service",
+      verified: false,
     },
 
     // --- Processors ---
@@ -24,6 +26,7 @@ export const pipeline: PipelineDefinition = {
       id: "grey-lit-search",
       label: "Grey literature search",
       type: "processor",
+      verified: false,
       link: {
         url: "https://github.com/MIT-FutureTech/greylitsearcher",
         label: "greylitsearcher",
@@ -33,6 +36,7 @@ export const pipeline: PipelineDefinition = {
       id: "company-scraping",
       label: "Company scraping",
       type: "processor",
+      verified: false,
       link: {
         url: "https://github.com/MIT-FutureTech/airi-orgrev-orglist",
         label: "airi-orgrev-orglist",
@@ -42,6 +46,7 @@ export const pipeline: PipelineDefinition = {
       id: "fulltext-extraction",
       label: "Full-text extraction",
       type: "processor",
+      verified: false,
       link: {
         url: "https://github.com/MIT-FutureTech/airi-orgreview-fulltext",
         label: "airi-orgreview-fulltext",
@@ -51,6 +56,7 @@ export const pipeline: PipelineDefinition = {
       id: "relevance-screening",
       label: "LLM relevance screening",
       type: "processor",
+      verified: false,
       link: {
         url: "https://github.com/MIT-FutureTech/airi-llm-screening-orchestrator",
         label: "airi-llm-screening-orchestrator",
@@ -60,6 +66,7 @@ export const pipeline: PipelineDefinition = {
       id: "agentic-screening",
       label: "Agentic screening (prototype)",
       type: "proposed",
+      verified: false,
       link: {
         url: "https://github.com/MIT-FutureTech/agentic-framework",
         label: "agentic-framework",
@@ -69,6 +76,7 @@ export const pipeline: PipelineDefinition = {
       id: "doc-type-classification",
       label: "Document type classification",
       type: "processor",
+      verified: false,
       link: {
         url: "https://github.com/MIT-FutureTech/org-doc-classifier",
         label: "org-doc-classifier",
@@ -80,11 +88,13 @@ export const pipeline: PipelineDefinition = {
       id: "airtable-grey-lit",
       label: "Airtable: Grey Literature",
       type: "datastore",
+      verified: false,
     },
     {
       id: "airtable-classified",
       label: "Airtable: classified docs",
       type: "datastore",
+      verified: false,
       link: {
         url: "https://airtable.com/appHrhJQHkZz4c82U/tblb9eEVPpV4Qqo4u",
         label: "Open in Airtable",
