@@ -55,7 +55,11 @@ export function PipelineNodeComponent({ data }: NodeProps) {
           className={
             nodeData.verified ? styles.verifiedIcon : styles.unverifiedIcon
           }
-          title={nodeData.verified ? "Verified" : "Unverified"}
+          title={
+            nodeData.verified
+              ? "The details for this node have been verified to be accurate."
+              : "The details for this node have not yet been verified and may not be entirely accurate."
+          }
         >
           {nodeData.verified ? "\u2713" : "?"}
         </span>

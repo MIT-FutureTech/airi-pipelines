@@ -53,6 +53,11 @@ export function NodeDetailPanel({
                 className={
                   verified ? styles.verifiedBadge : styles.unverifiedBadge
                 }
+                title={
+                  verified
+                    ? "The details for this node have been verified to be accurate."
+                    : "The details for this node have not yet been verified and may not be entirely accurate."
+                }
               >
                 {verified ? "\u2713 Verified" : "? Unverified"}
               </span>
