@@ -7,6 +7,7 @@ import styles from "./PipelineNode.module.css";
 interface PipelineNodeData {
   label: string;
   nodeType: NodeType;
+  verified: boolean;
   link?: { url: string; label: string };
   [key: string]: unknown;
 }
@@ -50,6 +51,18 @@ export function PipelineNodeComponent({ data }: NodeProps) {
     <>
       <Handle type="target" position={Position.Top} />
       <div className={`${styles.card} ${variant.card}`}>
+        <span
+          className={
+            nodeData.verified ? styles.verifiedIcon : styles.unverifiedIcon
+          }
+          title={
+            nodeData.verified
+              ? "The details for this node have been verified to be accurate."
+              : "The details for this node have not yet been verified and may not be entirely accurate."
+          }
+        >
+          {nodeData.verified ? "\u2713" : "?"}
+        </span>
         <div className="mb-1.5">
           <span className={`${styles.badge} ${variant.badge}`}>
             {variant.badgeLabel}

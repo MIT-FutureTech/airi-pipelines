@@ -96,6 +96,7 @@ export function PipelineGraph({ pipelines, sharedNodes }: PipelineGraphProps) {
             nodeId={selectedNode.id}
             nodeLabel={selectedNode.label}
             nodeType={selectedNode.nodeType}
+            verified={selectedNode.verified}
             content={getNodeContent(selectedNode.id)}
             onClose={handleClosePanel}
           />
