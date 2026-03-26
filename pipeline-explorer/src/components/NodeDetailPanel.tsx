@@ -1,24 +1,33 @@
 "use client";
 
 import { type ComponentType, useCallback } from "react";
+import {
+  type DetailStatus,
+  detailStatusConfig,
+  type PipelineNode,
+} from "@/types/pipeline";
 import styles from "./NodeDetailPanel.module.css";
 
 interface NodeDetailPanelProps {
-  nodeId: string;
-  nodeLabel: string;
-  nodeType: string;
-  verified: boolean;
+  node: PipelineNode;
+  detailStatus: DetailStatus;
   content: ComponentType | null;
   onClose: () => void;
 }
 
+const badgeStyles: Record<DetailStatus, string> = {
+  verified: styles.verifiedBadge,
+  unverified: styles.unverifiedBadge,
+  "no-details": styles.noDetailsBadge,
+};
+
 export function NodeDetailPanel({
-  nodeLabel,
-  nodeType,
-  verified,
+  node,
+  detailStatus,
   content: Content,
   onClose,
 }: NodeDetailPanelProps) {
+  const status = detailStatusConfig[detailStatus];
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -46,20 +55,14 @@ export function NodeDetailPanel({
       >
         <div className={styles.header}>
           <div>
-            <h2 className={styles.title}>{nodeLabel}</h2>
+            <h2 className={styles.title}>{node.label}</h2>
             <div className={styles.meta}>
-              <span className={styles.type}>{nodeType}</span>
+              <span className={styles.type}>{node.type}</span>
               <span
-                className={
-                  verified ? styles.verifiedBadge : styles.unverifiedBadge
-                }
-                title={
-                  verified
-                    ? "The details for this node have been verified to be accurate."
-                    : "The details for this node have not yet been verified and may not be entirely accurate."
-                }
+                className={badgeStyles[detailStatus]}
+                title={status.tooltip}
               >
-                {verified ? "\u2713 Verified" : "? Unverified"}
+                {status.label}
               </span>
             </div>
           </div>

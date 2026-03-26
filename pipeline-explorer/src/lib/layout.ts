@@ -1,6 +1,11 @@
 import dagre from "@dagrejs/dagre";
 import type { Edge, Node } from "@xyflow/react";
-import type { PipelineDefinition, PipelineNode } from "@/types/pipeline";
+import { hasNodeContent } from "@/pipelines/node-content";
+import type {
+  DetailStatus,
+  PipelineDefinition,
+  PipelineNode,
+} from "@/types/pipeline";
 
 function getPosition(
   map: Map<string, { x: number; y: number }>,
@@ -20,13 +25,6 @@ const NODE_HEIGHT = 60;
 const GROUP_PADDING = 30;
 /** Space reserved at top of group for the label */
 const GROUP_LABEL_HEIGHT = 36;
-
-export interface SelectedNode {
-  id: string;
-  label: string;
-  nodeType: string;
-  verified: boolean;
-}
 
 /**
  * Build the full React Flow graph from all pipelines + shared nodes.
@@ -84,29 +82,26 @@ export function findNode(
   nodeId: string,
   pipelines: PipelineDefinition[],
   sharedNodes: PipelineNode[],
-): SelectedNode | null {
+): PipelineNode | null {
   for (const node of sharedNodes) {
     if (node.id === nodeId) {
-      return {
-        id: node.id,
-        label: node.label,
-        nodeType: node.type,
-        verified: node.verified,
-      };
+      return node;
     }
   }
   for (const p of pipelines) {
     const node = p.nodes.find((n) => n.id === nodeId);
     if (node) {
-      return {
-        id: node.id,
-        label: node.label,
-        nodeType: node.type,
-        verified: node.verified,
-      };
+      return node;
     }
   }
   return null;
+}
+
+export function resolveDetailStatus(node: PipelineNode): DetailStatus {
+  if (!hasNodeContent(node.id)) {
+    return "no-details";
+  }
+  return node.verified ? "verified" : "unverified";
 }
 
 function runDagreLayout(
@@ -194,12 +189,7 @@ function buildPipelineGroup(
         x: pos.x - minX + GROUP_PADDING,
         y: pos.y - minY + GROUP_PADDING + GROUP_LABEL_HEIGHT,
       },
-      data: {
-        label: node.label,
-        nodeType: node.type,
-        verified: node.verified,
-        link: node.link,
-      },
+      data: { ...node, detailStatus: resolveDetailStatus(node) },
     };
   });
 
@@ -214,11 +204,6 @@ function toFlowNode(
     id: node.id,
     type: "pipeline",
     position,
-    data: {
-      label: node.label,
-      nodeType: node.type,
-      verified: node.verified,
-      link: node.link,
-    },
+    data: { ...node, detailStatus: resolveDetailStatus(node) },
   };
 }
