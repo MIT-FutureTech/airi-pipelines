@@ -1,7 +1,12 @@
 "use client";
 
 import { Handle, type NodeProps, Position } from "@xyflow/react";
-import type { DetailStatus, NodeType, PipelineNode } from "@/types/pipeline";
+import {
+  type DetailStatus,
+  detailStatusConfig,
+  type NodeType,
+  type PipelineNode,
+} from "@/types/pipeline";
 import styles from "./PipelineNode.module.css";
 
 type PipelineNodeData = PipelineNode & { detailStatus: DetailStatus };
@@ -37,22 +42,10 @@ const variantsByType: Record<
   },
 };
 
-const detailStatusIcons: Record<DetailStatus, string> = {
-  verified: "\u2713",
-  unverified: "?",
-  "no-details": "",
-};
-
-const detailStatusTooltips: Record<DetailStatus, string> = {
-  verified: "The details for this node have been verified to be accurate.",
-  unverified:
-    "The details for this node have not yet been verified and may not be entirely accurate.",
-  "no-details": "No details have been documented for this node yet.",
-};
-
 export function PipelineNodeComponent({ data }: NodeProps) {
   const nodeData = data as unknown as PipelineNodeData;
   const variant = variantsByType[nodeData.type] ?? variantsByType.processor;
+  const status = detailStatusConfig[nodeData.detailStatus];
 
   return (
     <>
@@ -60,9 +53,9 @@ export function PipelineNodeComponent({ data }: NodeProps) {
       <div className={`${styles.card} ${variant.card}`}>
         <span
           className={styles[`detailStatus-${nodeData.detailStatus}`]}
-          title={detailStatusTooltips[nodeData.detailStatus]}
+          title={status.tooltip}
         >
-          {detailStatusIcons[nodeData.detailStatus]}
+          {status.icon}
         </span>
         <div className="mb-1.5">
           <span className={`${styles.badge} ${variant.badge}`}>

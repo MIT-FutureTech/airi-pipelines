@@ -10,7 +10,11 @@ import {
 } from "@xyflow/react";
 import { useCallback, useMemo, useState } from "react";
 
-import { buildNodesAndEdges, findNode } from "@/lib/layout";
+import {
+  buildNodesAndEdges,
+  findNode,
+  resolveDetailStatus,
+} from "@/lib/layout";
 import { getNodeContent } from "@/pipelines/node-content";
 import type { PipelineDefinition, PipelineNode } from "@/types/pipeline";
 import { NodeDetailPanel } from "./NodeDetailPanel";
@@ -94,6 +98,7 @@ export function PipelineGraph({ pipelines, sharedNodes }: PipelineGraphProps) {
         {selectedNode && (
           <NodeDetailPanel
             node={selectedNode}
+            detailStatus={resolveDetailStatus(selectedNode)}
             content={getNodeContent(selectedNode.id)}
             onClose={handleClosePanel}
           />

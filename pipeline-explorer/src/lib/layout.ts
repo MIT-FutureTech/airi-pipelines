@@ -97,7 +97,7 @@ export function findNode(
   return null;
 }
 
-function resolveDetailStatus(node: PipelineNode): DetailStatus {
+export function resolveDetailStatus(node: PipelineNode): DetailStatus {
   if (!hasNodeContent(node.id)) {
     return "no-details";
   }
