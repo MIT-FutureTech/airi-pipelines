@@ -5,6 +5,8 @@ export type NodeType =
   | "manual-step"
   | "proposed";
 
+export type DetailStatus = "verified" | "unverified" | "no-details";
+
 export interface PipelineNode {
   id: string;
   label: string;

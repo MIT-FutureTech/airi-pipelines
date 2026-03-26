@@ -10,7 +10,7 @@ import {
 } from "@xyflow/react";
 import { useCallback, useMemo, useState } from "react";
 
-import { buildNodesAndEdges, findNode, type SelectedNode } from "@/lib/layout";
+import { buildNodesAndEdges, findNode } from "@/lib/layout";
 import { getNodeContent } from "@/pipelines/node-content";
 import type { PipelineDefinition, PipelineNode } from "@/types/pipeline";
 import { NodeDetailPanel } from "./NodeDetailPanel";
@@ -93,10 +93,7 @@ export function PipelineGraph({ pipelines, sharedNodes }: PipelineGraphProps) {
 
         {selectedNode && (
           <NodeDetailPanel
-            nodeId={selectedNode.id}
-            nodeLabel={selectedNode.label}
-            nodeType={selectedNode.nodeType}
-            verified={selectedNode.verified}
+            node={selectedNode}
             content={getNodeContent(selectedNode.id)}
             onClose={handleClosePanel}
           />
@@ -106,7 +103,7 @@ export function PipelineGraph({ pipelines, sharedNodes }: PipelineGraphProps) {
   );
 }
 
-export function updateUrl(node: SelectedNode | null) {
+export function updateUrl(node: PipelineNode | null) {
   const url = node
     ? `${window.location.pathname}?node=${node.id}`
     : window.location.pathname;

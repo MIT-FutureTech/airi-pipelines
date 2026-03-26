@@ -36,3 +36,7 @@ const nodeContent: Record<string, ComponentType> = {
 export function getNodeContent(nodeId: string): ComponentType | null {
   return nodeContent[nodeId] ?? null;
 }
+
+export function hasNodeContent(nodeId: string): boolean {
+  return nodeId in nodeContent;
+}

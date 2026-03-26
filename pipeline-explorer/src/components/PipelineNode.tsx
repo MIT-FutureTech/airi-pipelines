@@ -1,16 +1,10 @@
 "use client";
 
 import { Handle, type NodeProps, Position } from "@xyflow/react";
-import type { NodeType } from "@/types/pipeline";
+import type { DetailStatus, NodeType, PipelineNode } from "@/types/pipeline";
 import styles from "./PipelineNode.module.css";
 
-interface PipelineNodeData {
-  label: string;
-  nodeType: NodeType;
-  verified: boolean;
-  link?: { url: string; label: string };
-  [key: string]: unknown;
-}
+type PipelineNodeData = PipelineNode & { detailStatus: DetailStatus };
 
 const variantsByType: Record<
   NodeType,
@@ -43,25 +37,32 @@ const variantsByType: Record<
   },
 };
 
+const detailStatusIcons: Record<DetailStatus, string> = {
+  verified: "\u2713",
+  unverified: "?",
+  "no-details": "",
+};
+
+const detailStatusTooltips: Record<DetailStatus, string> = {
+  verified: "The details for this node have been verified to be accurate.",
+  unverified:
+    "The details for this node have not yet been verified and may not be entirely accurate.",
+  "no-details": "No details have been documented for this node yet.",
+};
+
 export function PipelineNodeComponent({ data }: NodeProps) {
-  const nodeData = data as PipelineNodeData;
-  const variant = variantsByType[nodeData.nodeType] ?? variantsByType.processor;
+  const nodeData = data as unknown as PipelineNodeData;
+  const variant = variantsByType[nodeData.type] ?? variantsByType.processor;
 
   return (
     <>
       <Handle type="target" position={Position.Top} />
       <div className={`${styles.card} ${variant.card}`}>
         <span
-          className={
-            nodeData.verified ? styles.verifiedIcon : styles.unverifiedIcon
-          }
-          title={
-            nodeData.verified
-              ? "The details for this node have been verified to be accurate."
-              : "The details for this node have not yet been verified and may not be entirely accurate."
-          }
+          className={styles[`detailStatus-${nodeData.detailStatus}`]}
+          title={detailStatusTooltips[nodeData.detailStatus]}
         >
-          {nodeData.verified ? "\u2713" : "?"}
+          {detailStatusIcons[nodeData.detailStatus]}
         </span>
         <div className="mb-1.5">
           <span className={`${styles.badge} ${variant.badge}`}>

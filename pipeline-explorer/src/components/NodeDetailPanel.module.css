@@ -85,6 +85,18 @@
   color: #d97706;
 }
 
+.noDetailsBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 1px 8px;
+  border-radius: 9999px;
+  background: #f1f5f9;
+  color: #64748b;
+}
+
 .closeButton {
   color: var(--color-text-muted);
   width: 32px;
