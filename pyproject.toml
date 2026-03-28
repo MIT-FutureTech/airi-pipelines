@@ -27,6 +27,11 @@ typeCheckingMode = "recommended"
 # often aren't important. This rule can create a lot of noise.
 reportUnusedCallResult = false
 
+executionEnvironments = [
+    # Tools are allowed to access private attributes
+    { root = "toolbox-lib/tests", reportPrivateUsage = false },
+]
+
 [tool.ruff]
 src = ["toolbox-lib/src"]
 target-version = "py312"
