@@ -22,6 +22,9 @@ toolbox = { workspace = true }
 [tool.basedpyright]
 pythonVersion = "3.12"
 typeCheckingMode = "recommended"
+# Allow implicit and explicit uses of `Any`. It's sometimes warranted.
+reportAny = false
+reportExplicitAny = false
 # Don't require return values to be assigned to variables. Common functions like
 # `await asyncio.gather()` have non-None return values, but those return values
 # often aren't important. This rule can create a lot of noise.
