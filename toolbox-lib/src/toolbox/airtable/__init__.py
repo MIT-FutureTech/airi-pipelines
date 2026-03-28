@@ -13,6 +13,7 @@ from toolbox.airtable.data_types import (
     TableSchema,
     UpdateRecord,
 )
+from toolbox.airtable.table import Table
 
 __all__ = [
     "Client",
@@ -24,6 +25,7 @@ __all__ = [
     "JsonValue",
     "Record",
     "RecordList",
+    "Table",
     "TableSchema",
     "UpdateRecord",
 ]
