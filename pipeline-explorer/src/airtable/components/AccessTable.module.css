@@ -21,7 +21,7 @@
   letter-spacing: 0.05em;
   color: var(--color-text-muted);
   border-bottom: 2px solid var(--color-border);
-  min-width: 240px;
+  width: 1000px;
 }
 
 .repoHeader {
@@ -30,7 +30,6 @@
   white-space: nowrap;
   vertical-align: bottom;
   text-align: center;
-  min-width: 48px;
 }
 
 .repoLabel {
@@ -163,6 +162,7 @@
   align-items: baseline;
   gap: 8px;
   border-bottom: 1px solid var(--color-border-subtle);
+  max-width: 1000px;
 }
 
 .fieldName {
