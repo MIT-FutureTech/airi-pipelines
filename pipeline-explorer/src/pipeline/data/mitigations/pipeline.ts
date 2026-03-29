@@ -14,7 +14,7 @@ export const pipeline: PipelineDefinition = {
     // --- Corporate docs path ---
     {
       id: "mitigation-classification-corporate",
-      label: "LLM mitigation classification (corporate)",
+      label: "LLM mitigation classification",
       type: "processor",
       verified: false,
       link: {
