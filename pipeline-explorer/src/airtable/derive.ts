@@ -1,4 +1,9 @@
-import type { AccessMode, AirtableBase, AirtableTable } from "@/airtable/types";
+import type {
+  AccessMode,
+  AirtableBase,
+  AirtableTable,
+  FieldAccess,
+} from "@/airtable/types";
 
 /**
  * Canonical repo ordering following the pipeline flow.
@@ -44,6 +49,20 @@ export function getReposForBase(base: AirtableBase): string[] {
     // Both unknown: alphabetical
     return a.localeCompare(b);
   });
+}
+
+export function hasFieldDetail(access: FieldAccess): boolean {
+  return !!(access.filterFormula || access.writtenAs || access.notes);
+}
+
+export function hasTableDetail(table: AirtableTable, repo: string): boolean {
+  for (const field of table.fields) {
+    const access = field.access[repo];
+    if (access && hasFieldDetail(access)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 export function getTableAccessSummary(

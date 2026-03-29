@@ -6,6 +6,8 @@ import {
   getReposForBase,
   getTableAccessSummary,
   getTablePopoverContent,
+  hasFieldDetail,
+  hasTableDetail,
 } from "@/airtable/derive";
 import type { AirtableBase } from "@/airtable/types";
 import { AccessCell } from "./AccessCell";
@@ -102,15 +104,16 @@ function TableRows({
         </td>
         {repos.map((repo) => {
           const mode = getTableAccessSummary(table, repo);
-          const popoverData = mode
-            ? getTablePopoverContent(table, repo)
-            : undefined;
+          const detail = mode && hasTableDetail(table, repo);
+          const popoverData =
+            mode && detail ? getTablePopoverContent(table, repo) : undefined;
           return (
             <AccessCell
               key={repo}
               mode={mode}
+              hasDetail={!!detail}
               popover={
-                mode && popoverData
+                popoverData
                   ? {
                       repo,
                       reads: popoverData.reads,
@@ -139,12 +142,14 @@ function TableRows({
               </td>
               {repos.map((repo) => {
                 const access = field.access[repo];
+                const detail = access ? hasFieldDetail(access) : false;
                 return (
                   <AccessCell
                     key={repo}
                     mode={access?.mode ?? null}
+                    hasDetail={detail}
                     popover={
-                      access
+                      access && detail
                         ? { repo, fieldName: field.name, access }
                         : undefined
                     }

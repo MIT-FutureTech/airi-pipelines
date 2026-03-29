@@ -18,12 +18,12 @@ const modeStyles: Record<AccessMode, string> = {
 
 interface AccessCellProps {
   mode: AccessMode | null;
+  hasDetail?: boolean;
   /** If provided, the cell is clickable and shows a popover. */
   popover?: {
     repo: string;
     fieldName?: string;
     access?: FieldAccess;
-    /** For table-level cells: aggregated info */
     reads?: string[];
     writes?: string[];
     filters?: string[];
@@ -40,11 +40,18 @@ function PopoverContent({
   return (
     <div className={styles.popoverBody}>
       <div className={styles.popoverHeader}>
-        <strong>{repo}</strong>
-        {fieldName && <span className={styles.popoverField}>{fieldName}</span>}
+        <div className={styles.popoverHeaderItem}>
+          <span className={styles.popoverHeaderLabel}>Repo</span>
+          <span className={styles.popoverHeaderValue}>{repo}</span>
+        </div>
+        {fieldName && (
+          <div className={styles.popoverHeaderItem}>
+            <span className={styles.popoverHeaderLabel}>Field</span>
+            <span className={styles.popoverHeaderValue}>{fieldName}</span>
+          </div>
+        )}
       </div>
 
-      {/* Field-level detail */}
       {access?.filterFormula && (
         <div className={styles.popoverSection}>
           <span className={styles.popoverLabel}>Filter</span>
@@ -64,7 +71,6 @@ function PopoverContent({
         </div>
       )}
 
-      {/* Table-level aggregated detail */}
       {reads && reads.length > 0 && (
         <div className={styles.popoverSection}>
           <span className={styles.popoverLabel}>
@@ -95,13 +101,16 @@ function PopoverContent({
   );
 }
 
-export function AccessCell({ mode, popover }: AccessCellProps) {
+export function AccessCell({ mode, hasDetail, popover }: AccessCellProps) {
   if (!mode) {
     return <td className={styles.cell} />;
   }
 
   const badge = (
-    <button type="button" className={`${styles.badge} ${modeStyles[mode]}`}>
+    <button
+      type="button"
+      className={`${styles.badge} ${modeStyles[mode]} ${hasDetail ? styles.badgeDetailed : ""}`}
+    >
       {modeLabels[mode]}
     </button>
   );
