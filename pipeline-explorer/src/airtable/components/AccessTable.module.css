@@ -104,6 +104,21 @@
   content: ")";
 }
 
+.externalLink {
+  display: inline-flex;
+  color: var(--color-accent);
+  padding: 2px;
+  border-radius: 3px;
+  transition:
+    color 0.1s ease,
+    background 0.1s ease;
+}
+
+.externalLink:hover {
+  color: var(--color-accent-hover);
+  background: rgba(59, 130, 246, 0.1);
+}
+
 .fieldCount {
   font-size: 11px;
   color: var(--color-text-muted);

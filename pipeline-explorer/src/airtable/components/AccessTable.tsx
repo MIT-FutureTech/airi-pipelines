@@ -1,5 +1,6 @@
 "use client";
 
+import { ExternalLink } from "lucide-react";
 import { useState } from "react";
 import {
   getReposForBase,
@@ -37,6 +38,7 @@ export function AccessTable({ base }: AccessTableProps) {
             return (
               <TableRows
                 key={table.tableId}
+                baseId={base.baseId}
                 table={table}
                 repos={repos}
                 isExpanded={isExpanded}
@@ -53,16 +55,20 @@ export function AccessTable({ base }: AccessTableProps) {
 }
 
 function TableRows({
+  baseId,
   table,
   repos,
   isExpanded,
   onToggle,
 }: {
+  baseId: string;
   table: AirtableBase["tables"][number];
   repos: string[];
   isExpanded: boolean;
   onToggle: () => void;
 }) {
+  const airtableUrl =
+    table.tableId && `https://airtable.com/${baseId}/${table.tableId}`;
   const fieldCount = table.fields.length;
 
   return (
@@ -79,6 +85,18 @@ function TableRows({
           <span className={styles.tableName}>{table.name}</span>
           {table.alias && (
             <span className={styles.tableAlias}>{table.alias}</span>
+          )}
+          {airtableUrl && (
+            <a
+              href={airtableUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.externalLink}
+              title="Open in Airtable"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <ExternalLink size={12} />
+            </a>
           )}
           <span className={styles.fieldCount}>{fieldCount} fields</span>
         </td>
