@@ -4,18 +4,9 @@
   padding: 24px;
 }
 
-.intro {
-  margin-bottom: 20px;
-}
-
-.intro p {
-  font-size: 13px;
-  color: var(--color-text-muted);
-  margin: 0;
-}
-
 .sections {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  margin-top: 20px;
 }
