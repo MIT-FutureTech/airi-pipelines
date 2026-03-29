@@ -3,7 +3,6 @@ import type { AirtableTable } from "@/airtable/types";
 export const searchResults: AirtableTable = {
   tableId: "tblb9eEVPpV4Qqo4u",
   name: "Search Results",
-  alias: "raw_results",
   description:
     "All candidate documents from Google Search API and supplementary agent search. One row per retrieved URL. Stores LLM screening outputs and human review decisions side-by-side.",
   fields: [

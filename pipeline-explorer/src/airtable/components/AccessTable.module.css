@@ -109,12 +109,6 @@
   color: var(--color-text-primary);
 }
 
-.tableAlias {
-  font-size: 11px;
-  color: var(--color-text-muted);
-  font-family: var(--font-geist-mono), monospace;
-}
-
 .tableAlias::before {
   content: "(";
 }

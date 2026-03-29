@@ -23,8 +23,6 @@ export interface AirtableField {
 export interface AirtableTable {
   tableId: string;
   name: string;
-  /** How repos commonly refer to this table (e.g. "raw_results") */
-  alias?: string;
   description?: string;
   fields: AirtableField[];
 }

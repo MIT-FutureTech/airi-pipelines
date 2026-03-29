@@ -87,9 +87,6 @@ function TableRows({
           <div className={styles.tableNameContent}>
             <div className={styles.tableNameRow}>
               <span className={styles.tableName}>{table.name}</span>
-              {table.alias && (
-                <span className={styles.tableAlias}>{table.alias}</span>
-              )}
               {airtableUrl && (
                 <a
                   href={airtableUrl}
