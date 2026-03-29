@@ -1,4 +1,5 @@
 import type { PipelineDefinition } from "@/pipeline/types";
+import { governanceVisualizations } from "../shared/nodes";
 
 export const pipeline: PipelineDefinition = {
   id: "incidents",
@@ -39,10 +40,11 @@ export const pipeline: PipelineDefinition = {
       },
     },
   ],
-  shared: [],
+  shared: [governanceVisualizations],
   edges: [
     { source: "ai-incident-database", target: "incident-ingestion" },
     { source: "incident-ingestion", target: "incident-classification" },
     { source: "incident-classification", target: "airtable-incidents" },
+    { source: "airtable-incidents", target: "governance-visualizations" },
   ],
 };

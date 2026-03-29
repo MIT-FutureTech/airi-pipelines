@@ -5,6 +5,17 @@ import type { PipelineNode } from "@/pipeline/types";
  * These are displayed outside any pipeline group box.
  */
 
+export const governanceVisualizations: PipelineNode = {
+  id: "governance-visualizations",
+  label: "Gov & incident visualizations",
+  type: "processor",
+  verified: false,
+  link: {
+    url: "https://github.com/MIT-FutureTech/governance-visualizations",
+    label: "governance-visualizations",
+  },
+};
+
 export const airtableCompanies: PipelineNode = {
   id: "airtable-companies",
   label: "Airtable: Companies",
