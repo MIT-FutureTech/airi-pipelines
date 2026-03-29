@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { NavHeader } from "@/shared/components/NavHeader";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -28,7 +29,8 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-surface text-text-primary font-[family-name:var(--font-geist-sans)]">
-        {children}
+        <NavHeader />
+        <main className="flex-1 min-h-0">{children}</main>
       </body>
     </html>
   );

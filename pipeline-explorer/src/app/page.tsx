@@ -1,6 +1,6 @@
-import { ClientShell } from "@/components/ClientShell";
-import { allPipelines, allSharedNodes } from "@/pipelines";
+import { PipelineView } from "@/pipeline/components/PipelineView";
+import { allPipelines, allSharedNodes } from "@/pipeline/data";
 
 export default function Home() {
-  return <ClientShell pipelines={allPipelines} sharedNodes={allSharedNodes} />;
+  return <PipelineView pipelines={allPipelines} sharedNodes={allSharedNodes} />;
 }
