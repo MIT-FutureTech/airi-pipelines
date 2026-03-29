@@ -1,5 +1,9 @@
 import type { PipelineDefinition } from "@/pipeline/types";
-import { airtableCompanies, pdfKeywordExtraction } from "../shared/nodes";
+import {
+  airtableClassifiedDocs,
+  airtableCompanies,
+  pdfKeywordExtraction,
+} from "../shared/nodes";
 
 export const pipeline: PipelineDefinition = {
   id: "mitigations",
@@ -73,9 +77,13 @@ export const pipeline: PipelineDefinition = {
       },
     },
   ],
-  shared: [airtableCompanies, pdfKeywordExtraction],
+  shared: [airtableClassifiedDocs, airtableCompanies, pdfKeywordExtraction],
   edges: [
     // Corporate docs path
+    {
+      source: "airtable-classified",
+      target: "pdf-keyword-extraction",
+    },
     {
       source: "airtable-companies",
       target: "pdf-keyword-extraction",

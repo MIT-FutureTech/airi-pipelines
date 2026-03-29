@@ -27,6 +27,17 @@ export const airtableCompanies: PipelineNode = {
   },
 };
 
+export const airtableClassifiedDocs: PipelineNode = {
+  id: "airtable-classified",
+  label: "Airtable: classified docs",
+  type: "datastore",
+  verified: false,
+  link: {
+    url: "https://airtable.com/appHrhJQHkZz4c82U/tblb9eEVPpV4Qqo4u",
+    label: "Open in Airtable",
+  },
+};
+
 export const pdfKeywordExtraction: PipelineNode = {
   id: "pdf-keyword-extraction",
   label: "PDF keyword extraction",
