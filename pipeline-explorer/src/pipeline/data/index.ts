@@ -1,5 +1,6 @@
 import type { PipelineNode } from "@/pipeline/types";
 import { pipeline as actors } from "./actors/pipeline";
+import { pipeline as companyData } from "./company-data/pipeline";
 import { pipeline as documentProcessing } from "./document-processing/pipeline";
 import { pipeline as governance } from "./governance/pipeline";
 import { pipeline as incidents } from "./incidents/pipeline";
@@ -8,6 +9,7 @@ import { pipeline as risks } from "./risks/pipeline";
 
 export const allPipelines = [
   documentProcessing,
+  companyData,
   actors,
   risks,
   mitigations,

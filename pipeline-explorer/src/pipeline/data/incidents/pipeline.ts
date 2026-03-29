@@ -1,44 +1,50 @@
 import type { PipelineDefinition } from "@/pipeline/types";
+import { governanceVisualizations } from "../shared/nodes";
 
 export const pipeline: PipelineDefinition = {
   id: "incidents",
   name: "Incidents",
   description:
-    "Would classify AI incidents from AIID into subdomains, causal factors, severity, and purpose. Currently data is manually entered in Airtable.",
+    "Classifies AI incidents from AIID into subdomains, causal factors, severity, and purpose. Uses LLM classification. Pipeline repos live in a separate GitHub org.",
   nodes: [
     {
-      id: "aiid",
-      label: "AIID (incidentdatabase.ai)",
+      id: "ai-incident-database",
+      label: "AI Incident Database",
       type: "external-service",
       verified: false,
+      link: {
+        url: "https://incidentdatabase.ai/",
+        label: "incidentdatabase.ai",
+      },
     },
     {
-      id: "incident-scraping",
-      label: "Incident scraping",
-      type: "proposed",
-      verified: false,
-    },
-    {
-      id: "airtable-incidents",
-      label: "Airtable: Incidents",
-      type: "datastore",
+      id: "incident-ingestion",
+      label: "Incident ingestion",
+      type: "processor",
       verified: false,
     },
     {
       id: "incident-classification",
-      label: "Incident classification",
-      type: "proposed",
+      label: "LLM Incident classification",
+      type: "processor",
       verified: false,
     },
-  ],
-  shared: [],
-  edges: [
-    { source: "aiid", target: "incident-scraping" },
-    { source: "incident-scraping", target: "airtable-incidents" },
     {
-      source: "airtable-incidents",
-      target: "incident-classification",
-      label: "currently manual",
+      id: "airtable-incidents",
+      label: "Airtable: Incident Tracker",
+      type: "datastore",
+      verified: false,
+      link: {
+        url: "https://airtable.com/appYXeL8YwZfAy4kF/tblA8dZPux36bV6ox",
+        label: "Open in Airtable",
+      },
     },
+  ],
+  shared: [governanceVisualizations],
+  edges: [
+    { source: "ai-incident-database", target: "incident-ingestion" },
+    { source: "incident-ingestion", target: "incident-classification" },
+    { source: "incident-classification", target: "airtable-incidents" },
+    { source: "airtable-incidents", target: "governance-visualizations" },
   ],
 };

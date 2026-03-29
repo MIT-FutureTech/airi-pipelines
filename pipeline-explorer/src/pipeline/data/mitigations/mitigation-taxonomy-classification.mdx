@@ -12,7 +12,7 @@ Python, OpenRouter, pyairtable, tenacity, rich (optional terminal UI)
 
 ## Inputs
 
-- **Airtable Base 2** (Mitigations V2) — records where `Status = "llm_todo"`
+- Base: AI Risk Mitigation Database, table [SysRev_MitigationDatabase](https://airtable.com/appUJl8KRAUMeIVXs/tblZRKlssxugpZAfr) — records where `MitTax_Status = "llm_todo"`
 - Fields: `Mitigation_Name`, `Mitigation_Description`, `Mitigation_AdditionalEvidence`
 - Prompts loaded from `llm_prompts` table (supports versioning)
 

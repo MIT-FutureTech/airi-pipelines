@@ -32,6 +32,10 @@ export const pipeline: PipelineDefinition = {
       label: "Airtable: Companies (enriched)",
       type: "datastore",
       verified: false,
+      link: {
+        url: "https://airtable.com/appHrhJQHkZz4c82U/tblyO155su2M9nCLW",
+        label: "Open in Airtable",
+      },
     },
   ],
   shared: [airtableCompanies],

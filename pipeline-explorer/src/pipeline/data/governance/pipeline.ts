@@ -1,44 +1,47 @@
 import type { PipelineDefinition } from "@/pipeline/types";
+import { governanceVisualizations } from "../shared/nodes";
 
 export const pipeline: PipelineDefinition = {
   id: "governance",
   name: "Governance",
   description:
-    "Would classify governance documents (regulations, policies, frameworks) into risk subdomains, lifecycle stages, actor types, and sectors. Currently data is manually entered in Airtable.",
+    "Classifies governance documents (regulations, policies, frameworks) into risk subdomains, lifecycle stages, actor types, and sectors. Input is the AGORA dataset. Pipeline repos live in a separate GitHub org.",
   nodes: [
     {
-      id: "governance-sources",
-      label: "Government sources",
+      id: "agora",
+      label: "AGORA dataset",
       type: "external-service",
       verified: false,
+      link: { url: "https://agora.eto.tech/", label: "agora.eto.tech" },
     },
     {
-      id: "governance-scraping",
-      label: "Governance document scraping",
-      type: "proposed",
-      verified: false,
-    },
-    {
-      id: "airtable-governance",
-      label: "Airtable: Governance",
-      type: "datastore",
+      id: "governance-ingestion",
+      label: "Governance ingestion",
+      type: "processor",
       verified: false,
     },
     {
       id: "governance-classification",
-      label: "Governance classification",
-      type: "proposed",
+      label: "LLM governance classification",
+      type: "processor",
       verified: false,
     },
-  ],
-  shared: [],
-  edges: [
-    { source: "governance-sources", target: "governance-scraping" },
-    { source: "governance-scraping", target: "airtable-governance" },
     {
-      source: "airtable-governance",
-      target: "governance-classification",
-      label: "currently manual",
+      id: "airtable-governance",
+      label: "Airtable: Governance Mapping",
+      type: "datastore",
+      verified: false,
+      link: {
+        url: "https://airtable.com/appLSe43cSlDiYZyA/tblZot2LtgZGxthp7",
+        label: "Open in Airtable",
+      },
     },
+  ],
+  shared: [governanceVisualizations],
+  edges: [
+    { source: "agora", target: "governance-ingestion" },
+    { source: "governance-ingestion", target: "governance-classification" },
+    { source: "governance-classification", target: "airtable-governance" },
+    { source: "airtable-governance", target: "governance-visualizations" },
   ],
 };

@@ -1,5 +1,9 @@
 import type { PipelineDefinition } from "@/pipeline/types";
-import { airtableCompanies, pdfKeywordExtraction } from "../shared/nodes";
+import {
+  airtableClassifiedDocs,
+  airtableCompanies,
+  pdfKeywordExtraction,
+} from "../shared/nodes";
 
 export const pipeline: PipelineDefinition = {
   id: "mitigations",
@@ -10,7 +14,7 @@ export const pipeline: PipelineDefinition = {
     // --- Corporate docs path ---
     {
       id: "mitigation-classification-corporate",
-      label: "LLM mitigation classification (corporate)",
+      label: "LLM mitigation classification",
       type: "processor",
       verified: false,
       link: {
@@ -44,9 +48,13 @@ export const pipeline: PipelineDefinition = {
     },
     {
       id: "airtable-mitigations",
-      label: "Airtable: Mitigations V2",
+      label: "Airtable: Mitigations",
       type: "datastore",
       verified: false,
+      link: {
+        url: "https://airtable.com/appUJl8KRAUMeIVXs/tblZRKlssxugpZAfr",
+        label: "Open in Airtable",
+      },
     },
     {
       id: "mitigation-taxonomy-classification",
@@ -63,11 +71,19 @@ export const pipeline: PipelineDefinition = {
       label: "Airtable: Mitigations (classified)",
       type: "datastore",
       verified: false,
+      link: {
+        url: "https://airtable.com/appUJl8KRAUMeIVXs/tblZRKlssxugpZAfr",
+        label: "Open in Airtable",
+      },
     },
   ],
-  shared: [airtableCompanies, pdfKeywordExtraction],
+  shared: [airtableClassifiedDocs, airtableCompanies, pdfKeywordExtraction],
   edges: [
     // Corporate docs path
+    {
+      source: "airtable-classified",
+      target: "pdf-keyword-extraction",
+    },
     {
       source: "airtable-companies",
       target: "pdf-keyword-extraction",
