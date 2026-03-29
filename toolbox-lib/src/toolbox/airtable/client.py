@@ -4,6 +4,7 @@ from typing import Self
 
 from httpx import AsyncClient, HTTPStatusError, QueryParams, Response
 from tenacity import (
+    after_log,
     retry,
     retry_if_exception,
     stop_after_attempt,
@@ -60,6 +61,7 @@ class Client:
         retry=retry_if_exception(_is_retryable),
         wait=wait_exponential(multiplier=1, max=30),
         stop=stop_after_attempt(5),
+        after=after_log(logger, logging.INFO),
         reraise=True,
     )
     async def request(
