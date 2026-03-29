@@ -3,6 +3,8 @@ import type { AirtableTable } from "@/airtable/types";
 export const sysRevMitigationDatabase: AirtableTable = {
   tableId: "tblZRKlssxugpZAfr",
   name: "SysRev_MitigationDatabase",
+  description:
+    "Mitigation actions extracted from research papers during systematic review. One row per mitigation. Name, definition, source, and LLM/human classification against multiple taxonomies.",
   fields: [
     {
       name: "Mitigation_Name",

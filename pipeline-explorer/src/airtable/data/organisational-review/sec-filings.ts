@@ -3,6 +3,8 @@ import type { AirtableTable } from "@/airtable/types";
 export const secFilings: AirtableTable = {
   tableId: "tblE0lKFB66dLjv7i",
   name: "SEC Filings",
+  description:
+    "SEC EDGAR filing metadata for US-listed companies. One row per 10-K or 20-F filing. Accession number, filing type, date, fiscal year, full-text attachment.",
   fields: [
     {
       name: "cik",

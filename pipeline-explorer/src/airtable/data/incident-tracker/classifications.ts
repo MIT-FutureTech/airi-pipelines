@@ -3,6 +3,8 @@ import type { AirtableTable } from "@/airtable/types";
 export const classifications: AirtableTable = {
   tableId: "tblA8dZPux36bV6ox",
   name: "Classifications",
+  description:
+    "AI incident records from AIID. One row per incident. Severity scores across 10 categories, causal taxonomy (entity/intent/timing), deployers, developers, harmed parties.",
   fields: [
     {
       name: "Title",

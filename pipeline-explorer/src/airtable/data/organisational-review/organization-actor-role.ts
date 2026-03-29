@@ -3,6 +3,8 @@ import type { AirtableTable } from "@/airtable/types";
 export const organizationActorRole: AirtableTable = {
   tableId: "tblyO155su2M9nCLW",
   name: "Organization Actor Role",
+  description:
+    "LLM-generated and human-validated actor role classification. One row per organisation. Primary role, secondary roles, per-role evidence and counter-evidence.",
   fields: [
     {
       name: "cmc_rank (from cmc_company_name)",

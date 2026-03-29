@@ -3,6 +3,8 @@ import type { AirtableTable } from "@/airtable/types";
 export const llmPrompts: AirtableTable = {
   tableId: "tbljvaQKe4wjQvJiS",
   name: "llm_prompts",
+  description:
+    "Version history for LLM classification prompts used by airi-mitrev-classifier. Tracks prompt content, model, provider, reasoning effort, and changelog.",
   fields: [
     {
       name: "llm_version",

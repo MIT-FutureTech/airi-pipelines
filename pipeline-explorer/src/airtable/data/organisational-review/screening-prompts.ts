@@ -3,6 +3,8 @@ import type { AirtableTable } from "@/airtable/types";
 export const screeningPrompts: AirtableTable = {
   tableId: "tblwVxxrSAAdK5R9n",
   name: "screening_prompts",
+  description:
+    "Version history for LLM screening prompts. Tracks prompt content, model, provider, active status, and changelog.",
   fields: [
     {
       name: "version",

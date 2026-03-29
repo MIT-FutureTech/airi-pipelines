@@ -3,6 +3,8 @@ import type { AirtableTable } from "@/airtable/types";
 export const uniqueUpload: AirtableTable = {
   tableId: "tblZot2LtgZGxthp7",
   name: "Unique Upload",
+  description:
+    "Governance documents (regulations, policies, frameworks). One row per document. Coverage scores across risk subdomains, lifecycle stages, sectors, and actor roles.",
   fields: [
     {
       name: "document_id",

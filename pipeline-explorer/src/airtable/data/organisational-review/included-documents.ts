@@ -3,6 +3,8 @@ import type { AirtableTable } from "@/airtable/types";
 export const includedDocuments: AirtableTable = {
   tableId: "tblppga8ctRLam672",
   name: "Included Documents",
+  description:
+    "Document corpus including screening status. One row per included document. PDF attachment, document type, annual report sub-type.",
   fields: [
     {
       name: "Document ID",

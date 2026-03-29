@@ -3,6 +3,8 @@ import type { AirtableTable } from "@/airtable/types";
 export const organizationMetadata: AirtableTable = {
   tableId: "tblurwszwgrluMLrB",
   name: "Organization Metadata",
+  description:
+    "One row per company in the study sample (~200). Company name, rank, market cap, country, NAICS sector, employee count, Compustat identifiers.",
   fields: [
     {
       name: "cmc_company_name",

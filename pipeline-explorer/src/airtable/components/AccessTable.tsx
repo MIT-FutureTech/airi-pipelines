@@ -84,23 +84,32 @@ function TableRows({
           <span className={styles.chevron}>
             {isExpanded ? "\u25BC" : "\u25B6"}
           </span>
-          <span className={styles.tableName}>{table.name}</span>
-          {table.alias && (
-            <span className={styles.tableAlias}>{table.alias}</span>
-          )}
-          {airtableUrl && (
-            <a
-              href={airtableUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.externalLink}
-              title="Open in Airtable"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <ExternalLink size={12} />
-            </a>
-          )}
-          <span className={styles.fieldCount}>{fieldCount} fields</span>
+          <div className={styles.tableNameContent}>
+            <div className={styles.tableNameRow}>
+              <span className={styles.tableName}>{table.name}</span>
+              {table.alias && (
+                <span className={styles.tableAlias}>{table.alias}</span>
+              )}
+              {airtableUrl && (
+                <a
+                  href={airtableUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.externalLink}
+                  title="Open in Airtable"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <ExternalLink size={12} />
+                </a>
+              )}
+              <span className={styles.fieldCount}>{fieldCount} fields</span>
+            </div>
+            {table.description && (
+              <span className={styles.tableDescription}>
+                {table.description}
+              </span>
+            )}
+          </div>
         </td>
         {repos.map((repo) => {
           const mode = getTableAccessSummary(table, repo);

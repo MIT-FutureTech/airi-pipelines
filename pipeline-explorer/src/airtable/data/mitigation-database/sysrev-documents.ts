@@ -3,6 +3,8 @@ import type { AirtableTable } from "@/airtable/types";
 export const sysRevDocuments: AirtableTable = {
   tableId: "tbleVxrlfEZvuFBJI",
   name: "SysRev_Documents",
+  description:
+    "Source documents for the mitigation systematic review. One row per paper. Title, authors, year, URL, DOI, abstract.",
   fields: [
     {
       name: "SourceID",

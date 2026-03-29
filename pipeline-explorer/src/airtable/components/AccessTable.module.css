@@ -65,9 +65,28 @@
   background: inherit;
   padding: 10px 12px;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.tableNameContent {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.tableNameRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tableDescription {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  line-height: 1.4;
 }
 
 .tableRow:hover .tableNameCell {
@@ -83,6 +102,7 @@
   color: var(--color-text-muted);
   width: 12px;
   flex-shrink: 0;
+  margin-top: 4px;
 }
 
 .tableName {
