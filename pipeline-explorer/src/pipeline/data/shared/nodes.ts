@@ -1,4 +1,4 @@
-import type { PipelineNode } from "@/types/pipeline";
+import type { PipelineNode } from "@/pipeline/types";
 
 /**
  * Shared nodes used by multiple pipelines.

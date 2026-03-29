@@ -1,4 +1,4 @@
-import type { PipelineNode } from "@/types/pipeline";
+import type { PipelineNode } from "@/pipeline/types";
 import { pipeline as actors } from "./actors/pipeline";
 import { pipeline as documentProcessing } from "./document-processing/pipeline";
 import { pipeline as governance } from "./governance/pipeline";

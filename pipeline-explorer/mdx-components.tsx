@@ -1,5 +1,5 @@
 import type { MDXComponents } from "mdx/types";
-import { NodeLink } from "@/components/NodeLink";
+import { NodeLink } from "@/pipeline/components/NodeLink";
 
 export function useMDXComponents(components: MDXComponents): MDXComponents {
   return {

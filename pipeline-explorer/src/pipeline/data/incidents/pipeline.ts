@@ -1,4 +1,4 @@
-import type { PipelineDefinition } from "@/types/pipeline";
+import type { PipelineDefinition } from "@/pipeline/types";
 
 export const pipeline: PipelineDefinition = {
   id: "incidents",

@@ -6,7 +6,7 @@ import {
   detailStatusConfig,
   type NodeType,
   type PipelineNode,
-} from "@/types/pipeline";
+} from "@/pipeline/types";
 import styles from "./PipelineNode.module.css";
 
 type PipelineNodeData = PipelineNode & { detailStatus: DetailStatus };

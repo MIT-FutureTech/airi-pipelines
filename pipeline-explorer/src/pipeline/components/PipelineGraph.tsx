@@ -9,14 +9,13 @@ import {
   ReactFlow,
 } from "@xyflow/react";
 import { useCallback, useMemo, useState } from "react";
-
+import { getNodeContent } from "@/pipeline/data/node-content";
 import {
   buildNodesAndEdges,
   findNode,
   resolveDetailStatus,
-} from "@/lib/layout";
-import { getNodeContent } from "@/pipelines/node-content";
-import type { PipelineDefinition, PipelineNode } from "@/types/pipeline";
+} from "@/pipeline/lib/layout";
+import type { PipelineDefinition, PipelineNode } from "@/pipeline/types";
 import { NodeDetailPanel } from "./NodeDetailPanel";
 import { NodeSelectionProvider } from "./NodeSelectionContext";
 import { PipelineGroupNode } from "./PipelineGroupNode";

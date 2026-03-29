@@ -1,11 +1,11 @@
 import dagre from "@dagrejs/dagre";
 import type { Edge, Node } from "@xyflow/react";
-import { hasNodeContent } from "@/pipelines/node-content";
+import { hasNodeContent } from "@/pipeline/data/node-content";
 import type {
   DetailStatus,
   PipelineDefinition,
   PipelineNode,
-} from "@/types/pipeline";
+} from "@/pipeline/types";
 
 function getPosition(
   map: Map<string, { x: number; y: number }>,

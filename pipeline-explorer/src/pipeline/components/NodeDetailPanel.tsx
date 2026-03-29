@@ -5,7 +5,7 @@ import {
   type DetailStatus,
   detailStatusConfig,
   type PipelineNode,
-} from "@/types/pipeline";
+} from "@/pipeline/types";
 import styles from "./NodeDetailPanel.module.css";
 
 interface NodeDetailPanelProps {

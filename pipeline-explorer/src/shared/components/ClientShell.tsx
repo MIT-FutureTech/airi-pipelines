@@ -1,11 +1,14 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import type { PipelineDefinition, PipelineNode } from "@/types/pipeline";
+import type { PipelineDefinition, PipelineNode } from "@/pipeline/types";
 import styles from "./ClientShell.module.css";
 
 const PipelineGraph = dynamic(
-  () => import("@/components/PipelineGraph").then((mod) => mod.PipelineGraph),
+  () =>
+    import("@/pipeline/components/PipelineGraph").then(
+      (mod) => mod.PipelineGraph,
+    ),
   { ssr: false },
 );
 

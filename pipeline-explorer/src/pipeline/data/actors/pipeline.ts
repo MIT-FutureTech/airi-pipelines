@@ -1,4 +1,4 @@
-import type { PipelineDefinition } from "@/types/pipeline";
+import type { PipelineDefinition } from "@/pipeline/types";
 import { airtableCompanies } from "../shared/nodes";
 
 export const pipeline: PipelineDefinition = {
