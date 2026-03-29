@@ -101,6 +101,8 @@ function PopoverContent({
   );
 }
 
+const stopPropagation = (e: React.SyntheticEvent) => e.stopPropagation();
+
 export function AccessCell({ mode, hasDetail, popover }: AccessCellProps) {
   if (!mode) {
     return <td className={styles.cell} />;
@@ -117,7 +119,11 @@ export function AccessCell({ mode, hasDetail, popover }: AccessCellProps) {
 
   if (popover) {
     return (
-      <td className={styles.cell}>
+      <td
+        className={styles.cell}
+        onClick={stopPropagation}
+        onKeyDown={stopPropagation}
+      >
         <CellPopover content={<PopoverContent popover={popover} />}>
           {badge}
         </CellPopover>
@@ -125,5 +131,13 @@ export function AccessCell({ mode, hasDetail, popover }: AccessCellProps) {
     );
   }
 
-  return <td className={styles.cell}>{badge}</td>;
+  return (
+    <td
+      className={styles.cell}
+      onClick={stopPropagation}
+      onKeyDown={stopPropagation}
+    >
+      {badge}
+    </td>
+  );
 }
