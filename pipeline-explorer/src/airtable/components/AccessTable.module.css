@@ -1,0 +1,146 @@
+.wrapper {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.cornerCell {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: var(--color-surface);
+  text-align: left;
+  padding: 8px 12px;
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+  border-bottom: 2px solid var(--color-border);
+  min-width: 240px;
+}
+
+.repoHeader {
+  padding: 8px 4px;
+  border-bottom: 2px solid var(--color-border);
+  white-space: nowrap;
+  vertical-align: bottom;
+  text-align: center;
+  min-width: 48px;
+}
+
+.repoLabel {
+  display: inline-block;
+  writing-mode: vertical-lr;
+  transform: rotate(180deg);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  max-height: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tableRow {
+  cursor: pointer;
+  transition: background 0.1s ease;
+}
+
+.tableRow:hover {
+  background: var(--color-surface-secondary);
+}
+
+.tableRowExpanded {
+  background: var(--color-surface-secondary);
+}
+
+.tableNameCell {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: inherit;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.tableRow:hover .tableNameCell {
+  background: var(--color-surface-secondary);
+}
+
+.tableRowExpanded .tableNameCell {
+  background: var(--color-surface-secondary);
+}
+
+.chevron {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  width: 12px;
+  flex-shrink: 0;
+}
+
+.tableName {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.tableAlias {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  font-family: var(--font-geist-mono), monospace;
+}
+
+.tableAlias::before {
+  content: "(";
+}
+
+.tableAlias::after {
+  content: ")";
+}
+
+.fieldCount {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  margin-left: auto;
+}
+
+.fieldRow {
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.fieldRowMuted {
+  opacity: 0.45;
+}
+
+.fieldNameCell {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--color-surface);
+  padding: 6px 12px 6px 32px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.fieldName {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 12px;
+  color: var(--color-text-primary);
+}
+
+.fieldType {
+  font-size: 10px;
+  color: var(--color-text-muted);
+}
+
+.tableRow td {
+  border-bottom: 1px solid var(--color-border-subtle);
+}
