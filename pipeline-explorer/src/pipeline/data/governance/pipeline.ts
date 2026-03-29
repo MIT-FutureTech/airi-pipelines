@@ -30,6 +30,10 @@ export const pipeline: PipelineDefinition = {
       label: "Airtable: Governance Mapping",
       type: "datastore",
       verified: false,
+      link: {
+        url: "https://airtable.com/appLSe43cSlDiYZyA/tblZot2LtgZGxthp7",
+        label: "Open in Airtable",
+      },
     },
   ],
   shared: [],

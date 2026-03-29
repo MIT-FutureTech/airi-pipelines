@@ -10,6 +10,10 @@ export const airtableCompanies: PipelineNode = {
   label: "Airtable: Companies",
   type: "datastore",
   verified: false,
+  link: {
+    url: "https://airtable.com/appHrhJQHkZz4c82U/tblurwszwgrluMLrB",
+    label: "Open in Airtable",
+  },
 };
 
 export const pdfKeywordExtraction: PipelineNode = {

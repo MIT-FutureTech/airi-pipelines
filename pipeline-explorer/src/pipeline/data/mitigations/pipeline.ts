@@ -47,6 +47,10 @@ export const pipeline: PipelineDefinition = {
       label: "Airtable: Mitigations V2",
       type: "datastore",
       verified: false,
+      link: {
+        url: "https://airtable.com/appUJl8KRAUMeIVXs/tblZRKlssxugpZAfr",
+        label: "Open in Airtable",
+      },
     },
     {
       id: "mitigation-taxonomy-classification",
@@ -63,6 +67,10 @@ export const pipeline: PipelineDefinition = {
       label: "Airtable: Mitigations (classified)",
       type: "datastore",
       verified: false,
+      link: {
+        url: "https://airtable.com/appUJl8KRAUMeIVXs/tblZRKlssxugpZAfr",
+        label: "Open in Airtable",
+      },
     },
   ],
   shared: [airtableCompanies, pdfKeywordExtraction],

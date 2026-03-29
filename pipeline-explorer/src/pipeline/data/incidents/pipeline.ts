@@ -33,6 +33,10 @@ export const pipeline: PipelineDefinition = {
       label: "Airtable: Incident Tracker",
       type: "datastore",
       verified: false,
+      link: {
+        url: "https://airtable.com/appYXeL8YwZfAy4kF/tblA8dZPux36bV6ox",
+        label: "Open in Airtable",
+      },
     },
   ],
   shared: [],

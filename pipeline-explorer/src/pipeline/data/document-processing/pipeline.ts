@@ -89,6 +89,10 @@ export const pipeline: PipelineDefinition = {
       label: "Airtable: Grey Literature",
       type: "datastore",
       verified: false,
+      link: {
+        url: "https://airtable.com/appHrhJQHkZz4c82U/tblb9eEVPpV4Qqo4u",
+        label: "Open in Airtable",
+      },
     },
     {
       id: "airtable-classified",
