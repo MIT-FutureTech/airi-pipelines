@@ -44,7 +44,7 @@ export const pipeline: PipelineDefinition = {
     },
     {
       id: "airtable-mitigations",
-      label: "Airtable: Mitigations V2",
+      label: "Airtable: Mitigations",
       type: "datastore",
       verified: false,
       link: {
