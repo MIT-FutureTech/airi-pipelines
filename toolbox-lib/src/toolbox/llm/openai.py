@@ -1,11 +1,15 @@
+import json
 import logging
 from collections.abc import Sequence
 from types import TracebackType
-from typing import Self, TypeVar, cast
+from typing import Self, TypeVar
 
 from openai import APIConnectionError, APITimeoutError, AsyncOpenAI, RateLimitError
-from openai.types import CompletionUsage
-from openai.types.chat import ChatCompletionMessageParam
+from openai.types.responses import (
+    EasyInputMessageParam,
+    ResponseInputParam,
+    ResponseUsage,
+)
 from pydantic import BaseModel
 from tenacity import (
     after_log,
@@ -15,7 +19,13 @@ from tenacity import (
     wait_exponential,
 )
 
-from toolbox.llm.data_types import Message, StructuredResult, TextResult, TokenUsage
+from toolbox.llm.data_types import (
+    Message,
+    StructuredResult,
+    TextResult,
+    TokenUsage,
+    ToolboxLLMError,
+)
 from toolbox.rate_limit import RateLimiter
 
 logger = logging.getLogger(__name__)
@@ -83,17 +93,18 @@ class OpenAIClient:
         if self._rate_limiter:
             await self._rate_limiter.acquire()
 
-        response = await self._client.chat.completions.create(
+        response = await self._client.responses.create(
+            input=_to_api_messages(messages),
             model=self._model,
-            messages=_to_api_messages(messages),
             temperature=self._temperature,
-            max_tokens=self._output_token_limit,
+            max_output_tokens=self._output_token_limit,
+            text={"format": {"type": "text"}},
         )
-
-        text = response.choices[0].message.content or ""
-        usage = _extract_usage(response.usage)
-
-        return TextResult(text=text, model=self._model, usage=usage)
+        return TextResult(
+            text=response.output_text,
+            model=response.model,
+            usage=_extract_usage(response.usage),
+        )
 
     @_GENERATION_RETRY_CONFIG
     async def generate_structured(
@@ -104,28 +115,27 @@ class OpenAIClient:
         if self._rate_limiter:
             await self._rate_limiter.acquire()
 
-        json_schema = schema.model_json_schema()
-
-        response = await self._client.chat.completions.create(
+        response = await self._client.responses.parse(
+            input=_to_api_messages(messages),
             model=self._model,
-            messages=_to_api_messages(messages),
             temperature=self._temperature,
-            max_tokens=self._output_token_limit,
-            response_format={
-                "type": "json_schema",
-                "json_schema": {
-                    "name": schema.__name__,
-                    "schema": json_schema,
-                    "strict": True,
-                },
-            },
+            max_output_tokens=self._output_token_limit,
+            text_format=schema,
         )
-
-        raw_json = response.choices[0].message.content or ""
-        value = schema.model_validate_json(raw_json)
-        usage = _extract_usage(response.usage)
-
-        return StructuredResult[T](value=value, model=self._model, usage=usage)
+        if (value := response.output_parsed) is None:
+            serialized_messages = json.dumps(
+                [msg.model_dump_json() for msg in messages],
+                indent=2,
+            )
+            logger.debug(
+                f"No response from {self._model}: messages={serialized_messages}",
+            )
+            raise ToolboxOpenAIError("LLM did not generate response")
+        return StructuredResult[T](
+            value=value,
+            model=response.model,
+            usage=_extract_usage(response.usage),
+        )
 
     async def close(self) -> None:
         await self._client.close()
@@ -142,25 +152,23 @@ class OpenAIClient:
         await self.close()
 
 
-def _extract_usage(usage: CompletionUsage | None) -> TokenUsage | None:
-    if usage is None:
-        return None
-    return TokenUsage(
-        input_tokens=usage.prompt_tokens,
-        output_tokens=usage.completion_tokens,
-    )
-
-
-def _to_api_messages(
-    messages: Sequence[Message],
-) -> list[ChatCompletionMessageParam]:
+def _to_api_messages(messages: Sequence[Message]) -> ResponseInputParam:
     return [
-        cast(
-            ChatCompletionMessageParam,
+        EasyInputMessageParam(
             {
                 "role": m.role,
                 "content": m.content,
+                "type": "message",
             },
-        )  # pyright: ignore[reportInvalidCast]
+        )
         for m in messages
     ]
+
+
+def _extract_usage(usage: ResponseUsage | None) -> TokenUsage | None:
+    if usage is None:
+        return None
+    return TokenUsage(
+        input_tokens=usage.input_tokens,
+        output_tokens=usage.output_tokens,
+    )
