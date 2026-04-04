@@ -11,8 +11,6 @@ from toolbox.llm.data_types import Message
 
 from .helpers import FAKE_MODEL, make_chat_completion, make_mock_openai_client
 
-pytestmark = [pytest.mark.asyncio]
-
 
 class Sentiment(BaseModel):
     label: str

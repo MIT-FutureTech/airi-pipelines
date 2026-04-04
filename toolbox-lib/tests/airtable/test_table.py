@@ -32,8 +32,6 @@ TABLES_JSON = {
     ],
 }
 
-pytestmark = [pytest.mark.asyncio]
-
 
 @pytest.fixture
 def success_response() -> Response:

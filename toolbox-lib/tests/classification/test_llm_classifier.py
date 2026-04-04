@@ -4,8 +4,6 @@ from toolbox.classification import Category, LLMClassifier
 
 from .helpers import FakeLLMClient
 
-pytestmark = [pytest.mark.asyncio]
-
 
 class TestLLMClassifier:
     async def test_classify_returns_result(self) -> None:
