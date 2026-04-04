@@ -4,10 +4,13 @@ from unittest.mock import AsyncMock
 import pytest
 from httpx import Response
 
-from toolbox.airtable import FieldSpec, Table, UpdateRecord
+from toolbox.airtable import Client, FieldSpec, Table, UpdateRecord
 from toolbox.airtable.data_types import JsonValue
 
 from .helpers import make_mock_client, make_response
+
+AIRTABLE_BASE_ID = "appUJl8KRAUMeIVXs"
+AIRTABLE_TABLE_NAME = "MitigationTaxonomy"
 
 BASE_ID = "appTEST123"
 TABLE_NAME = "TestTable"
@@ -327,3 +330,36 @@ class TestResolveTableId:
             assert isinstance(client._http_client.request, AsyncMock)
             # Only one HTTP request despite two calls
             assert client._http_client.request.call_count == 1
+
+
+@pytest.mark.network
+class TestTableNetwork:
+    @pytest.fixture
+    def table(self) -> Table:
+        return Table(
+            client=Client(timeout=30),
+            base_id=AIRTABLE_BASE_ID,
+            table_name=AIRTABLE_TABLE_NAME,
+        )
+
+    async def test_read_records_with_filter(self, table: Table) -> None:
+        async with table._client:
+            records = await table.all(
+                formula="{Code}='3.6'",
+                fields=["Code", "Name", "Description"],
+            )
+
+        assert len(records) >= 1
+        record = records[0]
+        assert record.id.startswith("rec")
+        assert record.fields["Code"] == "3.6"
+        assert record.fields["Name"]
+        assert record.fields["Description"]
+
+    async def test_schema(self, table: Table) -> None:
+        async with table._client:
+            schema = await table.schema()
+
+        assert schema.name == AIRTABLE_TABLE_NAME
+        field_names = {f.name for f in schema.fields}
+        assert {"Code", "Name", "Description"} <= field_names
