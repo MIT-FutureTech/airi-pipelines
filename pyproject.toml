@@ -66,7 +66,13 @@ select = [
 [tool.pytest]
 addopts = [
     "--import-mode=importlib",
+    "-m not network",
 ]
+markers = [
+    "network: tests that make real requests to remote services (use -m network to run)",
+]
+asyncio_mode = "auto"
+filterwarnings = ["error"]
 strict = true
 testpaths = ["toolbox-lib/tests"]
 xfail_strict = true

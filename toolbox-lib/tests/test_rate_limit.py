@@ -1,11 +1,7 @@
 import asyncio
 import time
 
-import pytest
-
 from toolbox.rate_limit import RateLimiter
-
-pytestmark = [pytest.mark.asyncio]
 
 
 class TestRateLimiter:
