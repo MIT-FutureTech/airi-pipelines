@@ -37,7 +37,7 @@ def make_ok_response() -> Response:
 async def make_mock_client(
     request_side_effect: Iterable[Response],
 ) -> AsyncGenerator[Client]:
-    async with Client(FAKE_TOKEN, timeout=5.0) as client:
+    async with Client(timeout=5.0, token=FAKE_TOKEN) as client:
         with patch.object(
             client._http_client, "request", side_effect=request_side_effect
         ):

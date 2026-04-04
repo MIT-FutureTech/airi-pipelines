@@ -1,3 +1,5 @@
+import os
+
 from toolbox.llm.openai import OpenAIClient
 
 OPEN_ROUTER_BASE_URL = "https://openrouter.ai/api/v1"
@@ -26,6 +28,8 @@ class OpenRouterClient(OpenAIClient):
         temperature: float | None = None,
         output_token_limit: int | None = None,
     ) -> None:
+        if api_key is None:
+            api_key = os.environ["OPENROUTER_API_KEY"]
         super().__init__(
             model=model,
             rate_limit_rps=rate_limit_rps,
