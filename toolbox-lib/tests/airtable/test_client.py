@@ -5,8 +5,6 @@ from httpx import HTTPStatusError
 
 from .helpers import make_mock_client, make_ok_response, make_response
 
-pytestmark = [pytest.mark.asyncio]
-
 
 class TestRetry:
     async def test_retries_on_429(self) -> None:
