@@ -67,6 +67,12 @@ select = [
     "W",     # pycodestyle warnings
 ]
 
+[tool.ruff.lint.per-file-ignores]
+# Relax some rules for code in the pipelines/ directory
+"pipelines/*" = [
+    "T201",  # `print` found
+]
+
 [tool.pytest]
 addopts = [
     "--import-mode=importlib",
