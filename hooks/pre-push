@@ -1,0 +1,12 @@
+#!/bin/sh
+
+# Prevent pushing to main
+while read local_ref local_oid remote_ref remote_oid
+do
+    if [ "${remote_ref}" = "refs/heads/main" ]
+    then
+        echo "Pushing to main is not allowed. Please see the Workflow section of the README."
+        exit 1
+    fi
+done
+
