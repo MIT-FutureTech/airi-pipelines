@@ -1,4 +1,5 @@
 import logging
+import os
 from types import TracebackType
 from typing import Self
 
@@ -44,10 +45,12 @@ class Client:
 
     def __init__(
         self,
-        token: str,
         *,
         timeout: float,
+        token: str | None = None,
     ) -> None:
+        if token is None:
+            token = os.environ["AIRTABLE_TOKEN"]
         self._http_client = AsyncClient(
             headers={
                 "Authorization": f"Bearer {token}",
