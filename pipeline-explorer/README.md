@@ -26,6 +26,8 @@ Then go to <http://localhost:3000>
 
 ### Automatic Formatting and Linting
 
+Run these commands from the `pipeline-explorer/` directory.
+
 ```bash
 # Automatically reformat all files
 npm run format
