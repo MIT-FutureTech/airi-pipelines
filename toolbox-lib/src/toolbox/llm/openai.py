@@ -32,6 +32,10 @@ _GENERATION_RETRY_CONFIG = retry(
 )
 
 
+class ToolboxOpenAIError(ToolboxLLMError):
+    pass
+
+
 class OpenAIClient:
     """LLM client using the OpenAI library.
 
