@@ -68,6 +68,7 @@ addopts = [
     "--import-mode=importlib",
 ]
 asyncio_mode = "auto"
+filterwarnings = ["error"]
 strict = true
 testpaths = ["toolbox-lib/tests"]
 xfail_strict = true
