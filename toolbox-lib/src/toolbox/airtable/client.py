@@ -1,9 +1,11 @@
 import logging
+import os
 from types import TracebackType
 from typing import Self
 
 from httpx import AsyncClient, HTTPStatusError, QueryParams, Response
 from tenacity import (
+    after_log,
     retry,
     retry_if_exception,
     stop_after_attempt,
@@ -43,10 +45,12 @@ class Client:
 
     def __init__(
         self,
-        token: str,
         *,
         timeout: float,
+        token: str | None = None,
     ) -> None:
+        if token is None:
+            token = os.environ["AIRTABLE_TOKEN"]
         self._http_client = AsyncClient(
             headers={
                 "Authorization": f"Bearer {token}",
@@ -60,6 +64,7 @@ class Client:
         retry=retry_if_exception(_is_retryable),
         wait=wait_exponential(multiplier=1, max=30),
         stop=stop_after_attempt(5),
+        after=after_log(logger, logging.INFO),
         reraise=True,
     )
     async def request(
