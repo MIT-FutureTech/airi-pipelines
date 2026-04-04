@@ -4,8 +4,13 @@
 
 ### [Pipeline Explorer](/pipeline-explorer/README.md)
 
-An interactive web app for understanding the AI Risk Initiative's software
-pipelines.
+The pipeline explorer is an interactive web app for understanding the AI Risk
+Initiative's software pipelines.
+
+### [Toolbox Library](/toolbox-lib/README.md)
+
+Toolbox is a Python library containing functionality which is shared across
+multiple pipelines.
 
 ## Developer Notes
 
