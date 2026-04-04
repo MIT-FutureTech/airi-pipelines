@@ -33,3 +33,34 @@ committing and pushing changes.
 ```bash
 git config core.hooksPath hooks/
 ```
+
+### Automated Checks
+
+There are several tools for helping to promote code correctness and consistency.
+The pre-commit hook runs some of these automatically during each commit.
+
+#### Python Checks
+
+Run these commands from the root directory of the repository.
+
+```bash
+# Automatically reformat all files
+uv run ruff format
+
+# Run linter and apply fixes for issues
+# that can be fixed automatically
+uv run ruff check --fix
+
+# Run type checker
+uv run basedpyright
+
+# Run unit tests
+uv run pytest
+
+# Run all the checks together
+uv run ruff format && uv run ruff check --fix && uv run basedpyright && uv run pytest
+```
+
+#### TypeScript Checks
+
+See the [pipeline explorer's README](/pipeline-explorer/README.md#automatic-formatting-and-linting).
