@@ -4,6 +4,10 @@ from typing import ClassVar, Literal
 from pydantic import BaseModel, ConfigDict
 
 
+class ToolboxLLMError(Exception):
+    pass
+
+
 class Message(BaseModel):
     model_config: ClassVar[ConfigDict] = ConfigDict(frozen=True)
 
