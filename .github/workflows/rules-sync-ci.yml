@@ -1,0 +1,60 @@
+name: Rules Sync Check
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".claude/rules/**"
+      - ".cursor/rules/**"
+  pull_request:
+    paths:
+      - ".claude/rules/**"
+      - ".cursor/rules/**"
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify rule bodies match
+        run: |
+          strip_frontmatter() {
+            sed '1{/^---$/!q}; 1,/^---$/d' "$1"
+          }
+
+          status=0
+          for claude_file in .claude/rules/*.md; do
+            name=$(basename "$claude_file" .md)
+            cursor_file=".cursor/rules/${name}.mdc"
+
+            if [ ! -f "$cursor_file" ]; then
+              echo "MISSING: $cursor_file (expected to match $claude_file)"
+              status=1
+              continue
+            fi
+
+            claude_body=$(strip_frontmatter "$claude_file")
+            cursor_body=$(strip_frontmatter "$cursor_file")
+
+            if [ "$claude_body" != "$cursor_body" ]; then
+              echo "MISMATCH: $claude_file and $cursor_file have different bodies"
+              diff <(echo "$claude_body") <(echo "$cursor_body") || true
+              status=1
+            else
+              echo "OK: $name"
+            fi
+          done
+
+          for cursor_file in .cursor/rules/*.mdc; do
+            name=$(basename "$cursor_file" .mdc)
+            claude_file=".claude/rules/${name}.md"
+
+            if [ ! -f "$claude_file" ]; then
+              echo "MISSING: $claude_file (expected to match $cursor_file)"
+              status=1
+            fi
+          done
+
+          exit $status

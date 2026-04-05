@@ -1,0 +1,13 @@
+---
+description: Coding guidelines for the Pipeline Explorer project
+globs: */**
+alwaysApply: false
+---
+
+# Pipeline Explorer Guidelines
+
+## Automated Checks
+
+```bash
+npm run check
+```

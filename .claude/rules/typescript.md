@@ -1,0 +1,19 @@
+---
+paths:
+  - "**/*.ts"
+  - "**/*.tsx"
+---
+
+# TypeScript Guidelines
+
+## React
+
+Minimize `useEffect`. Prefer derived state and event handlers.
+
+## Style
+
+Use block statements (braces) for control flow, even for single-line bodies.
+
+## Next.js
+
+This project may use a newer Next.js with breaking API changes. Read `node_modules/next/dist/docs/` before writing Next.js code. Heed deprecation notices.
