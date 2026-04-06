@@ -14,7 +14,10 @@ dev = [
 ]
 
 [tool.uv.workspace]
-members = ["toolbox-lib"]
+members = [
+    "toolbox-lib",
+    "pipelines/risk-repository",
+]
 
 [tool.uv.sources]
 toolbox = { workspace = true }
