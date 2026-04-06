@@ -7,6 +7,11 @@
 Toolbox is a Python library containing functionality which is shared across
 multiple pipelines.
 
+### [Risk Repository Pipeline](/pipelines/risk-repository/README.md)
+
+This pipeline collects risks from AI and classifies them according to a
+taxonomy.
+
 ## Developer Notes
 
 ### Setup
