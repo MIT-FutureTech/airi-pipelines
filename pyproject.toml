@@ -63,13 +63,18 @@ select = [
     "PTH",   # pathlib preference
     "RET",   # return style
     "RUF",   # ruff-specific rules
+    "S110",  # `try`-`except`-`pass` detected, consider logging the exception
+    "S112",  # `try`-`except`-`continue` detected, consider logging the exception
     "SIM",   # simplify
     "T20",   # print statements
+    "TRY",   # tryceratops exception handling
     "UP",    # pyupgrade
     "W",     # pycodestyle warnings
 ]
 ignore = [
     "G004",   # Logging statement uses f-string
+    "TRY003", # Avoid specifying long messages outside the exception class
+    "SIM105", # Use `contextlib.suppress(Exception)`. Disabled because we don't want to suppress exceptions.
 ]
 
 [tool.ruff.lint.per-file-ignores]
