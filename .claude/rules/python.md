@@ -15,6 +15,10 @@ Prefer `uv` for all Python and package commands over the system Python and `pip`
 
 No `from __future__ import annotations`.
 
+## String Interpolation
+
+Use f-strings over %-style formatting, even for logging statements.
+
 ## Data Modeling
 
 Prefer Pydantic over dicts, TypedDicts, and dataclasses.
