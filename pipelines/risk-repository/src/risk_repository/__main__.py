@@ -1,6 +1,7 @@
 import argparse
 import asyncio
 import logging
+from collections.abc import Container
 from pathlib import Path
 
 from toolbox.airtable import Client as AirtableClient
@@ -43,7 +44,7 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--model", default=DEFAULT_MODEL)
     parser.add_argument("--limit", type=int, default=None)
-    parser.add_argument("--record-ids", nargs="+", default=None)
+    parser.add_argument("--documents", nargs="+", default=None)
     parser.add_argument(
         "--stages",
         nargs="+",
@@ -57,12 +58,12 @@ def _parse_args() -> argparse.Namespace:
 
 async def _collect_records(
     airtable: AirtableClient,
-    record_ids: list[str] | None,
+    document_ids: Container[str] | None,
     limit: int | None,
 ) -> list[DocumentRecord]:
     records: list[DocumentRecord] = []
     async for record in fetch_records(airtable):
-        if record_ids and record.record_id not in record_ids:
+        if document_ids is not None and record.quick_ref not in document_ids:
             continue
         records.append(record)
         if limit is not None and len(records) >= limit:
@@ -78,7 +79,7 @@ async def _download_all(
     async def download_one(record: DocumentRecord) -> Document | None:
         pdf_path = await download_paper(record, cache_dir)
         if pdf_path is None:
-            logger.warning(f"Skipping {record.record_id}: no PDF available")
+            logger.warning(f"Skipping {record.quick_ref}: no PDF available")
             return None
         return record, pdf_path
 
@@ -99,15 +100,15 @@ async def _screen_all(
 ) -> None:
     async def screen_one(doc: Document) -> None:
         record, pdf_path = doc
-        output_path = result_path(output_dir, PipelineStage.SCREEN, record.record_id)
+        output_path = result_path(output_dir, PipelineStage.SCREEN, record.quick_ref)
         if not force and output_path.exists():
             return
         first_page = convert_to_markdown(pdf_path, pages=[0])
         full_text = convert_to_markdown(pdf_path)
         screening = await screen_document(llm, first_page, full_text)
         save(output_path, screening)
-        invalidate_downstream(output_dir, PipelineStage.SCREEN, record.record_id)
-        logger.info(f"Screened {record.record_id}: {screening.decision}")
+        invalidate_downstream(output_dir, PipelineStage.SCREEN, record.quick_ref)
+        logger.info(f"Screened {record.quick_ref}: {screening.decision}")
 
     async for _ in concurrent_map(documents, screen_one, DEFAULT_CONCURRENCY):
         pass
@@ -119,9 +120,9 @@ def _filter_screened(
 ) -> list[Document]:
     included: list[Document] = []
     for record, pdf_path in documents:
-        output_path = result_path(output_dir, PipelineStage.SCREEN, record.record_id)
+        output_path = result_path(output_dir, PipelineStage.SCREEN, record.quick_ref)
         if not output_path.exists():
-            logger.warning(f"Skipping {record.record_id}: no screening results")
+            logger.warning(f"Skipping {record.quick_ref}: no screening results")
             continue
         screening = load(output_path, ScreeningResult)
         if screening.decision == Decision.EXCLUDE:
@@ -140,15 +141,14 @@ async def _extract_all(
 ) -> None:
     async def extract_one(doc: Document) -> None:
         record, pdf_path = doc
-        record_id = record.record_id
-        output_path = result_path(output_dir, PipelineStage.EXTRACT, record_id)
+        output_path = result_path(output_dir, PipelineStage.EXTRACT, record.quick_ref)
         if not force and output_path.exists():
             return
         full_text = convert_to_markdown(pdf_path)
         extraction = await extract_risks(llm, full_text)
         save(output_path, extraction)
-        invalidate_downstream(output_dir, PipelineStage.EXTRACT, record_id)
-        logger.info(f"Extracted {len(extraction.risks)} risks from {record_id}")
+        invalidate_downstream(output_dir, PipelineStage.EXTRACT, record.quick_ref)
+        logger.info(f"Extracted {len(extraction.risks)} risks from {record.quick_ref}")
 
     async for _ in concurrent_map(documents, extract_one, DEFAULT_CONCURRENCY):
         pass
@@ -163,23 +163,24 @@ async def _classify_all(
 ) -> None:
     async def classify_one(doc: Document) -> None:
         record, _ = doc
-        record_id = record.record_id
-        classify_path = result_path(output_dir, PipelineStage.CLASSIFY, record_id)
+        classify_path = result_path(
+            output_dir, PipelineStage.CLASSIFY, record.quick_ref
+        )
         if not force and classify_path.exists():
             return
-        extract_path = result_path(output_dir, PipelineStage.EXTRACT, record_id)
+        extract_path = result_path(output_dir, PipelineStage.EXTRACT, record.quick_ref)
         if not extract_path.exists():
-            logger.warning(f"Skipping {record_id}: no extraction results")
+            logger.warning(f"Skipping {record.quick_ref}: no extraction results")
             return
         extraction = load(extract_path, ExtractionResult)
         classified_risks: list[ClassifiedRisk] = []
         for i, risk in enumerate(extraction.risks):
-            risk_id = f"{record_id}-{i:03}"
+            risk_id = f"{record.quick_ref}-{i:03}"
             causal = await classify_causal(llm, risk)
             classified_risks.append(ClassifiedRisk(risk_id=risk_id, causal=causal))
         classification = ClassificationResult(risks=classified_risks)
         save(classify_path, classification)
-        logger.info(f"Classified {len(classified_risks)} risks from {record_id}")
+        logger.info(f"Classified {len(classified_risks)} risks from {record.quick_ref}")
 
     async for _ in concurrent_map(documents, classify_one, DEFAULT_CONCURRENCY):
         pass
@@ -199,7 +200,7 @@ async def amain() -> None:
         AirtableClient(timeout=AIRTABLE_TIMEOUT) as airtable,
         OpenAIClient(model=args.model, rate_limit_rps=LLM_RATE_LIMIT_RPS) as llm,
     ):
-        records = await _collect_records(airtable, args.record_ids, args.limit)
+        records = await _collect_records(airtable, args.documents, args.limit)
         documents = await _download_all(records, args.cache_dir)
 
         if PipelineStage.SCREEN in stages:
