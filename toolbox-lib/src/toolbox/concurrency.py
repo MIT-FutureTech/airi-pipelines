@@ -49,8 +49,10 @@ async def concurrent_map[T, R](
                 raise item.exception
             else:
                 yield item
-    finally:
+    except:
         logger.info("Cancelling workers")
+        raise
+    finally:
         producer.cancel()
         for w in workers:
             w.cancel()
