@@ -2,9 +2,8 @@ from enum import StrEnum
 
 from pydantic import BaseModel, Field
 
+from risk_repository.extract import ExtractedRisk
 from toolbox.llm import LLMClient, Message
-
-from .extract import ExtractedRisk
 
 
 class Entity(StrEnum):
