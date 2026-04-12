@@ -16,8 +16,8 @@ class PipelineStage(StrEnum):
 STAGE_ORDER = [PipelineStage.SCREEN, PipelineStage.EXTRACT, PipelineStage.CLASSIFY]
 
 
-def result_path(output_dir: Path, stage: PipelineStage, record_id: str) -> Path:
-    return output_dir / stage.value / f"{record_id}.json"
+def result_path(output_dir: Path, stage: PipelineStage, quick_ref: str) -> Path:
+    return output_dir / stage.value / f"{quick_ref}.json"
 
 
 def save(path: Path, result: BaseModel) -> None:
@@ -33,11 +33,11 @@ def load[T: BaseModel](path: Path, schema: type[T]) -> T:
 def invalidate_downstream(
     output_dir: Path,
     stage: PipelineStage,
-    record_id: str,
+    quick_ref: str,
 ) -> None:
     stage_idx = STAGE_ORDER.index(stage)
     for downstream in STAGE_ORDER[stage_idx + 1 :]:
-        path = result_path(output_dir, downstream, record_id)
+        path = result_path(output_dir, downstream, quick_ref)
         if path.exists():
             path.unlink()
-            logger.info(f"Invalidated {downstream.value} for {record_id}")
+            logger.info(f"Invalidated {downstream.value} for {quick_ref}")

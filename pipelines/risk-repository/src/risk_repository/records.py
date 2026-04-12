@@ -41,13 +41,13 @@ async def download_paper(
     record: DocumentRecord,
     cache_dir: Path,
 ) -> Path | None:
-    cached = list(cache_dir.glob(f"{record.record_id}.*"))
+    cached = list(cache_dir.glob(f"{record.quick_ref}.*"))
     if len(cached) == 1:
         logger.debug(f"Cache hit: {cached[0]}")
         return cached[0]
 
     if (url := record.url) is None:
-        logger.warning(f"Record {record.record_id} is missing a URL")
+        logger.warning(f"Paper {record.quick_ref} is missing a URL")
         return None
     url = url.replace("https://arxiv.org/abs/", "https://arxiv.org/pdf/")
 
@@ -61,17 +61,17 @@ async def download_paper(
         response = await http.get(url)
         if response.status_code in {403, 404}:
             logger.warning(
-                f"Skipping {record.record_id} due to fetch error: {response.status_code}"
+                f"Skipping {record.quick_ref} due to fetch error: {response.status_code}"
             )
             logger.debug(f"Request for {url} returned response\n{response.text}")
             return None
         response.raise_for_status()
     content_type = response.headers.get("content-type", "").split(";")[0].strip()
     if content_type != "application/pdf":
-        logger.warning(f"Skipping {record.record_id}: expected PDF, got {content_type}")
+        logger.warning(f"Skipping {record.quick_ref}: expected PDF, got {content_type}")
         return None
 
-    local_path = cache_dir / f"{record.record_id}.pdf"
+    local_path = cache_dir / f"{record.quick_ref}.pdf"
     local_path.write_bytes(response.content)
     logger.info(f"Downloaded {record.url} -> {local_path}")
     return local_path
