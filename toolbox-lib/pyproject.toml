@@ -8,6 +8,8 @@ dependencies = [
     "httpx>=0.28",
     "openai>=1.70",
     "pydantic>=2.12",
+    "pymupdf>=1.27",
+    "pymupdf4llm>=1.27",
     "tenacity>=9",
 ]
 
