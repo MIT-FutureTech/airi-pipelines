@@ -33,6 +33,7 @@ DEFAULT_OUTPUT_DIR = Path("output")
 DEFAULT_MODEL = "gpt-5-mini-2025-08-07"
 DEFAULT_CONCURRENCY = 5
 LLM_RATE_LIMIT_RPS = 10.0
+LLM_TIMEOUT = 180.0
 AIRTABLE_TIMEOUT = 30.0
 
 Document = tuple[DocumentRecord, Path]
@@ -198,7 +199,11 @@ async def amain() -> None:
 
     async with (
         AirtableClient(timeout=AIRTABLE_TIMEOUT) as airtable,
-        OpenAIClient(model=args.model, rate_limit_rps=LLM_RATE_LIMIT_RPS) as llm,
+        OpenAIClient(
+            model=args.model,
+            rate_limit_rps=LLM_RATE_LIMIT_RPS,
+            timeout=LLM_TIMEOUT,
+        ) as llm,
     ):
         records = await _collect_records(airtable, args.documents, args.limit)
         documents = await _download_all(records, args.cache_dir)
