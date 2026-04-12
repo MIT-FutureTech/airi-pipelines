@@ -80,7 +80,6 @@ async def _download_all(
     async def download_one(record: DocumentRecord) -> Document | None:
         pdf_path = await download_paper(record, cache_dir)
         if pdf_path is None:
-            logger.warning(f"Skipping {record.quick_ref}: no PDF available")
             return None
         return record, pdf_path
 
@@ -178,6 +177,9 @@ async def _classify_all(
         for i, risk in enumerate(extraction.risks):
             risk_id = f"{record.quick_ref}-{i:03}"
             causal = await classify_causal(llm, risk)
+            logger.info(
+                f"Classified risk {risk_id} as {causal.model_dump_json(exclude={'reasoning'})}"
+            )
             classified_risks.append(ClassifiedRisk(risk_id=risk_id, causal=causal))
         classification = ClassificationResult(risks=classified_risks)
         save(classify_path, classification)
@@ -195,6 +197,7 @@ async def amain() -> None:
         format="{asctime:s} {levelname:7s} {name:s}:{lineno:d} {message:s}",
         datefmt="%Y-%m-%dT%H:%M:%S%z",
     )
+    logging.getLogger("httpx").setLevel(level=logging.WARNING)
     stages: set[PipelineStage] = set(args.stages)
 
     async with (
