@@ -19,9 +19,6 @@ members = [
     "pipelines/risk-repository",
 ]
 
-[tool.uv.sources]
-toolbox = { workspace = true }
-
 [tool.basedpyright]
 pythonVersion = "3.12"
 typeCheckingMode = "recommended"
