@@ -59,6 +59,12 @@ async def download_paper(
         },
     ) as http:
         response = await http.get(url)
+        if response.status_code in {403, 404}:
+            logger.warning(
+                f"Skipping {record.record_id} due to fetch error: {response.status_code}"
+            )
+            logger.debug(f"Request for {url} returned response\n{response.text}")
+            return None
         response.raise_for_status()
     content_type = response.headers.get("content-type", "").split(";")[0].strip()
     if content_type != "application/pdf":
