@@ -76,6 +76,7 @@ select = [
 ]
 ignore = [
     "E501",   # Line too long. We let `ruff format` handle formatting.
+    "G003",   # Logging statement uses `+`
     "G004",   # Logging statement uses f-string
     "TRY003", # Avoid specifying long messages outside the exception class
     "SIM105", # Use `contextlib.suppress(Exception)`. Disabled because we don't want to suppress exceptions.
