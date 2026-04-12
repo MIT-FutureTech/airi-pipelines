@@ -9,6 +9,16 @@ multiple pipelines.
 
 ## Developer Notes
 
+### Setup
+
+For Python dependencies, make sure you have
+[`uv` installed](https://docs.astral.sh/uv/getting-started/installation/). Then
+run this command from the root of the repository:
+
+```bash
+uv sync --all-packages
+```
+
 ### Workflow
 
 To simplify collaboration, committing and pushing to main are not allowed.

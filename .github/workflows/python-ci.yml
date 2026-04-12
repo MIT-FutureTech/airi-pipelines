@@ -25,13 +25,13 @@ jobs:
           enable-cache: true
 
       - name: Format
-        run: uv run ruff format --check
+        run: uv run --all-packages ruff format --check
 
       - name: Lint
-        run: uv run ruff check
+        run: uv run --all-packages ruff check
 
       - name: Typecheck
-        run: uv run basedpyright
+        run: uv run --all-packages basedpyright
 
       - name: Test
-        run: uv run pytest
+        run: uv run --all-packages pytest
