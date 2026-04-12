@@ -31,8 +31,9 @@ reportExplicitAny = false
 reportUnusedCallResult = false
 
 executionEnvironments = [
-    # Tools are allowed to access private attributes
+    # Tests are allowed to access private attributes
     { root = "toolbox-lib/tests", reportPrivateUsage = false },
+    { root = "pipelines/risk-repository/tests", reportPrivateUsage = false },
 ]
 
 [tool.ruff]
@@ -96,5 +97,5 @@ markers = [
 asyncio_mode = "auto"
 filterwarnings = ["error"]
 strict = true
-testpaths = ["toolbox-lib/tests"]
+testpaths = ["toolbox-lib/tests", "pipelines/*/tests"]
 xfail_strict = true
