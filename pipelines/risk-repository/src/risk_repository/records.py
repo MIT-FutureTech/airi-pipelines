@@ -52,7 +52,12 @@ async def download_paper(
     url = url.replace("https://arxiv.org/abs/", "https://arxiv.org/pdf/")
 
     cache_dir.mkdir(parents=True, exist_ok=True)
-    async with httpx.AsyncClient(follow_redirects=True) as http:
+    async with httpx.AsyncClient(
+        follow_redirects=True,
+        headers={
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:149.0) Gecko/20100101 Firefox/149.0"
+        },
+    ) as http:
         response = await http.get(url)
         response.raise_for_status()
     content_type = response.headers.get("content-type", "").split(";")[0].strip()
