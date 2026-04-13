@@ -12,9 +12,16 @@ Initiative's software pipelines.
 Toolbox is a Python library containing functionality which is shared across
 multiple pipelines.
 
+### [Risk Repository Pipeline](/pipelines/risk-repository/README.md)
+
+This pipeline collects risks from AI and classifies them according to a
+taxonomy.
+
 ## Developer Notes
 
 ### Setup
+
+#### Python Dependencies
 
 For Python dependencies, make sure you have
 [`uv` installed](https://docs.astral.sh/uv/getting-started/installation/). Then
@@ -23,6 +30,16 @@ run this command from the root of the repository:
 ```bash
 uv sync --all-packages
 ```
+
+#### `.env` File
+
+Make a copy of the example file:
+
+```bash
+cp -n .env.example .env
+```
+
+Then fill in the required environment variables in the new `.env` file.
 
 ### Workflow
 

@@ -14,10 +14,10 @@ dev = [
 ]
 
 [tool.uv.workspace]
-members = ["toolbox-lib"]
-
-[tool.uv.sources]
-toolbox = { workspace = true }
+members = [
+    "toolbox-lib",
+    "pipelines/risk-repository",
+]
 
 [tool.basedpyright]
 pythonVersion = "3.12"
@@ -31,12 +31,15 @@ reportExplicitAny = false
 reportUnusedCallResult = false
 
 executionEnvironments = [
-    # Tools are allowed to access private attributes
+    # Add each pipeline to the search path for imports
+    { root = "pipelines/risk-repository/src" },
+    # Tests are allowed to access private attributes
     { root = "toolbox-lib/tests", reportPrivateUsage = false },
+    { root = "pipelines/risk-repository/tests", reportPrivateUsage = false },
 ]
 
 [tool.ruff]
-src = ["toolbox-lib/src"]
+src = ["toolbox-lib/src", "pipelines/*/src"]
 target-version = "py312"
 
 [tool.ruff.lint]
@@ -73,6 +76,7 @@ select = [
 ]
 ignore = [
     "E501",   # Line too long. We let `ruff format` handle formatting.
+    "G003",   # Logging statement uses `+`
     "G004",   # Logging statement uses f-string
     "TRY003", # Avoid specifying long messages outside the exception class
     "SIM105", # Use `contextlib.suppress(Exception)`. Disabled because we don't want to suppress exceptions.
@@ -95,5 +99,5 @@ markers = [
 asyncio_mode = "auto"
 filterwarnings = ["error"]
 strict = true
-testpaths = ["toolbox-lib/tests"]
+testpaths = ["toolbox-lib/tests", "pipelines/*/tests"]
 xfail_strict = true
