@@ -1,3 +1,4 @@
+from risk_repository.evaluate.classify import ClassificationMetrics
 from risk_repository.evaluate.extract import ExtractionMetrics
 from risk_repository.evaluate.screen import ScreeningMetrics
 
@@ -5,11 +6,15 @@ from risk_repository.evaluate.screen import ScreeningMetrics
 def print_report(
     screening: ScreeningMetrics,
     extraction: ExtractionMetrics | None = None,
+    classification: ClassificationMetrics | None = None,
 ) -> None:
     _print_screening(screening)
     if extraction is not None:
         print()
         _print_extraction(extraction)
+    if classification is not None:
+        print()
+        _print_classification(classification)
 
 
 def _print_screening(m: ScreeningMetrics) -> None:
@@ -36,3 +41,15 @@ def _print_extraction(m: ExtractionMetrics) -> None:
     print(f"Precision:               {m.precision:.1%}")
     print(f"Recall:                  {m.recall:.1%}")
     print(f"F1:                      {m.f1:.1%}")
+
+
+def _print_classification(m: ClassificationMetrics) -> None:
+    print("=== Classification (causal) ===")
+    print(f"Matched risks evaluated: {m.matched_risks}")
+    print()
+    print(f"{'Axis':<16} {'Total':>6} {'Correct':>8} {'Accuracy':>9} {'Kappa':>7}")
+    print(f"{'-' * 16} {'-' * 6} {'-' * 8} {'-' * 9} {'-' * 7}")
+    for a in m.axes:
+        print(
+            f"{a.axis:<16} {a.total:>6} {a.correct:>8} {a.accuracy:>8.1%} {a.kappa:>7.3f}"
+        )

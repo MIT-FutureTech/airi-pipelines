@@ -3,6 +3,7 @@ import asyncio
 import logging
 from pathlib import Path
 
+from risk_repository.evaluate.classify import evaluate_classification
 from risk_repository.evaluate.extract import evaluate_extraction
 from risk_repository.evaluate.ground_truth import fetch_ground_truth
 from risk_repository.evaluate.match import match_all
@@ -50,7 +51,8 @@ async def amain() -> None:
         match_results = await match_all(gt, args.results_dir, llm)
 
     extraction = evaluate_extraction(match_results)
-    print_report(screening, extraction)
+    classification = evaluate_classification(match_results, args.results_dir)
+    print_report(screening, extraction, classification)
 
 
 if __name__ == "__main__":
