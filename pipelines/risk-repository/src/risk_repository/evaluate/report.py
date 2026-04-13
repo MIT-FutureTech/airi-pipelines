@@ -5,16 +5,14 @@ from risk_repository.evaluate.screen import ScreeningMetrics
 
 def print_report(
     screening: ScreeningMetrics,
-    extraction: ExtractionMetrics | None = None,
-    classification: ClassificationMetrics | None = None,
+    extraction: ExtractionMetrics,
+    classification: ClassificationMetrics,
 ) -> None:
     _print_screening(screening)
-    if extraction is not None:
-        print()
-        _print_extraction(extraction)
-    if classification is not None:
-        print()
-        _print_classification(classification)
+    print()
+    _print_extraction(extraction)
+    print()
+    _print_classification(classification)
 
 
 def _print_screening(m: ScreeningMetrics) -> None:
