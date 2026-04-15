@@ -28,7 +28,7 @@ from toolbox.text_processing.pdf import convert_to_markdown
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_OUTPUT_DIR = Path("output")
+DEFAULT_OUTPUT_DIR = Path(__file__).parent.parent.parent / "output"
 DEFAULT_MODEL = "gpt-5-mini-2025-08-07"
 DEFAULT_CONCURRENCY = 5
 LLM_RATE_LIMIT_RPS = 10.0
