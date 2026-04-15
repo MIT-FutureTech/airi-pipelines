@@ -28,7 +28,6 @@ from toolbox.text_processing.pdf import convert_to_markdown
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_CACHE_DIR = Path("cache/papers")
 DEFAULT_OUTPUT_DIR = Path("output")
 DEFAULT_MODEL = "gpt-5-mini-2025-08-07"
 DEFAULT_CONCURRENCY = 5
@@ -41,7 +40,6 @@ Document = tuple[DocumentRecord, Path]
 
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="AI Risk Repository pipeline")
-    parser.add_argument("--cache-dir", type=Path, default=DEFAULT_CACHE_DIR)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--model", default=DEFAULT_MODEL)
     parser.add_argument("--limit", type=int, default=None)
@@ -75,10 +73,10 @@ async def _collect_records(
 
 async def _download_all(
     records: list[DocumentRecord],
-    cache_dir: Path,
+    output_dir: Path,
 ) -> list[Document]:
     async def download_one(record: DocumentRecord) -> Document | None:
-        pdf_path = await download_paper(record, cache_dir)
+        pdf_path = await download_paper(record, output_dir)
         if pdf_path is None:
             return None
         return record, pdf_path
@@ -203,13 +201,13 @@ async def amain() -> None:
         ) as llm,
     ):
         records = await _collect_records(airtable, args.documents, args.limit)
-        documents = await _download_all(records, args.cache_dir)
+        documents = await _download_all(records, output_dir=args.output_dir)
 
         if PipelineStage.SCREEN in stages:
             await _screen_all(
                 documents, llm=llm, output_dir=args.output_dir, force=args.force
             )
-        documents = _filter_screened(documents, args.output_dir)
+        documents = _filter_screened(documents, output_dir=args.output_dir)
 
         if PipelineStage.EXTRACT in stages:
             await _extract_all(

@@ -7,6 +7,7 @@ from typing import ClassVar
 import httpx
 from pydantic import BaseModel, ConfigDict, Field
 
+from risk_repository.results import PipelineStage, stage_dir
 from toolbox.airtable import Client, Table
 
 BASE_ID = "app32FOUBa5WcUfEO"
@@ -39,9 +40,10 @@ async def fetch_records(client: Client) -> AsyncIterator[DocumentRecord]:
 
 async def download_paper(
     record: DocumentRecord,
-    cache_dir: Path,
+    output_dir: Path,
 ) -> Path | None:
-    cached = list(cache_dir.glob(f"{record.quick_ref}.*"))
+    download_cache = stage_dir(output_dir, PipelineStage.COLLECT)
+    cached = list(download_cache.glob(f"{record.quick_ref}.*"))
     if len(cached) == 1:
         logger.debug(f"Cache hit: {cached[0]}")
         return cached[0]
@@ -51,7 +53,7 @@ async def download_paper(
         return None
     url = url.replace("https://arxiv.org/abs/", "https://arxiv.org/pdf/")
 
-    cache_dir.mkdir(parents=True, exist_ok=True)
+    download_cache.mkdir(parents=True, exist_ok=True)
     async with httpx.AsyncClient(
         follow_redirects=True,
         headers={
@@ -71,7 +73,7 @@ async def download_paper(
         logger.warning(f"Skipping {record.quick_ref}: expected PDF, got {content_type}")
         return None
 
-    local_path = cache_dir / f"{record.quick_ref}.pdf"
+    local_path = download_cache / f"{record.quick_ref}.pdf"
     local_path.write_bytes(response.content)
     logger.info(f"Downloaded {record.url} -> {local_path}")
     return local_path
