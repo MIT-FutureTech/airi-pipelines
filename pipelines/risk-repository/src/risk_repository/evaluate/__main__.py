@@ -13,7 +13,7 @@ from toolbox.airtable import Client as AirtableClient
 from toolbox.llm import OpenAIClient
 from toolbox.log import configure_logging
 
-DEFAULT_RESULTS_DIR = Path("output")
+DEFAULT_RESULTS_DIR = Path(__file__).parent.parent.parent.parent / "output"
 DEFAULT_MODEL = "gpt-5-mini-2025-08-07"
 AIRTABLE_TIMEOUT = 30.0
 LLM_RATE_LIMIT_RPS = 10.0

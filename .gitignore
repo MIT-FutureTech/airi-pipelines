@@ -18,3 +18,10 @@ node_modules/
 .next/
 *.tsbuildinfo
 next-env.d.ts
+
+# Documents and data files
+*.pdf
+*.csv
+
+# Pipeline output
+/pipelines/*/output
