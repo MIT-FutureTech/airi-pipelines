@@ -1,6 +1,17 @@
 import asyncio
 import logging
-from collections.abc import AsyncIterable, AsyncIterator, Awaitable, Callable, Iterable
+from collections.abc import (
+    AsyncGenerator,
+    AsyncIterable,
+    AsyncIterator,
+    Awaitable,
+    Callable,
+    Iterable,
+    Sized,
+)
+from typing import NoReturn
+
+import tqdm
 
 
 class _Sentinel:
@@ -23,14 +34,25 @@ async def concurrent_map[T, R](
     func: Callable[[T], Awaitable[R]],
     *,
     max_concurrency: int,
-) -> AsyncIterator[R]:
+    progress_description: str | None = None,
+    progress_total: int | None = None,
+) -> AsyncGenerator[R]:
     """Apply an async function to items with bounded concurrency.
 
     Items are consumed lazily from the input iterable, and results are yielded
     as they complete (not necessarily in input order).
+
+    Enable progress reporting by specifying progress_description. If the iterable is
+    sized, the total number of items will be determined automatically. Otherwise,
+    specify progress_total as the total number of items in the iterable.
     """
     in_queue: asyncio.Queue[T | _Sentinel] = asyncio.Queue(maxsize=max_concurrency)
     out_queue: asyncio.Queue[R | _Sentinel | _Failure] = asyncio.Queue()
+    progress: tqdm.tqdm[NoReturn] | None = None
+    if progress_description:
+        if progress_total is None and isinstance(items, Sized):
+            progress_total = len(items)
+        progress = tqdm.tqdm(desc=progress_description, total=progress_total)
 
     producer = asyncio.create_task(
         _producer(items=items, in_queue=in_queue, max_concurrency=max_concurrency),
@@ -49,11 +71,15 @@ async def concurrent_map[T, R](
             elif isinstance(item, _Failure):
                 raise item.exception
             else:
+                if progress is not None:
+                    progress.update()
                 yield item
     except:
         logger.info("Cancelling workers")
         raise
     finally:
+        if progress is not None:
+            progress.close()
         producer.cancel()
         for w in workers:
             w.cancel()
