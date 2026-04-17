@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 async def concurrent_map[T, R](
     items: AsyncIterable[T] | Iterable[T],
     func: Callable[[T], Awaitable[R]],
+    *,
     max_concurrency: int,
 ) -> AsyncIterator[R]:
     """Apply an async function to items with bounded concurrency.

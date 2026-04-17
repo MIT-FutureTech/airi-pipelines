@@ -90,7 +90,11 @@ async def match_all(
         )
 
     results: list[DocumentMatchResult] = []
-    async for result in concurrent_map(inputs, match_one, _CONCURRENCY):
+    async for result in concurrent_map(
+        items=inputs,
+        func=match_one,
+        max_concurrency=_CONCURRENCY,
+    ):
         results.append(result)
     return results
 
