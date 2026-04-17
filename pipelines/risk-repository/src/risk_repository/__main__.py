@@ -23,6 +23,7 @@ from risk_repository.screen import Decision, ScreeningResult, screen_document
 from toolbox.airtable import Client as AirtableClient
 from toolbox.concurrency import concurrent_map
 from toolbox.llm import OpenAIClient
+from toolbox.log import configure_logging
 from toolbox.text_processing.pdf import convert_to_markdown
 
 logger = logging.getLogger(__name__)
@@ -190,13 +191,7 @@ async def _classify_all(
 
 async def amain() -> None:
     args = _parse_args()
-    logging.basicConfig(
-        level=logging.INFO,
-        style="{",
-        format="{asctime:s} {levelname:7s} {name:s}:{lineno:d} {message:s}",
-        datefmt="%Y-%m-%dT%H:%M:%S%z",
-    )
-    logging.getLogger("httpx").setLevel(level=logging.WARNING)
+    configure_logging(level=logging.INFO, loggers_to_silence=["httpx", "openai"])
     stages: set[PipelineStage] = set(args.stages)
 
     async with (

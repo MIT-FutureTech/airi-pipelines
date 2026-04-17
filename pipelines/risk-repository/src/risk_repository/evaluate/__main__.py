@@ -11,6 +11,7 @@ from risk_repository.evaluate.report import print_report
 from risk_repository.evaluate.screen import evaluate_screening
 from toolbox.airtable import Client as AirtableClient
 from toolbox.llm import OpenAIClient
+from toolbox.log import configure_logging
 
 DEFAULT_RESULTS_DIR = Path("output")
 DEFAULT_MODEL = "gpt-5-mini-2025-08-07"
@@ -30,12 +31,7 @@ def _parse_args() -> argparse.Namespace:
 
 async def amain() -> None:
     args = _parse_args()
-    logging.basicConfig(
-        level=logging.INFO,
-        style="{",
-        format="{asctime:s} {levelname:7s} {name:s}:{lineno:d} {message:s}",
-        datefmt="%Y-%m-%dT%H:%M:%S%z",
-    )
+    configure_logging(level=logging.INFO, loggers_to_silence=["httpx", "openai"])
 
     async with AirtableClient(timeout=AIRTABLE_TIMEOUT) as airtable:
         gt = await fetch_ground_truth(airtable)
