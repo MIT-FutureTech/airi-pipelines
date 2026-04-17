@@ -1,5 +1,6 @@
 import asyncio
 from collections.abc import AsyncIterator
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -106,3 +107,111 @@ class TestConcurrentMap:
         bottom_frame = err_info.traceback[-1]
         assert bottom_frame.name == "failing"
         assert str(bottom_frame.statement).strip() == 'raise ValueError("bad item")'
+
+
+class TestConcurrentMapProgress:
+    @patch("toolbox.concurrency.tqdm.tqdm")
+    async def test_updates_once_per_result(self, mock_tqdm_cls: MagicMock) -> None:
+        progress_bar = mock_tqdm_cls.return_value
+        items = list(range(10))
+        async for _ in concurrent_map(
+            items=items,
+            func=slow_double,
+            max_concurrency=3,
+            progress_description="test",
+        ):
+            pass
+        assert progress_bar.update.call_count == len(items)
+
+    @patch("toolbox.concurrency.tqdm.tqdm")
+    async def test_auto_detects_total_from_sized(
+        self,
+        mock_tqdm_cls: MagicMock,
+    ) -> None:
+        items = list(range(7))
+        async for _ in concurrent_map(
+            items=items,
+            func=slow_double,
+            max_concurrency=3,
+            progress_description="test",
+        ):
+            pass
+        mock_tqdm_cls.assert_called_once_with(desc="test", total=7)
+
+    @patch("toolbox.concurrency.tqdm.tqdm")
+    async def test_no_total_for_unsized_iterables(
+        self,
+        mock_tqdm_cls: MagicMock,
+    ) -> None:
+        items = (num for num in range(7))
+        async for _ in concurrent_map(
+            items=items,
+            func=slow_double,
+            max_concurrency=3,
+            progress_description="test",
+        ):
+            pass
+        mock_tqdm_cls.assert_called_once_with(desc="test", total=None)
+
+    @patch("toolbox.concurrency.tqdm.tqdm")
+    async def test_explicit_total_overrides_auto(
+        self,
+        mock_tqdm_cls: MagicMock,
+    ) -> None:
+        async for _ in concurrent_map(
+            items=list(range(5)),
+            func=slow_double,
+            max_concurrency=3,
+            progress_description="test",
+            progress_total=99,
+        ):
+            pass
+        mock_tqdm_cls.assert_called_once_with(desc="test", total=99)
+
+    @patch("toolbox.concurrency.tqdm.tqdm")
+    async def test_closed_on_completion(self, mock_tqdm_cls: MagicMock) -> None:
+        progress_bar = mock_tqdm_cls.return_value
+        async for _ in concurrent_map(
+            items=[1, 2],
+            func=slow_double,
+            max_concurrency=2,
+            progress_description="test",
+        ):
+            pass
+        progress_bar.close.assert_called_once()
+
+    @patch("toolbox.concurrency.tqdm.tqdm")
+    async def test_closed_on_exception(self, mock_tqdm_cls: MagicMock) -> None:
+        progress_bar = mock_tqdm_cls.return_value
+        with pytest.raises(ValueError, match="bad item"):
+            async for _ in concurrent_map(
+                items=range(10),
+                func=failing,
+                max_concurrency=2,
+                progress_description="test",
+            ):
+                pass
+        progress_bar.close.assert_called_once()
+
+    @patch("toolbox.concurrency.tqdm.tqdm")
+    async def test_closed_on_early_break(self, mock_tqdm_cls: MagicMock) -> None:
+        progress_bar = mock_tqdm_cls.return_value
+        count = 0
+        generator = concurrent_map(
+            items=range(100),
+            func=slow_double,
+            max_concurrency=3,
+            progress_description="test",
+        )
+        async for _ in generator:
+            count += 1
+            if count == 3:
+                break
+        await generator.aclose()
+        progress_bar.close.assert_called_once()
+
+    @patch("toolbox.concurrency.tqdm.tqdm")
+    async def test_no_bar_without_description(self, mock_tqdm_cls: MagicMock) -> None:
+        async for _ in concurrent_map([1, 2], slow_double, max_concurrency=1):
+            pass
+        mock_tqdm_cls.assert_not_called()
