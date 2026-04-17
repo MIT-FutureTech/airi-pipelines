@@ -82,7 +82,11 @@ async def _download_all(
         return record, pdf_path
 
     documents: list[Document] = []
-    async for result in concurrent_map(records, download_one, DEFAULT_CONCURRENCY):
+    async for result in concurrent_map(
+        items=records,
+        func=download_one,
+        max_concurrency=DEFAULT_CONCURRENCY,
+    ):
         if result is not None:
             documents.append(result)
     logger.info(f"Downloaded {len(documents)} PDFs")
@@ -108,7 +112,11 @@ async def _screen_all(
         invalidate_downstream(output_dir, PipelineStage.SCREEN, record.quick_ref)
         logger.info(f"Screened {record.quick_ref}: {screening.decision}")
 
-    async for _ in concurrent_map(documents, screen_one, DEFAULT_CONCURRENCY):
+    async for _ in concurrent_map(
+        items=documents,
+        func=screen_one,
+        max_concurrency=DEFAULT_CONCURRENCY,
+    ):
         pass
 
 
@@ -148,7 +156,11 @@ async def _extract_all(
         invalidate_downstream(output_dir, PipelineStage.EXTRACT, record.quick_ref)
         logger.info(f"Extracted {len(extraction.risks)} risks from {record.quick_ref}")
 
-    async for _ in concurrent_map(documents, extract_one, DEFAULT_CONCURRENCY):
+    async for _ in concurrent_map(
+        items=documents,
+        func=extract_one,
+        max_concurrency=DEFAULT_CONCURRENCY,
+    ):
         pass
 
 
@@ -183,7 +195,11 @@ async def _classify_all(
         save(classify_path, classification)
         logger.info(f"Classified {len(classified_risks)} risks from {record.quick_ref}")
 
-    async for _ in concurrent_map(documents, classify_one, DEFAULT_CONCURRENCY):
+    async for _ in concurrent_map(
+        items=documents,
+        func=classify_one,
+        max_concurrency=DEFAULT_CONCURRENCY,
+    ):
         pass
 
 
