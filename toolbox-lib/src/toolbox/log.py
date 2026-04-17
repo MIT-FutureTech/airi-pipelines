@@ -1,6 +1,9 @@
 import logging
 from collections.abc import Iterable
 from pathlib import Path
+from typing import TextIO, override
+
+from tqdm import tqdm
 
 
 def configure_logging(
@@ -13,7 +16,7 @@ def configure_logging(
 
     This must be called before any log messages are emitted.
     """
-    handlers: list[logging.Handler] = [logging.StreamHandler()]
+    handlers: list[logging.Handler] = [_TqdmStreamHandler()]
     if filepath is not None:
         handlers.append(logging.FileHandler(filepath, mode="a"))
     logging.basicConfig(
@@ -25,3 +28,10 @@ def configure_logging(
     )
     for logger_name in loggers_to_silence:
         logging.getLogger(logger_name).setLevel(level=logging.WARNING)
+
+
+class _TqdmStreamHandler(logging.StreamHandler[TextIO]):
+    @override
+    def emit(self, record: logging.LogRecord) -> None:
+        tqdm.write(self.format(record), file=self.stream)
+        self.flush()
