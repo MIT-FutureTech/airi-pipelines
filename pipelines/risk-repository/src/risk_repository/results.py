@@ -8,16 +8,26 @@ logger = logging.getLogger(__name__)
 
 
 class PipelineStage(StrEnum):
+    COLLECT = "collection"
     SCREEN = "screening"
     EXTRACT = "extraction"
     CLASSIFY = "classification"
 
 
-STAGE_ORDER = [PipelineStage.SCREEN, PipelineStage.EXTRACT, PipelineStage.CLASSIFY]
+STAGE_ORDER = [
+    PipelineStage.COLLECT,
+    PipelineStage.SCREEN,
+    PipelineStage.EXTRACT,
+    PipelineStage.CLASSIFY,
+]
+
+
+def stage_dir(output_dir: Path, stage: PipelineStage) -> Path:
+    return output_dir / stage.value
 
 
 def result_path(output_dir: Path, stage: PipelineStage, quick_ref: str) -> Path:
-    return output_dir / stage.value / f"{quick_ref}.json"
+    return stage_dir(output_dir, stage) / f"{quick_ref}.json"
 
 
 def save(path: Path, result: BaseModel) -> None:
