@@ -94,6 +94,7 @@ async def match_all(
         items=inputs,
         func=match_one,
         max_concurrency=_CONCURRENCY,
+        progress_description="Matching",
     ):
         results.append(result)
     return results

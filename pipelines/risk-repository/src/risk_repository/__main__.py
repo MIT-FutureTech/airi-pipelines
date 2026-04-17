@@ -86,6 +86,7 @@ async def _download_all(
         items=records,
         func=download_one,
         max_concurrency=DEFAULT_CONCURRENCY,
+        progress_description="Downloading",
     ):
         if result is not None:
             documents.append(result)
@@ -116,6 +117,7 @@ async def _screen_all(
         items=documents,
         func=screen_one,
         max_concurrency=DEFAULT_CONCURRENCY,
+        progress_description="Screening",
     ):
         pass
 
@@ -160,6 +162,7 @@ async def _extract_all(
         items=documents,
         func=extract_one,
         max_concurrency=DEFAULT_CONCURRENCY,
+        progress_description="Extracting",
     ):
         pass
 
@@ -199,6 +202,7 @@ async def _classify_all(
         items=documents,
         func=classify_one,
         max_concurrency=DEFAULT_CONCURRENCY,
+        progress_description="Classifying",
     ):
         pass
 
