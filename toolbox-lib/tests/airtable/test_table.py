@@ -41,13 +41,17 @@ def success_response() -> Response:
     return make_response(status_code=200, json=RECORD_JSON)
 
 
+def create_table(client: Client) -> Table:
+    return Table(client, base_id=BASE_ID, table_name=TABLE_NAME)
+
+
 class TestCreate:
     async def test_sends_fields(
         self,
         success_response: Response,
     ) -> None:
         async with make_mock_client([success_response]) as client:
-            table = Table(client, BASE_ID, TABLE_NAME)
+            table = create_table(client)
             record = await table.create({"Name": "Ada"})
 
             assert record.id == "rec001"
@@ -60,7 +64,7 @@ class TestCreate:
         success_response: Response,
     ) -> None:
         async with make_mock_client([success_response]) as client:
-            table = Table(client, BASE_ID, TABLE_NAME)
+            table = create_table(client)
             await table.create({"Name": "Ada"})
 
             assert isinstance(client._http_client.request, AsyncMock)
@@ -72,7 +76,7 @@ class TestCreate:
         success_response: Response,
     ) -> None:
         async with make_mock_client([success_response]) as client:
-            table = Table(client, BASE_ID, TABLE_NAME)
+            table = create_table(client)
             await table.create(
                 {"Name": "Ada"},
                 typecast=True,
@@ -88,7 +92,7 @@ class TestBatchCreate:
         """batch_create should wrap each field dict in {"fields": ...}."""
         page_json: dict[str, JsonValue] = {"records": [RECORD_JSON]}
         async with make_mock_client([make_response(200, page_json)]) as client:
-            table = Table(client, BASE_ID, TABLE_NAME)
+            table = create_table(client)
             await table.batch_create([{"Name": "Ada"}])
 
             assert isinstance(client._http_client.request, AsyncMock)
@@ -99,7 +103,7 @@ class TestBatchCreate:
 
     async def test_empty_input(self) -> None:
         async with make_mock_client([]) as client:
-            table = Table(client, BASE_ID, TABLE_NAME)
+            table = create_table(client)
             results = await table.batch_create([])
 
             assert results == []
@@ -113,7 +117,7 @@ class TestGet:
         success_response: Response,
     ) -> None:
         async with make_mock_client([success_response]) as client:
-            table = Table(client, BASE_ID, TABLE_NAME)
+            table = create_table(client)
             record = await table.get("rec001")
 
         assert record.id == "rec001"
@@ -128,7 +132,7 @@ class TestAll:
             "offset": None,
         }
         async with make_mock_client([make_response(200, page_json)]) as client:
-            table = Table(client, BASE_ID, TABLE_NAME)
+            table = create_table(client)
             records = await table.all(
                 formula="{Status}='Active'",
             )
@@ -148,7 +152,7 @@ class TestAll:
         }
         responses = [make_response(200, page1), make_response(200, page2)]
         async with make_mock_client(responses) as client:
-            table = Table(client, BASE_ID, TABLE_NAME)
+            table = create_table(client)
             records = await table.all()
 
         assert len(records) == 2
@@ -161,7 +165,7 @@ class TestAll:
             "offset": None,
         }
         async with make_mock_client([make_response(200, page_json)]) as client:
-            table = Table(client, BASE_ID, TABLE_NAME)
+            table = create_table(client)
             await table.all(
                 formula="{Status}='Active'",
                 fields=["Name"],
@@ -181,7 +185,7 @@ class TestUpdate:
         success_response: Response,
     ) -> None:
         async with make_mock_client([success_response]) as client:
-            table = Table(client, BASE_ID, TABLE_NAME)
+            table = create_table(client)
             record = await table.update(
                 "rec001",
                 {"Status": "Done"},
@@ -201,7 +205,7 @@ class TestBatchUpdate:
         }
         responses = [make_response(200, page_json)] * 2
         async with make_mock_client(responses) as client:
-            table = Table(client, BASE_ID, TABLE_NAME)
+            table = create_table(client)
             await table.batch_update(updates)
 
             mock_request = client._http_client.request
@@ -214,7 +218,7 @@ class TestBatchUpdate:
 
     async def test_empty_input(self) -> None:
         async with make_mock_client([]) as client:
-            table = Table(client, BASE_ID, TABLE_NAME)
+            table = create_table(client)
             results = await table.batch_update([])
 
             assert results == []
@@ -228,7 +232,7 @@ class TestDelete:
         async with make_mock_client(
             [make_response(200, deleted_json)],
         ) as client:
-            table = Table(client, BASE_ID, TABLE_NAME)
+            table = create_table(client)
             result = await table.delete("rec001")
 
         assert result.id == "rec001"
@@ -241,7 +245,7 @@ class TestBatchDelete:
             "records": [{"id": "rec001", "deleted": True}],
         }
         async with make_mock_client([make_response(200, deleted_json)]) as client:
-            table = Table(client, BASE_ID, TABLE_NAME)
+            table = create_table(client)
             results = await table.batch_delete(["rec001"])
 
         assert len(results) == 1
@@ -249,7 +253,7 @@ class TestBatchDelete:
 
     async def test_empty_input(self) -> None:
         async with make_mock_client([]) as client:
-            table = Table(client, BASE_ID, TABLE_NAME)
+            table = create_table(client)
             results = await table.batch_delete([])
 
             assert results == []
@@ -260,7 +264,7 @@ class TestBatchDelete:
 class TestSchema:
     async def test_returns_table_schema(self) -> None:
         async with make_mock_client([make_response(200, TABLES_JSON)]) as client:
-            table = Table(client, BASE_ID, TABLE_NAME)
+            table = create_table(client)
             schema = await table.schema()
 
         assert schema.id == "tbl001"
@@ -271,7 +275,7 @@ class TestSchema:
     async def test_table_not_found_raises(self) -> None:
         empty_tables: dict[str, JsonValue] = {"tables": []}
         async with make_mock_client([make_response(200, empty_tables)]) as client:
-            table = Table(client, BASE_ID, TABLE_NAME)
+            table = create_table(client)
             with pytest.raises(ValueError, match="not found"):
                 await table.schema()
 
@@ -288,7 +292,7 @@ class TestEnsureFields:
             make_response(200, new_field_json),
         ]
         async with make_mock_client(responses) as client:
-            table = Table(client, BASE_ID, TABLE_NAME)
+            table = create_table(client)
             results = await table.ensure_fields(
                 {
                     "Name": FieldSpec(type="singleLineText"),
@@ -302,7 +306,7 @@ class TestEnsureFields:
     async def test_all_fields_exist(self) -> None:
         """When all fields exist, no create_field calls should be made."""
         async with make_mock_client([make_response(200, TABLES_JSON)]) as client:
-            table = Table(client, BASE_ID, TABLE_NAME)
+            table = create_table(client)
             results = await table.ensure_fields(
                 {"Name": FieldSpec(type="singleLineText")}
             )
@@ -321,7 +325,7 @@ class TestResolveTableId:
                 make_response(200, TABLES_JSON),
             ]
         ) as client:
-            table = Table(client, BASE_ID, TABLE_NAME)
+            table = create_table(client)
             id1 = await table._resolve_table_id()
             id2 = await table._resolve_table_id()
 

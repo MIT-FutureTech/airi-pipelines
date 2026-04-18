@@ -34,7 +34,7 @@ async def fetch_records(
     base_id: str,
     table_name: str,
 ) -> AsyncIterator[DocumentRecord]:
-    table = Table(client, base_id, table_name)
+    table = Table(client, base_id=base_id, table_name=table_name)
     async for record in table.iterate():
         yield DocumentRecord.model_validate({"record_id": record.id, **record.fields})
 
