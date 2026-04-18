@@ -18,7 +18,11 @@ async def amain() -> None:
     configure_logging(level=logging.INFO, loggers_to_silence=["httpx", "openai"])
 
     async with AirtableClient(timeout=settings.airtable_timeout) as airtable:
-        ground_truth = await fetch_ground_truth(airtable, settings.airtable_base_id)
+        ground_truth = await fetch_ground_truth(
+            client=airtable,
+            base_id=settings.airtable_base_id,
+            documents_table_name=settings.airtable_documents_table,
+        )
 
     gt_quick_refs = {doc.quick_ref for doc in ground_truth.documents}
     screening = evaluate_screening(gt_quick_refs, settings.results_dir)
