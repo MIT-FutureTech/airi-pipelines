@@ -2,7 +2,7 @@ import logging
 
 from pydantic import BaseModel, Field
 
-from toolbox.airtable import Client, Table
+from toolbox.airtable import AirtableClient, Table
 
 logger = logging.getLogger(__name__)
 
@@ -71,7 +71,7 @@ class GroundTruth(BaseModel):
         return by_doc
 
 
-async def fetch_ground_truth(client: Client, base_id: str) -> GroundTruth:
+async def fetch_ground_truth(client: AirtableClient, base_id: str) -> GroundTruth:
     documents = await _fetch_documents(client, base_id)
     doc_id_to_quick_ref = {doc.record_id: doc.quick_ref for doc in documents}
     causal_map = await _fetch_causal_map(client, base_id)
@@ -87,7 +87,9 @@ async def fetch_ground_truth(client: Client, base_id: str) -> GroundTruth:
     return GroundTruth(documents=documents, risks=risks)
 
 
-async def _fetch_documents(client: Client, base_id: str) -> list[GroundTruthDocument]:
+async def _fetch_documents(
+    client: AirtableClient, base_id: str
+) -> list[GroundTruthDocument]:
     table = Table(client, base_id=base_id, table_name="Documents")
     documents: list[GroundTruthDocument] = []
     async for record in table.iterate(fields=["QuickRef", "DocTitle", "DocAuthors"]):
@@ -98,7 +100,7 @@ async def _fetch_documents(client: Client, base_id: str) -> list[GroundTruthDocu
     return documents
 
 
-async def _fetch_causal_map(client: Client, base_id: str) -> dict[str, str]:
+async def _fetch_causal_map(client: AirtableClient, base_id: str) -> dict[str, str]:
     """Map Causal Taxonomy record IDs to their label (e.g. "Entity: Human")."""
     table = Table(client, base_id=base_id, table_name="Causal Taxonomy")
     result: dict[str, str] = {}
@@ -108,7 +110,7 @@ async def _fetch_causal_map(client: Client, base_id: str) -> dict[str, str]:
     return result
 
 
-async def _fetch_subdomain_map(client: Client, base_id: str) -> dict[str, str]:
+async def _fetch_subdomain_map(client: AirtableClient, base_id: str) -> dict[str, str]:
     """Map Domain Taxonomy (Subdomains) record IDs to their code (e.g. "3.1")."""
     table = Table(client, base_id=base_id, table_name="Domain Taxonomy (Subdomains)")
     result: dict[str, str] = {}
@@ -146,7 +148,7 @@ def _resolve_subdomain(ids: list[str], subdomain_map: dict[str, str]) -> str | N
 
 
 async def _fetch_risks(
-    client: Client,
+    client: AirtableClient,
     *,
     base_id: str,
     doc_id_to_quick_ref: dict[str, str],

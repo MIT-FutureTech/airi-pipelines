@@ -18,7 +18,7 @@ from risk_repository.results import (
 )
 from risk_repository.screen import Decision, ScreeningResult, screen_document
 from risk_repository.settings import RiskRepositorySettings
-from toolbox.airtable import Client as AirtableClient
+from toolbox.airtable import AirtableClient
 from toolbox.concurrency import concurrent_map
 from toolbox.llm import OpenAIClient
 from toolbox.log import configure_logging
