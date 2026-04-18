@@ -17,6 +17,7 @@ class FakeLLMClient:
 
     def __init__(
         self,
+        *,
         category: str,
         reasoning: str,
         confidence: float,
