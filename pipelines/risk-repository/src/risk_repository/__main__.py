@@ -18,7 +18,7 @@ from risk_repository.results import (
 )
 from risk_repository.screen import Decision, ScreeningResult, screen_document
 from risk_repository.settings import RiskRepositorySettings
-from toolbox.airtable import Client as AirtableClient
+from toolbox.airtable import AirtableClient
 from toolbox.concurrency import concurrent_map
 from toolbox.llm import OpenAIClient
 from toolbox.log import configure_logging
@@ -86,7 +86,11 @@ async def _screen_all(
             return
         first_page = convert_to_markdown(pdf_path, pages=[0])
         full_text = convert_to_markdown(pdf_path)
-        screening = await screen_document(llm, first_page, full_text)
+        screening = await screen_document(
+            client=llm,
+            first_page=first_page,
+            full_text=full_text,
+        )
         save(output_path, screening)
         invalidate_downstream(
             settings.output_dir, PipelineStage.SCREEN, record.quick_ref

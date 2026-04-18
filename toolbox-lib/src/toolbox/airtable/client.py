@@ -30,13 +30,13 @@ def _is_retryable(exc: BaseException) -> bool:
     )
 
 
-class Client:
+class AirtableClient:
     """Airtable API client with per-base rate limiting and retry.
 
     Usage:
 
-        async with Client("pat...", timeout=30.0) as client:
-            table = Table(client, "appXXX", "Records")
+        async with AirtableClient("pat...", timeout=30.0) as client:
+            table = Table(client, base_id="appXXX", table_name="Records")
             records = await table.all(formula="{Status}='Active'")
     """
 

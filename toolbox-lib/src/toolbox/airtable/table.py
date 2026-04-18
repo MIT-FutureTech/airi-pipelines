@@ -3,7 +3,7 @@ from collections.abc import AsyncIterator, Sequence
 
 from httpx import QueryParams, Response
 
-from toolbox.airtable.client import Client
+from toolbox.airtable.client import AirtableClient
 from toolbox.airtable.data_types import (
     DeletedRecord,
     DeletedRecordList,
@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 class Table:
     """Operations on a single Airtable table."""
 
-    _client: Client
+    _client: AirtableClient
     _base_id: str
     _table_name: str
     _url: str
@@ -35,7 +35,8 @@ class Table:
 
     def __init__(
         self,
-        client: Client,
+        client: AirtableClient,
+        *,
         base_id: str,
         table_name: str,
     ) -> None:

@@ -7,7 +7,11 @@ from .helpers import FakeLLMClient
 
 class TestLLMClassifier:
     async def test_classify_returns_result(self) -> None:
-        client = FakeLLMClient("Positive", "Clearly positive", 0.9)
+        client = FakeLLMClient(
+            category="Positive",
+            reasoning="Clearly positive",
+            confidence=0.9,
+        )
         categories = [
             Category(name="Positive", description="Positive sentiment"),
             Category(name="Negative", description="Negative sentiment"),
@@ -24,7 +28,11 @@ class TestLLMClassifier:
         assert result.confidence == 0.9
 
     async def test_system_prompt_is_first_message(self) -> None:
-        client = FakeLLMClient("A", "reason", 0.8)
+        client = FakeLLMClient(
+            category="A",
+            reasoning="reason",
+            confidence=0.8,
+        )
         classifier = LLMClassifier(
             client=client,
             categories=[Category(name="A"), Category(name="B")],
@@ -36,7 +44,11 @@ class TestLLMClassifier:
         assert client.last_messages[0].content == "You are a classifier."
 
     async def test_user_message_contains_categories_and_text(self) -> None:
-        client = FakeLLMClient("Cat", "reason", 0.8)
+        client = FakeLLMClient(
+            category="Cat",
+            reasoning="reason",
+            confidence=0.8,
+        )
         classifier = LLMClassifier(
             client=client,
             categories=[
@@ -53,7 +65,11 @@ class TestLLMClassifier:
         assert "Meow!" in user_msg
 
     async def test_schema_constrains_category_to_enum(self) -> None:
-        client = FakeLLMClient("High", "clearly high", 0.9)
+        client = FakeLLMClient(
+            category="High",
+            reasoning="clearly high",
+            confidence=0.9,
+        )
         classifier = LLMClassifier(
             client=client,
             categories=[Category(name="High"), Category(name="Low")],
@@ -70,7 +86,11 @@ class TestLLMClassifier:
         assert set(enum_def["enum"]) == {"High", "Low"}
 
     def test_requires_at_least_two_categories(self) -> None:
-        client = FakeLLMClient("A", "reason", 0.8)
+        client = FakeLLMClient(
+            category="A",
+            reasoning="reason",
+            confidence=0.8,
+        )
         with pytest.raises(ValueError, match="At least two categories"):
             LLMClassifier(
                 client=client,
