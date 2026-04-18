@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock
 import pytest
 from httpx import Response
 
-from toolbox.airtable import Client, FieldSpec, Table, UpdateRecord
+from toolbox.airtable import AirtableClient, FieldSpec, Table, UpdateRecord
 from toolbox.airtable.data_types import JsonValue
 
 from .helpers import make_mock_client, make_response
@@ -41,7 +41,7 @@ def success_response() -> Response:
     return make_response(status_code=200, json=RECORD_JSON)
 
 
-def create_table(client: Client) -> Table:
+def create_table(client: AirtableClient) -> Table:
     return Table(client, base_id=BASE_ID, table_name=TABLE_NAME)
 
 
@@ -341,7 +341,7 @@ class TestTableNetwork:
     @pytest.fixture
     def table(self) -> Table:
         return Table(
-            client=Client(timeout=30),
+            client=AirtableClient(timeout=30),
             base_id=AIRTABLE_BASE_ID,
             table_name=AIRTABLE_TABLE_NAME,
         )

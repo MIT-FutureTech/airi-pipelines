@@ -8,7 +8,7 @@ import httpx
 from pydantic import BaseModel, ConfigDict, Field
 
 from risk_repository.results import PipelineStage, stage_dir
-from toolbox.airtable import Client, Table
+from toolbox.airtable import AirtableClient, Table
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +30,7 @@ class DocumentRecord(BaseModel):
 
 
 async def fetch_records(
-    client: Client,
+    client: AirtableClient,
     *,
     base_id: str,
     table_name: str,

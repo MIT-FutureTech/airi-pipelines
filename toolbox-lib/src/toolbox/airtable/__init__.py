@@ -1,6 +1,6 @@
 """Async Airtable client with rate limiting and retries."""
 
-from toolbox.airtable.client import Client
+from toolbox.airtable.client import AirtableClient
 from toolbox.airtable.data_types import (
     CreateRecord,
     DeletedRecord,
@@ -16,7 +16,7 @@ from toolbox.airtable.data_types import (
 from toolbox.airtable.table import Table
 
 __all__ = [
-    "Client",
+    "AirtableClient",
     "CreateRecord",
     "DeletedRecord",
     "FieldSchema",
