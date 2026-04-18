@@ -2,7 +2,6 @@ import logging
 
 from pydantic import BaseModel, Field
 
-from risk_repository.records import BASE_ID
 from toolbox.airtable import Client, Table
 
 logger = logging.getLogger(__name__)
@@ -72,18 +71,24 @@ class GroundTruth(BaseModel):
         return by_doc
 
 
-async def fetch_ground_truth(client: Client) -> GroundTruth:
-    documents = await _fetch_documents(client)
+async def fetch_ground_truth(client: Client, base_id: str) -> GroundTruth:
+    documents = await _fetch_documents(client, base_id)
     doc_id_to_quick_ref = {doc.record_id: doc.quick_ref for doc in documents}
-    causal_map = await _fetch_causal_map(client)
-    subdomain_map = await _fetch_subdomain_map(client)
-    risks = await _fetch_risks(client, doc_id_to_quick_ref, causal_map, subdomain_map)
+    causal_map = await _fetch_causal_map(client, base_id)
+    subdomain_map = await _fetch_subdomain_map(client, base_id)
+    risks = await _fetch_risks(
+        client,
+        base_id=base_id,
+        doc_id_to_quick_ref=doc_id_to_quick_ref,
+        causal_map=causal_map,
+        subdomain_map=subdomain_map,
+    )
     logger.info(f"Loaded ground truth: {len(documents)} documents, {len(risks)} risks")
     return GroundTruth(documents=documents, risks=risks)
 
 
-async def _fetch_documents(client: Client) -> list[GroundTruthDocument]:
-    table = Table(client, BASE_ID, "Documents")
+async def _fetch_documents(client: Client, base_id: str) -> list[GroundTruthDocument]:
+    table = Table(client, base_id, "Documents")
     documents: list[GroundTruthDocument] = []
     async for record in table.iterate(fields=["QuickRef", "DocTitle", "DocAuthors"]):
         doc = GroundTruthDocument.model_validate(
@@ -93,9 +98,9 @@ async def _fetch_documents(client: Client) -> list[GroundTruthDocument]:
     return documents
 
 
-async def _fetch_causal_map(client: Client) -> dict[str, str]:
+async def _fetch_causal_map(client: Client, base_id: str) -> dict[str, str]:
     """Map Causal Taxonomy record IDs to their label (e.g. "Entity: Human")."""
-    table = Table(client, BASE_ID, "Causal Taxonomy")
+    table = Table(client, base_id, "Causal Taxonomy")
     result: dict[str, str] = {}
     async for record in table.iterate(fields=["Causal Factor"]):
         raw = _CausalFactor.model_validate({"record_id": record.id, **record.fields})
@@ -103,9 +108,9 @@ async def _fetch_causal_map(client: Client) -> dict[str, str]:
     return result
 
 
-async def _fetch_subdomain_map(client: Client) -> dict[str, str]:
+async def _fetch_subdomain_map(client: Client, base_id: str) -> dict[str, str]:
     """Map Domain Taxonomy (Subdomains) record IDs to their code (e.g. "3.1")."""
-    table = Table(client, BASE_ID, "Domain Taxonomy (Subdomains)")
+    table = Table(client, base_id, "Domain Taxonomy (Subdomains)")
     result: dict[str, str] = {}
     async for record in table.iterate(fields=["Risk Subdomain Code"]):
         raw = _Subdomain.model_validate({"record_id": record.id, **record.fields})
@@ -142,11 +147,12 @@ def _resolve_subdomain(ids: list[str], subdomain_map: dict[str, str]) -> str | N
 
 async def _fetch_risks(
     client: Client,
+    base_id: str,
     doc_id_to_quick_ref: dict[str, str],
     causal_map: dict[str, str],
     subdomain_map: dict[str, str],
 ) -> list[GroundTruthRisk]:
-    table = Table(client, BASE_ID, "AI Risk Database")
+    table = Table(client, base_id, "AI Risk Database")
     risks: list[GroundTruthRisk] = []
     async for record in table.iterate():
         raw = _UnresolvedRisk.model_validate(record.fields)
