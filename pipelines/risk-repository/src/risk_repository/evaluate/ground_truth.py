@@ -92,7 +92,7 @@ async def fetch_ground_truth(
         base_id=base_id,
         documents_table_name=documents_table_name,
     )
-    doc_id_to_quick_ref = {doc.record_id: doc.quick_ref for doc in documents}
+    doc_id_to_quick_ref = await _fetch_doc_id_to_quick_ref(client, base_id)
     causal_map = await _fetch_causal_map(client, base_id)
     subdomain_map = await _fetch_subdomain_map(client, base_id)
     risks = await _fetch_risks(
@@ -104,6 +104,28 @@ async def fetch_ground_truth(
     )
     logger.info(f"Loaded ground truth: {len(documents)} documents, {len(risks)} risks")
     return GroundTruth(documents=documents, risks=risks)
+
+
+async def _fetch_doc_id_to_quick_ref(
+    client: AirtableClient,
+    base_id: str,
+) -> dict[str, str]:
+    """Map record IDs in the production Documents table to QuickRef values.
+
+    The AI Risk Database table links to Documents via record IDs, so this
+    mapping must always come from the production table regardless of which
+    table is used for ground truth documents.
+    """
+
+    class _RecordModel(BaseModel):
+        quick_ref: str = Field(validation_alias="QuickRef")
+
+    table = Table(client, base_id=base_id, table_name="Documents")
+    result: dict[str, str] = {}
+    async for raw_record in table.iterate(fields=["QuickRef"]):
+        record = _RecordModel.model_validate(raw_record.fields)
+        result[raw_record.id] = record.quick_ref
+    return result
 
 
 async def _fetch_documents(
