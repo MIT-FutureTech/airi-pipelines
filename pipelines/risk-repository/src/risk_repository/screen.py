@@ -40,11 +40,19 @@ async def screen_document(
     first_page: str,
     full_text: str,
 ) -> ScreeningResult:
-    stage1 = await _screen(client, FIRST_PAGE_SCREENING_SYSTEM_PROMPT, first_page)
+    stage1 = await _screen(
+        client,
+        system_prompt=FIRST_PAGE_SCREENING_SYSTEM_PROMPT,
+        document=first_page,
+    )
     stages = [StageResult(stage=Stage.FIRST_PAGE, **stage1.model_dump())]
     if stage1.decision == Decision.EXCLUDE:
         return ScreeningResult(stages=stages)
-    stage2 = await _screen(client, FULL_TEXT_SCREENING_SYSTEM_PROMPT, full_text)
+    stage2 = await _screen(
+        client,
+        system_prompt=FULL_TEXT_SCREENING_SYSTEM_PROMPT,
+        document=full_text,
+    )
     stages.append(StageResult(stage=Stage.FULL_TEXT, **stage2.model_dump()))
     return ScreeningResult(stages=stages)
 
