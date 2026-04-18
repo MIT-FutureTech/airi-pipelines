@@ -1,7 +1,5 @@
-import argparse
 import asyncio
 import logging
-from collections.abc import Container
 from pathlib import Path
 
 from risk_repository.classify import (
@@ -12,7 +10,6 @@ from risk_repository.classify import (
 from risk_repository.extract import ExtractionResult, extract_risks
 from risk_repository.records import DocumentRecord, download_paper, fetch_records
 from risk_repository.results import (
-    STAGE_ORDER,
     PipelineStage,
     invalidate_downstream,
     load,
@@ -20,6 +17,7 @@ from risk_repository.results import (
     save,
 )
 from risk_repository.screen import Decision, ScreeningResult, screen_document
+from risk_repository.settings import RiskRepositorySettings
 from toolbox.airtable import Client as AirtableClient
 from toolbox.concurrency import concurrent_map
 from toolbox.llm import OpenAIClient
@@ -28,44 +26,24 @@ from toolbox.text_processing.pdf import convert_to_markdown
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_OUTPUT_DIR = Path(__file__).parent.parent.parent / "output"
-DEFAULT_MODEL = "gpt-5-mini-2025-08-07"
-DEFAULT_CONCURRENCY = 5
-LLM_RATE_LIMIT_RPS = 10.0
-LLM_TIMEOUT = 180.0
-AIRTABLE_TIMEOUT = 30.0
-
 Document = tuple[DocumentRecord, Path]
-
-
-def _parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="AI Risk Repository pipeline")
-    parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
-    parser.add_argument("--model", default=DEFAULT_MODEL)
-    parser.add_argument("--limit", type=int, default=None)
-    parser.add_argument("--documents", nargs="+", default=None)
-    parser.add_argument(
-        "--stages",
-        nargs="+",
-        type=PipelineStage,
-        choices=[stage.value for stage in STAGE_ORDER],
-        default=[stage.value for stage in STAGE_ORDER],
-    )
-    parser.add_argument("--force", action="store_true")
-    return parser.parse_args()
 
 
 async def _collect_records(
     airtable: AirtableClient,
-    document_ids: Container[str] | None,
-    limit: int | None,
+    settings: RiskRepositorySettings,
 ) -> list[DocumentRecord]:
+    docs_to_process = settings.document_ids
     records: list[DocumentRecord] = []
-    async for record in fetch_records(airtable):
-        if document_ids is not None and record.quick_ref not in document_ids:
+    async for record in fetch_records(
+        client=airtable,
+        base_id=settings.airtable_base_id,
+        table_name=settings.airtable_table_name,
+    ):
+        if docs_to_process is not None and record.quick_ref not in docs_to_process:
             continue
         records.append(record)
-        if limit is not None and len(records) >= limit:
+        if settings.limit is not None and len(records) >= settings.limit:
             break
     logger.info(f"Fetched {len(records)} records")
     return records
@@ -73,10 +51,10 @@ async def _collect_records(
 
 async def _download_all(
     records: list[DocumentRecord],
-    output_dir: Path,
+    settings: RiskRepositorySettings,
 ) -> list[Document]:
     async def download_one(record: DocumentRecord) -> Document | None:
-        pdf_path = await download_paper(record, output_dir)
+        pdf_path = await download_paper(record, settings.output_dir)
         if pdf_path is None:
             return None
         return record, pdf_path
@@ -85,7 +63,7 @@ async def _download_all(
     async for result in concurrent_map(
         items=records,
         func=download_one,
-        max_concurrency=DEFAULT_CONCURRENCY,
+        max_concurrency=settings.concurrency,
         progress_description="Downloading",
     ):
         if result is not None:
@@ -96,27 +74,29 @@ async def _download_all(
 
 async def _screen_all(
     documents: list[Document],
-    *,
     llm: OpenAIClient,
-    output_dir: Path,
-    force: bool,
+    settings: RiskRepositorySettings,
 ) -> None:
     async def screen_one(doc: Document) -> None:
         record, pdf_path = doc
-        output_path = result_path(output_dir, PipelineStage.SCREEN, record.quick_ref)
-        if not force and output_path.exists():
+        output_path = result_path(
+            settings.output_dir, PipelineStage.SCREEN, record.quick_ref
+        )
+        if not settings.force and output_path.exists():
             return
         first_page = convert_to_markdown(pdf_path, pages=[0])
         full_text = convert_to_markdown(pdf_path)
         screening = await screen_document(llm, first_page, full_text)
         save(output_path, screening)
-        invalidate_downstream(output_dir, PipelineStage.SCREEN, record.quick_ref)
+        invalidate_downstream(
+            settings.output_dir, PipelineStage.SCREEN, record.quick_ref
+        )
         logger.info(f"Screened {record.quick_ref}: {screening.decision}")
 
     async for _ in concurrent_map(
         items=documents,
         func=screen_one,
-        max_concurrency=DEFAULT_CONCURRENCY,
+        max_concurrency=settings.concurrency,
         progress_description="Screening",
     ):
         pass
@@ -142,26 +122,28 @@ def _filter_screened(
 
 async def _extract_all(
     documents: list[Document],
-    *,
     llm: OpenAIClient,
-    output_dir: Path,
-    force: bool,
+    settings: RiskRepositorySettings,
 ) -> None:
     async def extract_one(doc: Document) -> None:
         record, pdf_path = doc
-        output_path = result_path(output_dir, PipelineStage.EXTRACT, record.quick_ref)
-        if not force and output_path.exists():
+        output_path = result_path(
+            settings.output_dir, PipelineStage.EXTRACT, record.quick_ref
+        )
+        if not settings.force and output_path.exists():
             return
         full_text = convert_to_markdown(pdf_path)
         extraction = await extract_risks(llm, full_text)
         save(output_path, extraction)
-        invalidate_downstream(output_dir, PipelineStage.EXTRACT, record.quick_ref)
+        invalidate_downstream(
+            settings.output_dir, PipelineStage.EXTRACT, record.quick_ref
+        )
         logger.info(f"Extracted {len(extraction.risks)} risks from {record.quick_ref}")
 
     async for _ in concurrent_map(
         items=documents,
         func=extract_one,
-        max_concurrency=DEFAULT_CONCURRENCY,
+        max_concurrency=settings.concurrency,
         progress_description="Extracting",
     ):
         pass
@@ -169,19 +151,19 @@ async def _extract_all(
 
 async def _classify_all(
     documents: list[Document],
-    *,
     llm: OpenAIClient,
-    output_dir: Path,
-    force: bool,
+    settings: RiskRepositorySettings,
 ) -> None:
     async def classify_one(doc: Document) -> None:
         record, _ = doc
         classify_path = result_path(
-            output_dir, PipelineStage.CLASSIFY, record.quick_ref
+            settings.output_dir, PipelineStage.CLASSIFY, record.quick_ref
         )
-        if not force and classify_path.exists():
+        if not settings.force and classify_path.exists():
             return
-        extract_path = result_path(output_dir, PipelineStage.EXTRACT, record.quick_ref)
+        extract_path = result_path(
+            settings.output_dir, PipelineStage.EXTRACT, record.quick_ref
+        )
         if not extract_path.exists():
             logger.warning(f"Skipping {record.quick_ref}: no extraction results")
             return
@@ -201,43 +183,37 @@ async def _classify_all(
     async for _ in concurrent_map(
         items=documents,
         func=classify_one,
-        max_concurrency=DEFAULT_CONCURRENCY,
+        max_concurrency=settings.concurrency,
         progress_description="Classifying",
     ):
         pass
 
 
 async def amain() -> None:
-    args = _parse_args()
+    settings = RiskRepositorySettings()
     configure_logging(level=logging.INFO, loggers_to_silence=["httpx", "openai"])
-    stages: set[PipelineStage] = set(args.stages)
+    stages: set[PipelineStage] = set(settings.stages)
 
     async with (
-        AirtableClient(timeout=AIRTABLE_TIMEOUT) as airtable,
+        AirtableClient(timeout=settings.airtable_timeout) as airtable,
         OpenAIClient(
-            model=args.model,
-            rate_limit_rps=LLM_RATE_LIMIT_RPS,
-            timeout=LLM_TIMEOUT,
+            model=settings.model,
+            rate_limit_rps=settings.llm_rate_limit_rps,
+            timeout=settings.llm_timeout,
         ) as llm,
     ):
-        records = await _collect_records(airtable, args.documents, args.limit)
-        documents = await _download_all(records, output_dir=args.output_dir)
+        records = await _collect_records(airtable, settings)
+        documents = await _download_all(records, settings)
 
         if PipelineStage.SCREEN in stages:
-            await _screen_all(
-                documents, llm=llm, output_dir=args.output_dir, force=args.force
-            )
-        documents = _filter_screened(documents, output_dir=args.output_dir)
+            await _screen_all(documents, llm, settings)
+        documents = _filter_screened(documents, output_dir=settings.output_dir)
 
         if PipelineStage.EXTRACT in stages:
-            await _extract_all(
-                documents, llm=llm, output_dir=args.output_dir, force=args.force
-            )
+            await _extract_all(documents, llm, settings)
 
         if PipelineStage.CLASSIFY in stages:
-            await _classify_all(
-                documents, llm=llm, output_dir=args.output_dir, force=args.force
-            )
+            await _classify_all(documents, llm, settings)
 
 
 if __name__ == "__main__":
