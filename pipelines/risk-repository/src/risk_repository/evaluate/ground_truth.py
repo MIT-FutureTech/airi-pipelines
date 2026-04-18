@@ -147,6 +147,7 @@ def _resolve_subdomain(ids: list[str], subdomain_map: dict[str, str]) -> str | N
 
 async def _fetch_risks(
     client: Client,
+    *,
     base_id: str,
     doc_id_to_quick_ref: dict[str, str],
     causal_map: dict[str, str],
