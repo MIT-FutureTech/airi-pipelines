@@ -81,8 +81,17 @@ class GroundTruth(BaseModel):
         return by_doc
 
 
-async def fetch_ground_truth(client: AirtableClient, base_id: str) -> GroundTruth:
-    documents = await _fetch_documents(client, base_id)
+async def fetch_ground_truth(
+    client: AirtableClient,
+    *,
+    base_id: str,
+    documents_table_name: str,
+) -> GroundTruth:
+    documents = await _fetch_documents(
+        client=client,
+        base_id=base_id,
+        documents_table_name=documents_table_name,
+    )
     doc_id_to_quick_ref = {doc.record_id: doc.quick_ref for doc in documents}
     causal_map = await _fetch_causal_map(client, base_id)
     subdomain_map = await _fetch_subdomain_map(client, base_id)
@@ -98,9 +107,12 @@ async def fetch_ground_truth(client: AirtableClient, base_id: str) -> GroundTrut
 
 
 async def _fetch_documents(
-    client: AirtableClient, base_id: str
+    client: AirtableClient,
+    *,
+    base_id: str,
+    documents_table_name: str,
 ) -> list[GroundTruthDocument]:
-    table = Table(client, base_id=base_id, table_name="Documents")
+    table = Table(client, base_id=base_id, table_name=documents_table_name)
     documents: list[GroundTruthDocument] = []
     async for record in table.iterate(fields=["QuickRef", "Screening Result"]):
         doc = GroundTruthDocument.model_validate(
