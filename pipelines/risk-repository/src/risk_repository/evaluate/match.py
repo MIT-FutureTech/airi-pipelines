@@ -146,6 +146,7 @@ async def _match_risks(
 
 def _validate_matches(
     matches: list[_LLMMatchPair],
+    *,
     gt_count: int,
     pipeline_count: int,
 ) -> list[_LLMMatchPair]:

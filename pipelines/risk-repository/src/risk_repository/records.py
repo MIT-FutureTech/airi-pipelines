@@ -31,6 +31,7 @@ class DocumentRecord(BaseModel):
 
 async def fetch_records(
     client: Client,
+    *,
     base_id: str,
     table_name: str,
 ) -> AsyncIterator[DocumentRecord]:
