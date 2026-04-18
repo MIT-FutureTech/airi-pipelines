@@ -37,6 +37,7 @@ class ScreeningResult(BaseModel):
 
 async def screen_document(
     client: LLMClient,
+    *,
     first_page: str,
     full_text: str,
 ) -> ScreeningResult:
@@ -59,6 +60,7 @@ async def screen_document(
 
 async def _screen(
     client: LLMClient,
+    *,
     system_prompt: str,
     document: str,
 ) -> _LLMScreeningResponse:

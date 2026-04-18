@@ -8,7 +8,7 @@ from risk_repository.evaluate.match import match_all
 from risk_repository.evaluate.report import print_report
 from risk_repository.evaluate.screen import evaluate_screening
 from risk_repository.settings import EvaluationSettings
-from toolbox.airtable import Client as AirtableClient
+from toolbox.airtable import AirtableClient
 from toolbox.llm import OpenAIClient
 from toolbox.log import configure_logging
 

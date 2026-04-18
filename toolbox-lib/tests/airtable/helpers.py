@@ -6,7 +6,7 @@ from unittest.mock import patch
 from httpx import Request, Response
 from tenacity import Retrying, wait_none
 
-from toolbox.airtable import Client, JsonValue
+from toolbox.airtable import AirtableClient, JsonValue
 
 FAKE_TOKEN = "abc123"
 
@@ -36,8 +36,8 @@ def make_ok_response() -> Response:
 @asynccontextmanager
 async def make_mock_client(
     request_side_effect: Iterable[Response],
-) -> AsyncGenerator[Client]:
-    async with Client(timeout=5.0, token=FAKE_TOKEN) as client:
+) -> AsyncGenerator[AirtableClient]:
+    async with AirtableClient(timeout=5.0, token=FAKE_TOKEN) as client:
         with patch.object(
             client._http_client, "request", side_effect=request_side_effect
         ):
