@@ -11,7 +11,6 @@ from risk_repository.results import PipelineStage, stage_dir
 from toolbox.airtable import Client, Table
 
 BASE_ID = "app32FOUBa5WcUfEO"
-TABLE_NAME = "Documents"
 
 logger = logging.getLogger(__name__)
 
@@ -32,8 +31,12 @@ class DocumentRecord(BaseModel):
     quick_ref: str = Field(validation_alias="QuickRef")
 
 
-async def fetch_records(client: Client) -> AsyncIterator[DocumentRecord]:
-    table = Table(client, BASE_ID, TABLE_NAME)
+async def fetch_records(
+    client: Client,
+    base_id: str,
+    table_name: str,
+) -> AsyncIterator[DocumentRecord]:
+    table = Table(client, base_id, table_name)
     async for record in table.iterate():
         yield DocumentRecord.model_validate({"record_id": record.id, **record.fields})
 
