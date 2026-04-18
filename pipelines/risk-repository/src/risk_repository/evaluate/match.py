@@ -11,9 +11,6 @@ from toolbox.llm import LLMClient, Message
 
 logger = logging.getLogger(__name__)
 
-_CONCURRENCY = 5
-_MAX_ATTEMPTS = 3
-
 
 class MatchPair(BaseModel):
     gt_index: int
@@ -48,11 +45,14 @@ class _MatchValidationError(Exception):
 
 
 async def match_all(
-    gt: GroundTruth,
+    ground_truth: GroundTruth,
     results_dir: Path,
     llm: LLMClient,
+    *,
+    concurrency: int,
+    max_attempts: int,
 ) -> list[DocumentMatchResult]:
-    gt_by_doc = gt.risks_by_document()
+    gt_by_doc = ground_truth.risks_by_document()
 
     class _Input(BaseModel):
         quick_ref: str
@@ -60,7 +60,7 @@ async def match_all(
         pipeline_risks: list[ExtractedRisk]
 
     inputs: list[_Input] = []
-    for doc in gt.documents:
+    for doc in ground_truth.documents:
         extraction_path = result_path(results_dir, PipelineStage.EXTRACT, doc.quick_ref)
         if not extraction_path.exists():
             continue
@@ -75,7 +75,9 @@ async def match_all(
 
     async def match_one(inp: _Input) -> DocumentMatchResult:
         if inp.gt_risks and inp.pipeline_risks:
-            llm_matches = await _match_risks(llm, inp.gt_risks, inp.pipeline_risks)
+            llm_matches = await _match_risks(
+                llm, inp.gt_risks, inp.pipeline_risks, max_attempts=max_attempts
+            )
             matches = [_to_match_pair(m) for m in llm_matches]
             logger.info(
                 f"{inp.quick_ref}: {len(matches)} matches (GT={len(inp.gt_risks)}, pipeline={len(inp.pipeline_risks)})"
@@ -93,7 +95,7 @@ async def match_all(
     async for result in concurrent_map(
         items=inputs,
         func=match_one,
-        max_concurrency=_CONCURRENCY,
+        max_concurrency=concurrency,
         progress_description="Matching",
     ):
         results.append(result)
@@ -111,20 +113,24 @@ async def _match_risks(
     llm: LLMClient,
     gt_risks: list[GroundTruthRisk],
     pipeline_risks: list[ExtractedRisk],
+    *,
+    max_attempts: int,
 ) -> list[_LLMMatchPair]:
     messages: list[Message] = [
         Message(role="system", content=_MATCHING_SYSTEM_PROMPT),
         Message(role="user", content=_format_user_message(gt_risks, pipeline_risks)),
     ]
-    for attempt in range(_MAX_ATTEMPTS):
+    for attempt in range(max_attempts):
         result = await llm.generate_structured(messages, _LLMMatchResponse)
         try:
             return _validate_matches(
-                result.value.matches, len(gt_risks), len(pipeline_risks)
+                result.value.matches,
+                gt_count=len(gt_risks),
+                pipeline_count=len(pipeline_risks),
             )
         except _MatchValidationError as exc:
             logger.warning(f"Match validation failed (attempt {attempt + 1}): {exc}")
-            if attempt + 1 == _MAX_ATTEMPTS:
+            if attempt + 1 == max_attempts:
                 return exc.valid_matches
             messages.append(
                 Message(role="assistant", content=result.value.model_dump_json())
