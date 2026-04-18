@@ -24,9 +24,7 @@ async def amain() -> None:
             documents_table_name=settings.airtable_documents_table,
         )
 
-    gt_quick_refs = {doc.quick_ref for doc in ground_truth.documents}
-    screening = evaluate_screening(gt_quick_refs, settings.results_dir)
-
+    screening = evaluate_screening(ground_truth.documents, settings.results_dir)
     async with OpenAIClient(
         model=settings.model,
         rate_limit_rps=settings.llm_rate_limit_rps,
