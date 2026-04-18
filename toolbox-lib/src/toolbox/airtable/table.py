@@ -36,6 +36,7 @@ class Table:
     def __init__(
         self,
         client: Client,
+        *,
         base_id: str,
         table_name: str,
     ) -> None:

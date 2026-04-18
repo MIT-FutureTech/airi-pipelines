@@ -36,7 +36,7 @@ class Client:
     Usage:
 
         async with Client("pat...", timeout=30.0) as client:
-            table = Table(client, "appXXX", "Records")
+            table = Table(client, base_id="appXXX", table_name="Records")
             records = await table.all(formula="{Status}='Active'")
     """
 

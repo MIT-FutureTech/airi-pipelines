@@ -88,7 +88,7 @@ async def fetch_ground_truth(client: Client, base_id: str) -> GroundTruth:
 
 
 async def _fetch_documents(client: Client, base_id: str) -> list[GroundTruthDocument]:
-    table = Table(client, base_id, "Documents")
+    table = Table(client, base_id=base_id, table_name="Documents")
     documents: list[GroundTruthDocument] = []
     async for record in table.iterate(fields=["QuickRef", "DocTitle", "DocAuthors"]):
         doc = GroundTruthDocument.model_validate(
@@ -100,7 +100,7 @@ async def _fetch_documents(client: Client, base_id: str) -> list[GroundTruthDocu
 
 async def _fetch_causal_map(client: Client, base_id: str) -> dict[str, str]:
     """Map Causal Taxonomy record IDs to their label (e.g. "Entity: Human")."""
-    table = Table(client, base_id, "Causal Taxonomy")
+    table = Table(client, base_id=base_id, table_name="Causal Taxonomy")
     result: dict[str, str] = {}
     async for record in table.iterate(fields=["Causal Factor"]):
         raw = _CausalFactor.model_validate({"record_id": record.id, **record.fields})
@@ -110,7 +110,7 @@ async def _fetch_causal_map(client: Client, base_id: str) -> dict[str, str]:
 
 async def _fetch_subdomain_map(client: Client, base_id: str) -> dict[str, str]:
     """Map Domain Taxonomy (Subdomains) record IDs to their code (e.g. "3.1")."""
-    table = Table(client, base_id, "Domain Taxonomy (Subdomains)")
+    table = Table(client, base_id=base_id, table_name="Domain Taxonomy (Subdomains)")
     result: dict[str, str] = {}
     async for record in table.iterate(fields=["Risk Subdomain Code"]):
         raw = _Subdomain.model_validate({"record_id": record.id, **record.fields})
@@ -152,7 +152,7 @@ async def _fetch_risks(
     causal_map: dict[str, str],
     subdomain_map: dict[str, str],
 ) -> list[GroundTruthRisk]:
-    table = Table(client, base_id, "AI Risk Database")
+    table = Table(client, base_id=base_id, table_name="AI Risk Database")
     risks: list[GroundTruthRisk] = []
     async for record in table.iterate():
         raw = _UnresolvedRisk.model_validate(record.fields)
