@@ -1,7 +1,8 @@
 import logging
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
+from risk_repository.screen import Decision
 from toolbox.airtable import AirtableClient, Table
 
 logger = logging.getLogger(__name__)
@@ -43,8 +44,17 @@ class _UnresolvedRisk(BaseModel):
 class GroundTruthDocument(BaseModel):
     record_id: str
     quick_ref: str = Field(validation_alias="QuickRef")
-    title: str = Field(validation_alias="DocTitle")
-    authors: str = Field(validation_alias="DocAuthors")
+    screening_result: Decision | None = Field(
+        default=None,
+        validation_alias="Screening Result",
+    )
+
+    @field_validator("screening_result", mode="before")
+    @classmethod
+    def normalize_case(cls, value: str | None) -> str | None:
+        if isinstance(value, str):
+            return value.lower()
+        return value
 
 
 class GroundTruthRisk(BaseModel):
@@ -92,7 +102,7 @@ async def _fetch_documents(
 ) -> list[GroundTruthDocument]:
     table = Table(client, base_id=base_id, table_name="Documents")
     documents: list[GroundTruthDocument] = []
-    async for record in table.iterate(fields=["QuickRef", "DocTitle", "DocAuthors"]):
+    async for record in table.iterate(fields=["QuickRef", "Screening Result"]):
         doc = GroundTruthDocument.model_validate(
             {"record_id": record.id, **record.fields}
         )
