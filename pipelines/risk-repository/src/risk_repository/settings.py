@@ -22,6 +22,13 @@ class RiskRepositorySettings(
     cli_hide_none_type=True,
     cli_prog_name="risk_repository",
 ):
+    """Screen, extract, and classify AI risks from academic literature.
+
+    Part of the AI Risk Repository project (https://airisk.mit.edu/).
+    Documents are fetched from Airtable and processed through a multi-stage
+    LLM pipeline. Results are saved to the output directory as JSON files.
+    """
+
     output_dir: Path = Field(
         default=DEFAULT_OUTPUT_DIR,
         description="Directory for pipeline output",
@@ -80,6 +87,12 @@ class EvaluationSettings(
     cli_hide_none_type=True,
     cli_prog_name="risk_repository.evaluate",
 ):
+    """Evaluate pipeline results against ground truth from Airtable.
+
+    Compares screening, extraction, and classification outputs to manually
+    curated data, reporting multiple metrics include precision and recall.
+    """
+
     results_dir: Path = Field(
         default=DEFAULT_OUTPUT_DIR,
         description="Directory containing pipeline results to evaluate",
