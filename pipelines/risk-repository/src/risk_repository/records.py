@@ -17,16 +17,16 @@ class DocumentRecord(BaseModel):
     model_config: ClassVar[ConfigDict] = ConfigDict(populate_by_name=True)
 
     record_id: str
-    paper_id: int | None = Field(None, validation_alias="PaperID")
-    title: str = Field(validation_alias="DocTitle")
-    authors: str = Field(validation_alias="DocAuthors")
-    authors_short: str | None = Field(None, validation_alias="DocAuthors_Short")
-    published_date: date | None = Field(None, validation_alias="PublishedDate")
-    doi: str | None = Field(None, validation_alias="DOI")
-    url: str | None = Field(None, validation_alias="URL")
-    citations: int | None = Field(None, validation_alias="Citations")
-    doc_type: str | None = Field(None, validation_alias="DocType")
     quick_ref: str = Field(validation_alias="QuickRef")
+    paper_id: int | None = Field(default=None, validation_alias="PaperID")
+    title: str | None = Field(default=None, validation_alias="DocTitle")
+    authors: str | None = Field(default=None, validation_alias="DocAuthors")
+    authors_short: str | None = Field(default=None, validation_alias="DocAuthors_Short")
+    published_date: date | None = Field(default=None, validation_alias="PublishedDate")
+    doi: str | None = Field(default=None, validation_alias="DOI")
+    url: str | None = Field(default=None, validation_alias="URL")
+    citations: int | None = Field(default=None, validation_alias="Citations")
+    doc_type: str | None = Field(default=None, validation_alias="DocType")
 
 
 async def fetch_records(
