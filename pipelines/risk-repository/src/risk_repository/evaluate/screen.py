@@ -92,6 +92,8 @@ def evaluate_screening(
 
     precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
     recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+    # Use F-score with beta = 2 since recall is more important than precision.
+    # https://en.wikipedia.org/wiki/F-score#F%CE%B2_score
     f2 = (
         5 * precision * recall / (4 * precision + recall)
         if (precision + recall) > 0
