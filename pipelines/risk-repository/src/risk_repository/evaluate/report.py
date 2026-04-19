@@ -24,7 +24,7 @@ def _print_screening(m: ScreeningMetrics) -> None:
     gt, pl = m.gt_counts, m.pipeline_counts
     print(f"              {'GT':^10}    {'Pipeline':^10}")
     print(
-        f"Include:      {gt.include:>3} ({_pct(gt.include, gt.total):>4})    {pl.exclude:>3} ({_pct(pl.include, pl.total):>4})"
+        f"Include:      {gt.include:>3} ({_pct(gt.include, gt.total):>4})    {pl.include:>3} ({_pct(pl.include, pl.total):>4})"
     )
     print(
         f"Uncertain:    {gt.uncertain:>3} ({_pct(gt.uncertain, gt.total):>4})    {pl.uncertain:>3} ({_pct(pl.uncertain, pl.total):>4})"
