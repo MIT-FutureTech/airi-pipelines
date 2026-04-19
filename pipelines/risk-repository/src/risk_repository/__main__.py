@@ -20,7 +20,7 @@ from risk_repository.screen import Decision, ScreeningResult, screen_document
 from risk_repository.settings import RiskRepositorySettings
 from toolbox.airtable import AirtableClient
 from toolbox.concurrency import concurrent_map
-from toolbox.llm import OpenAIClient
+from toolbox.llm import LLMClient, OpenRouterClient
 from toolbox.log import configure_logging
 from toolbox.text_processing.markdown import truncate_at_heading
 from toolbox.text_processing.pdf import convert_to_markdown
@@ -99,7 +99,7 @@ async def _download_all(
 
 async def _screen_all(
     documents: list[Document],
-    llm: OpenAIClient,
+    llm: LLMClient,
     settings: RiskRepositorySettings,
 ) -> None:
     async def screen_one(doc: Document) -> None:
@@ -155,7 +155,7 @@ def _filter_screened(
 
 async def _extract_all(
     documents: list[Document],
-    llm: OpenAIClient,
+    llm: LLMClient,
     settings: RiskRepositorySettings,
 ) -> None:
     async def extract_one(doc: Document) -> None:
@@ -188,7 +188,7 @@ async def _extract_all(
 
 async def _classify_all(
     documents: list[Document],
-    llm: OpenAIClient,
+    llm: LLMClient,
     settings: RiskRepositorySettings,
 ) -> None:
     async def classify_one(doc: Document) -> None:
@@ -233,7 +233,7 @@ async def amain() -> None:
 
     async with (
         AirtableClient(timeout=settings.airtable_timeout) as airtable,
-        OpenAIClient(
+        OpenRouterClient(
             model=settings.model,
             rate_limit_rps=settings.llm_rate_limit_rps,
             timeout=settings.llm_timeout,

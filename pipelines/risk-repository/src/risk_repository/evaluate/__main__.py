@@ -9,7 +9,7 @@ from risk_repository.evaluate.report import print_report
 from risk_repository.evaluate.screen import evaluate_screening
 from risk_repository.settings import EvaluationSettings
 from toolbox.airtable import AirtableClient
-from toolbox.llm import OpenAIClient
+from toolbox.llm import OpenRouterClient
 from toolbox.log import configure_logging
 
 
@@ -25,7 +25,7 @@ async def amain() -> None:
         )
 
     screening = evaluate_screening(ground_truth.documents, settings.results_dir)
-    async with OpenAIClient(
+    async with OpenRouterClient(
         model=settings.model,
         rate_limit_rps=settings.llm_rate_limit_rps,
         timeout=settings.llm_timeout,
