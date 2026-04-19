@@ -37,15 +37,23 @@ def _print_screening(m: ScreeningMetrics) -> None:
     print(f"Precision:    {m.precision:.1%}")
     print(f"Recall:       {m.recall:.1%}")
     print(f"F2:           {m.f2:.1%}")
+
+    list_limit = 9
     if m.false_negative_refs:
         print()
         print("False negatives (excluded by pipeline, should be included):")
-        for doc in m.false_negative_refs:
+        for i, doc in enumerate(m.false_negative_refs):
+            if i >= list_limit:
+                print(f"And {len(m.false_negative_refs) - i} more")
+                break
             print(f"  - {doc}")
     if m.false_positive_refs:
         print()
         print("False positives (included by pipeline, should be excluded):")
-        for doc in m.false_positive_refs:
+        for i, doc in enumerate(m.false_positive_refs):
+            if i >= list_limit:
+                print(f"And {len(m.false_positive_refs) - i} more")
+                break
             print(f"  - {doc}")
 
 
