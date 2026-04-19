@@ -38,7 +38,7 @@ async def _collect_records(
     async for record in fetch_records(
         client=airtable,
         base_id=settings.airtable_base_id,
-        table_name=settings.airtable_table_name,
+        table_name=settings.airtable_documents_table,
     ):
         if docs_to_process is not None and record.quick_ref not in docs_to_process:
             continue
