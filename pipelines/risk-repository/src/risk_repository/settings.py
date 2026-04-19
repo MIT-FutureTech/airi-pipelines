@@ -6,7 +6,7 @@ from pydantic_settings import BaseSettings
 from risk_repository.results import STAGE_ORDER, PipelineStage
 
 DEFAULT_OUTPUT_DIR = Path(__file__).parent.parent.parent / "output"
-DEFAULT_MODEL = "gpt-5-mini-2025-08-07"
+DEFAULT_MODEL = "openai/gpt-5-mini"
 DEFAULT_CONCURRENCY = 5
 DEFAULT_LLM_RATE_LIMIT_RPS = 10.0
 DEFAULT_AIRTABLE_TIMEOUT = 30.0
