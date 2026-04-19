@@ -74,7 +74,7 @@ class RiskRepositorySettings(
         description="Airtable ID for the AI Risk Repository base",
     )
     airtable_documents_table: str = Field(
-        default="Documents",
+        default="Documents: Training Set",
         description="Airtable table name to fetch documents from",
     )
 
@@ -126,6 +126,6 @@ class EvaluationSettings(
         description="Airtable ID for the AI Risk Repository base",
     )
     airtable_documents_table: str = Field(
-        default="Documents",
+        default="Documents: Training Set",
         description="Airtable table name to fetch documents from",
     )
