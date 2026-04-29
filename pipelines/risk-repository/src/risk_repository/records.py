@@ -1,5 +1,6 @@
 import logging
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Container
+from enum import StrEnum
 from pathlib import Path
 from typing import ClassVar
 
@@ -12,12 +13,18 @@ from toolbox.airtable import AirtableClient, Table
 logger = logging.getLogger(__name__)
 
 
+class TestTrainSplit(StrEnum):
+    TRAIN = "train"
+    TEST = "test"
+
+
 class DocumentRecord(BaseModel):
     model_config: ClassVar[ConfigDict] = ConfigDict(populate_by_name=True)
 
     record_id: str
     quick_ref: str = Field(validation_alias="QuickRef")
     url: str | None = Field(default=None, validation_alias="URL")
+    split: TestTrainSplit = Field(validation_alias="Split")
 
 
 async def fetch_records(
@@ -29,6 +36,18 @@ async def fetch_records(
     table = Table(client, base_id=base_id, table_name=table_name)
     async for record in table.iterate():
         yield DocumentRecord.model_validate({"record_id": record.id, **record.fields})
+
+
+def include_record(
+    record: DocumentRecord,
+    document_ids: Container[str] | None,
+    split: TestTrainSplit,
+) -> bool:
+    if record.split != split:
+        return False
+    if document_ids is None:
+        return True
+    return record.quick_ref in document_ids
 
 
 async def download_paper(

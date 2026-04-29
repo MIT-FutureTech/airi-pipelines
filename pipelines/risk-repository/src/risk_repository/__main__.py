@@ -8,7 +8,12 @@ from risk_repository.classify import (
     classify_causal,
 )
 from risk_repository.extract import ExtractionResult, extract_risks
-from risk_repository.records import DocumentRecord, download_paper, fetch_records
+from risk_repository.records import (
+    DocumentRecord,
+    download_paper,
+    fetch_records,
+    include_record,
+)
 from risk_repository.results import (
     PipelineStage,
     invalidate_downstream,
@@ -65,9 +70,8 @@ async def _collect_records(
         base_id=settings.airtable_base_id,
         table_name=settings.airtable_documents_table,
     ):
-        if docs_to_process is not None and record.quick_ref not in docs_to_process:
-            continue
-        records.append(record)
+        if include_record(record, docs_to_process, settings.split):
+            records.append(record)
         if settings.limit is not None and len(records) >= settings.limit:
             break
     logger.info(f"Fetched {len(records)} records")
