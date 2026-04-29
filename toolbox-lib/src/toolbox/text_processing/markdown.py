@@ -15,8 +15,6 @@ _TAIL_HEADING_KEYWORDS = (
     "appendices",
     "supplementary",
     "supplemental",
-    "acknowledgments",
-    "acknowledgements",
 )
 
 
