@@ -3,6 +3,7 @@ from pathlib import Path
 from pydantic import Field
 from pydantic_settings import BaseSettings
 
+from risk_repository.records import TestTrainSplit
 from risk_repository.results import STAGE_ORDER, PipelineStage
 
 DEFAULT_OUTPUT_DIR = Path(__file__).parent.parent.parent / "output"
@@ -44,6 +45,10 @@ class RiskRepositorySettings(
     document_ids: list[str] | None = Field(
         default=None,
         description="Specific document IDs to process",
+    )
+    split: TestTrainSplit = Field(
+        default=TestTrainSplit.TRAIN,
+        description="Split to process",
     )
     stages: list[PipelineStage] = Field(
         default=STAGE_ORDER,
