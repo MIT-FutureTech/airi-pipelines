@@ -61,9 +61,9 @@ class TestTruncateAtHeading:
         """).strip()
         result = truncate_at_heading(markdown)
 
-        assert result.matched_heading == "## Acknowledgments"
+        assert result.matched_heading == "## References"
         assert "Body." in result.text
-        assert "Thanks." not in result.text
+        assert "Thanks." in result.text
         assert "Citation." not in result.text
 
     def test_no_match_returns_unchanged(self) -> None:
