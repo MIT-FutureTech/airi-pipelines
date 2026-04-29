@@ -61,6 +61,13 @@ class RiskRepositorySettings(
         error.
         """,
     )
+    document_length_limit: int = Field(
+        default=1_000_000,
+        description="""
+        After removing references nd appendices, truncate the document to not
+        exceed this length in terms of number of characters.
+        """,
+    )
     concurrency: int = Field(
         default=DEFAULT_CONCURRENCY,
         description="Maximum number of concurrent tasks",
