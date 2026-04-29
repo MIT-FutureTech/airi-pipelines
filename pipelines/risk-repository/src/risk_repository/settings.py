@@ -54,7 +54,7 @@ class RiskRepositorySettings(
         description="Reprocess documents even if results already exist",
     )
     document_max_truncation_ratio: float = Field(
-        default=0.5,
+        default=0.55,
         description="""
         If truncating references and appendices from the end of the document
         would remove more than this fraction of the document's length, raise an
