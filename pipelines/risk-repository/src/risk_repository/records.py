@@ -1,6 +1,5 @@
 import logging
 from collections.abc import AsyncIterator
-from datetime import date
 from pathlib import Path
 from typing import ClassVar
 
@@ -18,15 +17,7 @@ class DocumentRecord(BaseModel):
 
     record_id: str
     quick_ref: str = Field(validation_alias="QuickRef")
-    paper_id: int | None = Field(default=None, validation_alias="PaperID")
-    title: str | None = Field(default=None, validation_alias="DocTitle")
-    authors: str | None = Field(default=None, validation_alias="DocAuthors")
-    authors_short: str | None = Field(default=None, validation_alias="DocAuthors_Short")
-    published_date: date | None = Field(default=None, validation_alias="PublishedDate")
-    doi: str | None = Field(default=None, validation_alias="DOI")
     url: str | None = Field(default=None, validation_alias="URL")
-    citations: int | None = Field(default=None, validation_alias="Citations")
-    doc_type: str | None = Field(default=None, validation_alias="DocType")
 
 
 async def fetch_records(
