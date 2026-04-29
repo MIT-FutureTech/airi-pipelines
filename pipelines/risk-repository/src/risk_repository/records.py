@@ -55,10 +55,10 @@ async def download_paper(
     output_dir: Path,
 ) -> Path | None:
     download_cache = stage_dir(output_dir, PipelineStage.COLLECT)
-    cached = list(download_cache.glob(f"{record.quick_ref}.*"))
-    if len(cached) == 1:
-        logger.debug(f"Cache hit: {cached[0]}")
-        return cached[0]
+    cached = download_cache / f"{record.quick_ref}.pdf"
+    if cached.exists():
+        logger.debug(f"Cache hit: {cached}")
+        return cached
 
     if (url := record.url) is None:
         logger.warning(f"Paper {record.quick_ref} is missing a URL")
