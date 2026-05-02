@@ -1,6 +1,6 @@
 import logging
-from collections.abc import AsyncIterator
-from datetime import date
+from collections.abc import AsyncIterator, Container
+from enum import StrEnum
 from pathlib import Path
 from typing import ClassVar
 
@@ -13,20 +13,18 @@ from toolbox.airtable import AirtableClient, Table
 logger = logging.getLogger(__name__)
 
 
+class TestTrainSplit(StrEnum):
+    TRAIN = "train"
+    TEST = "test"
+
+
 class DocumentRecord(BaseModel):
     model_config: ClassVar[ConfigDict] = ConfigDict(populate_by_name=True)
 
     record_id: str
     quick_ref: str = Field(validation_alias="QuickRef")
-    paper_id: int | None = Field(default=None, validation_alias="PaperID")
-    title: str | None = Field(default=None, validation_alias="DocTitle")
-    authors: str | None = Field(default=None, validation_alias="DocAuthors")
-    authors_short: str | None = Field(default=None, validation_alias="DocAuthors_Short")
-    published_date: date | None = Field(default=None, validation_alias="PublishedDate")
-    doi: str | None = Field(default=None, validation_alias="DOI")
     url: str | None = Field(default=None, validation_alias="URL")
-    citations: int | None = Field(default=None, validation_alias="Citations")
-    doc_type: str | None = Field(default=None, validation_alias="DocType")
+    split: TestTrainSplit = Field(validation_alias="Split")
 
 
 async def fetch_records(
@@ -40,15 +38,27 @@ async def fetch_records(
         yield DocumentRecord.model_validate({"record_id": record.id, **record.fields})
 
 
+def include_record(
+    record: DocumentRecord,
+    document_ids: Container[str] | None,
+    split: TestTrainSplit,
+) -> bool:
+    if record.split != split:
+        return False
+    if document_ids is None:
+        return True
+    return record.quick_ref in document_ids
+
+
 async def download_paper(
     record: DocumentRecord,
     output_dir: Path,
 ) -> Path | None:
     download_cache = stage_dir(output_dir, PipelineStage.COLLECT)
-    cached = list(download_cache.glob(f"{record.quick_ref}.*"))
-    if len(cached) == 1:
-        logger.debug(f"Cache hit: {cached[0]}")
-        return cached[0]
+    cached = download_cache / f"{record.quick_ref}.pdf"
+    if cached.exists():
+        logger.debug(f"Cache hit: {cached}")
+        return cached
 
     if (url := record.url) is None:
         logger.warning(f"Paper {record.quick_ref} is missing a URL")

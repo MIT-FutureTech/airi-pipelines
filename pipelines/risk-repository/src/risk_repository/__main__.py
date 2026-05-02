@@ -8,7 +8,12 @@ from risk_repository.classify import (
     classify_causal,
 )
 from risk_repository.extract import ExtractionResult, extract_risks
-from risk_repository.records import DocumentRecord, download_paper, fetch_records
+from risk_repository.records import (
+    DocumentRecord,
+    download_paper,
+    fetch_records,
+    include_record,
+)
 from risk_repository.results import (
     PipelineStage,
     invalidate_downstream,
@@ -20,7 +25,7 @@ from risk_repository.screen import Decision, ScreeningResult, screen_document
 from risk_repository.settings import RiskRepositorySettings
 from toolbox.airtable import AirtableClient
 from toolbox.concurrency import concurrent_map
-from toolbox.llm import OpenAIClient
+from toolbox.llm import LLMClient, OpenRouterClient
 from toolbox.log import configure_logging
 from toolbox.text_processing.markdown import truncate_at_heading
 from toolbox.text_processing.pdf import convert_to_markdown
@@ -65,9 +70,8 @@ async def _collect_records(
         base_id=settings.airtable_base_id,
         table_name=settings.airtable_documents_table,
     ):
-        if docs_to_process is not None and record.quick_ref not in docs_to_process:
-            continue
-        records.append(record)
+        if include_record(record, docs_to_process, settings.split):
+            records.append(record)
         if settings.limit is not None and len(records) >= settings.limit:
             break
     logger.info(f"Fetched {len(records)} records")
@@ -99,7 +103,7 @@ async def _download_all(
 
 async def _screen_all(
     documents: list[Document],
-    llm: OpenAIClient,
+    llm: LLMClient,
     settings: RiskRepositorySettings,
 ) -> None:
     async def screen_one(doc: Document) -> None:
@@ -155,7 +159,7 @@ def _filter_screened(
 
 async def _extract_all(
     documents: list[Document],
-    llm: OpenAIClient,
+    llm: LLMClient,
     settings: RiskRepositorySettings,
 ) -> None:
     async def extract_one(doc: Document) -> None:
@@ -188,7 +192,7 @@ async def _extract_all(
 
 async def _classify_all(
     documents: list[Document],
-    llm: OpenAIClient,
+    llm: LLMClient,
     settings: RiskRepositorySettings,
 ) -> None:
     async def classify_one(doc: Document) -> None:
@@ -226,14 +230,14 @@ async def _classify_all(
         pass
 
 
-async def amain() -> None:
+async def main() -> None:
     settings = RiskRepositorySettings()
     configure_logging(level=logging.INFO, loggers_to_silence=["httpx", "openai"])
     stages: set[PipelineStage] = set(settings.stages)
 
     async with (
         AirtableClient(timeout=settings.airtable_timeout) as airtable,
-        OpenAIClient(
+        OpenRouterClient(
             model=settings.model,
             rate_limit_rps=settings.llm_rate_limit_rps,
             timeout=settings.llm_timeout,
@@ -254,4 +258,4 @@ async def amain() -> None:
 
 
 if __name__ == "__main__":
-    asyncio.run(amain())
+    asyncio.run(main())

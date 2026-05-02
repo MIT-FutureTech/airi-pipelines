@@ -77,7 +77,7 @@ _SCREENING_CRITERIA = """
 
 Include documents that:
 - Are reviews, articles, or reports (peer-reviewed or gray literature)
-- Primarily propose NEW frameworks, taxonomies, or other structured classifications of risks from artificial intelligence
+- Enumerate concrete risks from AI using novel frameworks, taxonomies, or other structured classifications
 - Address AI risks broadly, across multiple locations and industry sectors
 
 ## Exclusion criteria
