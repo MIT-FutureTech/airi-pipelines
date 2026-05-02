@@ -46,7 +46,7 @@ class GroundTruthDocument(BaseModel):
     quick_ref: str = Field(validation_alias="QuickRef")
     screening_result: Decision | None = Field(
         default=None,
-        validation_alias="Screening Result",
+        validation_alias="ScreeningResult",
     )
 
     @field_validator("screening_result", mode="before")
@@ -136,7 +136,7 @@ async def _fetch_documents(
 ) -> list[GroundTruthDocument]:
     table = Table(client, base_id=base_id, table_name=documents_table_name)
     documents: list[GroundTruthDocument] = []
-    async for record in table.iterate(fields=["QuickRef", "Screening Result"]):
+    async for record in table.iterate(fields=["QuickRef", "ScreeningResult"]):
         doc = GroundTruthDocument.model_validate(
             {"record_id": record.id, **record.fields}
         )
