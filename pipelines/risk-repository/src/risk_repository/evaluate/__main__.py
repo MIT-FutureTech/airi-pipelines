@@ -13,7 +13,7 @@ from toolbox.llm import OpenRouterClient
 from toolbox.log import configure_logging
 
 
-async def amain() -> None:
+async def main() -> None:
     settings = EvaluationSettings()
     configure_logging(level=logging.INFO, loggers_to_silence=["httpx", "openai"])
 
@@ -44,4 +44,4 @@ async def amain() -> None:
 
 
 if __name__ == "__main__":
-    asyncio.run(amain())
+    asyncio.run(main())
