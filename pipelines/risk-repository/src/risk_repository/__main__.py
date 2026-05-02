@@ -230,7 +230,7 @@ async def _classify_all(
         pass
 
 
-async def amain() -> None:
+async def main() -> None:
     settings = RiskRepositorySettings()
     configure_logging(level=logging.INFO, loggers_to_silence=["httpx", "openai"])
     stages: set[PipelineStage] = set(settings.stages)
@@ -258,4 +258,4 @@ async def amain() -> None:
 
 
 if __name__ == "__main__":
-    asyncio.run(amain())
+    asyncio.run(main())
