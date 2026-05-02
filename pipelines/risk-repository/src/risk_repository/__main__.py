@@ -26,7 +26,7 @@ from risk_repository.settings import RiskRepositorySettings
 from toolbox.airtable import AirtableClient
 from toolbox.concurrency import concurrent_map
 from toolbox.llm import LLMClient, OpenRouterClient
-from toolbox.log import configure_logging
+from toolbox.log import configure_logging, install_log_context_filter, log_context
 from toolbox.text_processing.markdown import truncate_at_heading
 from toolbox.text_processing.pdf import convert_to_markdown
 
@@ -44,14 +44,14 @@ def _load_full_text(
     truncation = truncate_at_heading(convert_to_markdown(pdf_path))
     if truncation.truncation_ratio > max_truncation_ratio:
         raise RuntimeError(
-            f"Truncation of {pdf_path.name} at {truncation.matched_heading!r}"
+            f"Truncation at {truncation.matched_heading!r}"
             + f" would remove {truncation.truncation_ratio:.1%}, "
             + f" exceeding {max_truncation_ratio:.1%}"
         )
     if len(truncation.text) > max_document_length:
         logger.info(
-            f"{pdf_path.name} still exceeds maximum length after section"
-            + f" truncation. Reducing from {truncation.original_length:,d} to"
+            "Document still exceeds maximum length after section truncation."
+            + f" Reducing from {truncation.original_length:,d} to"
             + f" {max_document_length:,d} characters"
             + f" ({max_document_length / truncation.original_length:.1%} of original)."
         )
@@ -108,27 +108,28 @@ async def _screen_all(
 ) -> None:
     async def screen_one(doc: Document) -> None:
         record, pdf_path = doc
-        output_path = result_path(
-            settings.output_dir, PipelineStage.SCREEN, record.quick_ref
-        )
-        if not settings.force and output_path.exists():
-            return
-        first_page = convert_to_markdown(pdf_path, pages=[0])
-        full_text = _load_full_text(
-            pdf_path,
-            max_truncation_ratio=settings.document_max_truncation_ratio,
-            max_document_length=settings.document_length_limit,
-        )
-        screening = await screen_document(
-            client=llm,
-            first_page=first_page,
-            full_text=full_text,
-        )
-        save(output_path, screening)
-        invalidate_downstream(
-            settings.output_dir, PipelineStage.SCREEN, record.quick_ref
-        )
-        logger.info(f"Screened {record.quick_ref}: {screening.decision}")
+        with log_context(quick_ref=record.quick_ref):
+            output_path = result_path(
+                settings.output_dir, PipelineStage.SCREEN, record.quick_ref
+            )
+            if not settings.force and output_path.exists():
+                return
+            first_page = convert_to_markdown(pdf_path, pages=[0])
+            full_text = _load_full_text(
+                pdf_path,
+                max_truncation_ratio=settings.document_max_truncation_ratio,
+                max_document_length=settings.document_length_limit,
+            )
+            screening = await screen_document(
+                client=llm,
+                first_page=first_page,
+                full_text=full_text,
+            )
+            save(output_path, screening)
+            invalidate_downstream(
+                settings.output_dir, PipelineStage.SCREEN, record.quick_ref
+            )
+            logger.info(f"Screening decision: {screening.decision}")
 
     async for _ in concurrent_map(
         items=documents,
@@ -164,22 +165,23 @@ async def _extract_all(
 ) -> None:
     async def extract_one(doc: Document) -> None:
         record, pdf_path = doc
-        output_path = result_path(
-            settings.output_dir, PipelineStage.EXTRACT, record.quick_ref
-        )
-        if not settings.force and output_path.exists():
-            return
-        full_text = _load_full_text(
-            pdf_path=pdf_path,
-            max_truncation_ratio=settings.document_max_truncation_ratio,
-            max_document_length=settings.document_length_limit,
-        )
-        extraction = await extract_risks(llm, full_text)
-        save(output_path, extraction)
-        invalidate_downstream(
-            settings.output_dir, PipelineStage.EXTRACT, record.quick_ref
-        )
-        logger.info(f"Extracted {len(extraction.risks)} risks from {record.quick_ref}")
+        with log_context(quick_ref=record.quick_ref):
+            output_path = result_path(
+                settings.output_dir, PipelineStage.EXTRACT, record.quick_ref
+            )
+            if not settings.force and output_path.exists():
+                return
+            full_text = _load_full_text(
+                pdf_path=pdf_path,
+                max_truncation_ratio=settings.document_max_truncation_ratio,
+                max_document_length=settings.document_length_limit,
+            )
+            extraction = await extract_risks(llm, full_text)
+            save(output_path, extraction)
+            invalidate_downstream(
+                settings.output_dir, PipelineStage.EXTRACT, record.quick_ref
+            )
+            logger.info(f"Extracted {len(extraction.risks)} risks")
 
     async for _ in concurrent_map(
         items=documents,
@@ -197,29 +199,30 @@ async def _classify_all(
 ) -> None:
     async def classify_one(doc: Document) -> None:
         record, _ = doc
-        classify_path = result_path(
-            settings.output_dir, PipelineStage.CLASSIFY, record.quick_ref
-        )
-        if not settings.force and classify_path.exists():
-            return
-        extract_path = result_path(
-            settings.output_dir, PipelineStage.EXTRACT, record.quick_ref
-        )
-        if not extract_path.exists():
-            logger.warning(f"Skipping {record.quick_ref}: no extraction results")
-            return
-        extraction = load(extract_path, ExtractionResult)
-        classified_risks: list[ClassifiedRisk] = []
-        for i, risk in enumerate(extraction.risks):
-            risk_id = f"{record.quick_ref}-{i:03}"
-            causal = await classify_causal(llm, risk)
-            logger.info(
-                f"Classified risk {risk_id} as {causal.model_dump_json(exclude={'reasoning'})}"
+        with log_context(quick_ref=record.quick_ref):
+            classify_path = result_path(
+                settings.output_dir, PipelineStage.CLASSIFY, record.quick_ref
             )
-            classified_risks.append(ClassifiedRisk(risk_id=risk_id, causal=causal))
-        classification = ClassificationResult(risks=classified_risks)
-        save(classify_path, classification)
-        logger.info(f"Classified {len(classified_risks)} risks from {record.quick_ref}")
+            if not settings.force and classify_path.exists():
+                return
+            extract_path = result_path(
+                settings.output_dir, PipelineStage.EXTRACT, record.quick_ref
+            )
+            if not extract_path.exists():
+                logger.warning("Skipping document: no extraction results")
+                return
+            extraction = load(extract_path, ExtractionResult)
+            classified_risks: list[ClassifiedRisk] = []
+            for i, risk in enumerate(extraction.risks):
+                risk_id = f"{record.quick_ref}-{i:03}"
+                with log_context(risk_id=risk_id):
+                    causal = await classify_causal(llm, risk)
+                    serialized = causal.model_dump_json(exclude={"reasoning"})
+                    logger.info(f"Classified risk as {serialized}")
+                classified_risks.append(ClassifiedRisk(risk_id=risk_id, causal=causal))
+            classification = ClassificationResult(risks=classified_risks)
+            save(classify_path, classification)
+            logger.info(f"Classified {len(classified_risks)} risks")
 
     async for _ in concurrent_map(
         items=documents,
@@ -233,6 +236,7 @@ async def _classify_all(
 async def main() -> None:
     settings = RiskRepositorySettings()
     configure_logging(level=logging.INFO, loggers_to_silence=["httpx", "openai"])
+    install_log_context_filter()
     stages: set[PipelineStage] = set(settings.stages)
 
     async with (
