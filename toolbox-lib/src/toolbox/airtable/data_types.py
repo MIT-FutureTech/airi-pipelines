@@ -1,8 +1,7 @@
 from collections.abc import Mapping, Sequence
 from datetime import datetime
-from typing import ClassVar
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, Field
 
 type JsonValue = (
     str | int | float | bool | Sequence[JsonValue] | Mapping[str, JsonValue] | None
@@ -10,52 +9,48 @@ type JsonValue = (
 type JsonObject = Mapping[str, JsonValue]
 
 
-class Record(BaseModel):
+class Record(BaseModel, frozen=True):
     """An Airtable record."""
-
-    model_config: ClassVar[ConfigDict] = ConfigDict(frozen=True)
 
     id: str
     created_time: datetime = Field(alias="createdTime")
     fields: JsonObject
 
 
-class RecordList(BaseModel):
+class RecordList(BaseModel, frozen=True):
     """Paginated list of records returned by the list-records endpoint."""
 
     records: list[Record]
     offset: str | None = None
 
 
-class CreateRecord(BaseModel):
+class CreateRecord(BaseModel, frozen=True):
     """Input for batch_create: a single record's fields."""
 
     fields: JsonObject
 
 
-class UpdateRecord(BaseModel):
+class UpdateRecord(BaseModel, frozen=True):
     """Input for batch_update: a record ID and the fields to update."""
 
     id: str
     fields: JsonObject
 
 
-class DeletedRecord(BaseModel):
+class DeletedRecord(BaseModel, frozen=True):
     """Result of deleting a record."""
-
-    model_config: ClassVar[ConfigDict] = ConfigDict(frozen=True)
 
     id: str
     deleted: bool
 
 
-class DeletedRecordList(BaseModel):
+class DeletedRecordList(BaseModel, frozen=True):
     """Result of a batch-delete request."""
 
     records: list[DeletedRecord]
 
 
-class FieldSpec(BaseModel):
+class FieldSpec(BaseModel, frozen=True):
     """Specification for creating or ensuring a field exists."""
 
     type: str
@@ -63,10 +58,8 @@ class FieldSpec(BaseModel):
     description: str | None = None
 
 
-class FieldSchema(BaseModel):
+class FieldSchema(BaseModel, frozen=True):
     """Field metadata from the Airtable Metadata API."""
-
-    model_config: ClassVar[ConfigDict] = ConfigDict(frozen=True)
 
     id: str
     name: str
@@ -75,17 +68,15 @@ class FieldSchema(BaseModel):
     options: JsonObject | None = None
 
 
-class TableSchema(BaseModel):
+class TableSchema(BaseModel, frozen=True):
     """Table metadata from the Airtable Metadata API."""
-
-    model_config: ClassVar[ConfigDict] = ConfigDict(frozen=True)
 
     id: str
     name: str
     fields: list[FieldSchema]
 
 
-class TablesResponse(BaseModel):
+class TablesResponse(BaseModel, frozen=True):
     """Response from the Metadata API list-tables endpoint."""
 
     tables: list[TableSchema]

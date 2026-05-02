@@ -1,38 +1,30 @@
 from collections.abc import Sequence
-from typing import ClassVar, Literal
+from typing import Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
 
 
 class ToolboxLLMError(Exception):
     pass
 
 
-class Message(BaseModel):
-    model_config: ClassVar[ConfigDict] = ConfigDict(frozen=True)
-
+class Message(BaseModel, frozen=True):
     role: Literal["user", "assistant", "system"]
     content: str
 
 
-class TokenUsage(BaseModel):
-    model_config: ClassVar[ConfigDict] = ConfigDict(frozen=True)
-
+class TokenUsage(BaseModel, frozen=True):
     input_tokens: int
     output_tokens: int
 
 
-class TextResult(BaseModel):
-    model_config: ClassVar[ConfigDict] = ConfigDict(frozen=True)
-
+class TextResult(BaseModel, frozen=True):
     text: str
     model: str
     usage: TokenUsage | None
 
 
-class StructuredResult[T: BaseModel](BaseModel):
-    model_config: ClassVar[ConfigDict] = ConfigDict(frozen=True)
-
+class StructuredResult[T: BaseModel](BaseModel, frozen=True):
     value: T
     model: str
     usage: TokenUsage | None
