@@ -11,20 +11,10 @@ FAKE_USAGE = TokenUsage(input_tokens=10, output_tokens=20)
 
 
 class FakeLLMClient:
-    _category: str
-    _reasoning: str
-    _confidence: float
+    _payload: dict[str, object]
 
-    def __init__(
-        self,
-        *,
-        category: str,
-        reasoning: str,
-        confidence: float,
-    ) -> None:
-        self._category = category
-        self._reasoning = reasoning
-        self._confidence = confidence
+    def __init__(self, *, payload: dict[str, object]) -> None:
+        self._payload = payload
         self.last_messages: Sequence[Message] = []
         self.last_schema: type[BaseModel] | None = None
 
@@ -43,13 +33,7 @@ class FakeLLMClient:
         self.last_messages = messages
         self.last_schema = schema
 
-        value = schema.model_validate(
-            {
-                "category": self._category,
-                "reasoning": self._reasoning,
-                "confidence": self._confidence,
-            }
-        )
+        value = schema.model_validate(self._payload)
         return StructuredResult[T](value=value, model="fake", usage=FAKE_USAGE)
 
     async def close(self) -> None:
