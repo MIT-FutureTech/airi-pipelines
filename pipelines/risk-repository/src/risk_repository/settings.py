@@ -3,10 +3,11 @@ from pathlib import Path
 from pydantic import Field
 from pydantic_settings import BaseSettings
 
+from risk_repository.records import TestTrainSplit
 from risk_repository.results import STAGE_ORDER, PipelineStage
 
 DEFAULT_OUTPUT_DIR = Path(__file__).parent.parent.parent / "output"
-DEFAULT_MODEL = "gpt-5-mini-2025-08-07"
+DEFAULT_MODEL = "openai/gpt-5-mini"
 DEFAULT_CONCURRENCY = 5
 DEFAULT_LLM_RATE_LIMIT_RPS = 10.0
 DEFAULT_AIRTABLE_TIMEOUT = 30.0
@@ -44,6 +45,10 @@ class RiskRepositorySettings(
     document_ids: list[str] | None = Field(
         default=None,
         description="Specific document IDs to process",
+    )
+    split: TestTrainSplit = Field(
+        default=TestTrainSplit.TRAIN,
+        description="Split to process",
     )
     stages: list[PipelineStage] = Field(
         default=STAGE_ORDER,
