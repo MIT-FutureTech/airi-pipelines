@@ -3,7 +3,8 @@ from enum import StrEnum
 from pydantic import BaseModel, Field
 
 from risk_repository.extract import ExtractedRisk
-from toolbox.llm import LLMClient, Message
+from toolbox.classification import LLMClassifier
+from toolbox.llm import LLMClient
 
 
 class Entity(StrEnum):
@@ -44,15 +45,21 @@ class ClassificationResult(BaseModel):
     risks: list[ClassifiedRisk]
 
 
-async def classify_causal(
+def make_causal_classifier(
     client: LLMClient,
+) -> LLMClassifier[CausalClassification]:
+    return LLMClassifier(
+        client=client,
+        system_prompt=CAUSAL_TAXONOMY_SYSTEM_PROMPT,
+        response_schema=CausalClassification,
+    )
+
+
+async def classify_causal(
+    classifier: LLMClassifier[CausalClassification],
     risk: ExtractedRisk,
 ) -> CausalClassification:
-    messages = [
-        Message(role="system", content=CAUSAL_TAXONOMY_SYSTEM_PROMPT),
-        Message(role="user", content=format_classification_user_prompt(risk)),
-    ]
-    result = await client.generate_structured(messages, CausalClassification)
+    result = await classifier.classify(format_classification_user_prompt(risk))
     return result.value
 
 
