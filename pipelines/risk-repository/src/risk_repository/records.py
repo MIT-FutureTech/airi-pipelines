@@ -2,10 +2,9 @@ import logging
 from collections.abc import AsyncIterator, Container
 from enum import StrEnum
 from pathlib import Path
-from typing import ClassVar
 
 import httpx
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, Field
 
 from risk_repository.results import PipelineStage, stage_dir
 from toolbox.airtable import AirtableClient, Table
@@ -19,8 +18,6 @@ class TestTrainSplit(StrEnum):
 
 
 class DocumentRecord(BaseModel):
-    model_config: ClassVar[ConfigDict] = ConfigDict(populate_by_name=True)
-
     record_id: str
     quick_ref: str = Field(validation_alias="QuickRef")
     url: str | None = Field(default=None, validation_alias="URL")
