@@ -1,8 +1,6 @@
-from toolbox.classification.data_types import Category, ClassificationResult
-from toolbox.classification.llm_classifier import LLMClassifier
+from toolbox.classification.llm_classifier import LLMClassifier, format_categories
 
 __all__ = [
-    "Category",
-    "ClassificationResult",
     "LLMClassifier",
+    "format_categories",
 ]
