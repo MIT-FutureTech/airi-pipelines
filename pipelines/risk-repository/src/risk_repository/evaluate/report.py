@@ -41,7 +41,9 @@ def _print_screening(m: ScreeningMetrics) -> None:
     list_limit = 9
     if m.false_negative_refs:
         print()
-        print("False negatives (excluded by pipeline, should be included):")
+        print(
+            f"{m.false_negatives} false negatives (excluded by pipeline, should be included):"
+        )
         for i, doc in enumerate(m.false_negative_refs):
             if i >= list_limit:
                 print(f"And {len(m.false_negative_refs) - i} more")
@@ -49,7 +51,9 @@ def _print_screening(m: ScreeningMetrics) -> None:
             print(f"  - {doc}")
     if m.false_positive_refs:
         print()
-        print("False positives (included by pipeline, should be excluded):")
+        print(
+            f"{m.false_positives} false positives (included by pipeline, should be excluded):"
+        )
         for i, doc in enumerate(m.false_positive_refs):
             if i >= list_limit:
                 print(f"And {len(m.false_positive_refs) - i} more")
