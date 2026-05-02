@@ -6,6 +6,7 @@ from risk_repository.classify import (
     ClassificationResult,
     ClassifiedRisk,
     classify_causal,
+    make_causal_classifier,
 )
 from risk_repository.extract import ExtractionResult, extract_risks
 from risk_repository.records import (
@@ -197,6 +198,8 @@ async def _classify_all(
     llm: LLMClient,
     settings: RiskRepositorySettings,
 ) -> None:
+    classifier = make_causal_classifier(llm)
+
     async def classify_one(doc: Document) -> None:
         record, _ = doc
         with log_context(quick_ref=record.quick_ref):
@@ -216,7 +219,7 @@ async def _classify_all(
             for i, risk in enumerate(extraction.risks):
                 risk_id = f"{record.quick_ref}-{i:03}"
                 with log_context(risk_id=risk_id):
-                    causal = await classify_causal(llm, risk)
+                    causal = await classify_causal(classifier, risk)
                     serialized = causal.model_dump_json(exclude={"reasoning"})
                     logger.info(f"Classified risk as {serialized}")
                 classified_risks.append(ClassifiedRisk(risk_id=risk_id, causal=causal))

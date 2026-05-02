@@ -1,89 +1,53 @@
 from collections.abc import Sequence
-from enum import StrEnum
 
-from pydantic import BaseModel, Field, create_model
+from pydantic import BaseModel
 
-from toolbox.classification.data_types import Category, ClassificationResult
 from toolbox.llm.client import LLMClient
-from toolbox.llm.data_types import Message
+from toolbox.llm.data_types import Message, StructuredResult
 
 
-class LLMClassifier:
-    """Classifies text into one of a set of categories using an LLM.
+class LLMClassifier[T: BaseModel]:
+    """Classifies a user prompt into a typed response model using an LLM.
 
     Usage::
 
+        class Sentiment(BaseModel):
+            reasoning: str
+            sentiment: Literal["positive", "negative"]
+
         classifier = LLMClassifier(
             client=my_llm_client,
-            categories=[Category(name="Positive"), Category(name="Negative")],
             system_prompt="Classify the sentiment of the given text.",
+            response_schema=Sentiment,
         )
         result = await classifier.classify("I love this product!")
     """
 
     _client: LLMClient
-    _categories: Sequence[Category]
     _system_prompt: str
-    _response_schema: type[BaseModel]
+    _response_schema: type[T]
 
     def __init__(
         self,
         client: LLMClient,
-        categories: Sequence[Category],
         *,
         system_prompt: str,
+        response_schema: type[T],
     ) -> None:
-        if len(categories) < 2:
-            raise ValueError("At least two categories are required")
-
         self._client = client
-        self._categories = categories
         self._system_prompt = system_prompt
-        self._response_schema = _build_response_schema(categories)
+        self._response_schema = response_schema
 
-    async def classify(self, text: str) -> ClassificationResult:
-        category_list = _format_categories(self._categories)
-
-        messages = [
+    async def classify(self, user_prompt: str) -> StructuredResult[T]:
+        messages: Sequence[Message] = [
             Message(role="system", content=self._system_prompt),
-            Message(
-                role="user",
-                content=(
-                    f"## Categories\n{category_list}\n\n## Text to classify\n{text}"
-                ),
-            ),
+            Message(role="user", content=user_prompt),
         ]
-
-        result = await self._client.generate_structured(
-            messages,
-            self._response_schema,
-        )
-        return ClassificationResult.model_validate(result.value.model_dump())
+        return await self._client.generate_structured(messages, self._response_schema)
 
 
-def _build_response_schema(categories: Sequence[Category]) -> type[BaseModel]:
-    """Build a Pydantic model whose `category` field is an enum."""
-    category_enum = StrEnum("CategoryName", {cat.name: cat.name for cat in categories})
-    return create_model(
-        "ClassificationResponse",
-        reasoning=(str, Field(description="Brief explanation for this classification")),
-        category=(category_enum, Field(description="The chosen category")),
-        confidence=(
-            float,
-            Field(
-                description="Confidence score between 0 and 1",
-                ge=0.0,
-                le=1.0,
-            ),
-        ),
+def format_categories(categories: dict[str, str]) -> str:
+    """Format a category-to-description mapping as a markdown list."""
+    return "\n".join(
+        f"- {name}: {description}" for name, description in categories.items()
     )
-
-
-def _format_categories(categories: Sequence[Category]) -> str:
-    lines: list[str] = []
-    for cat in categories:
-        if cat.description:
-            lines.append(f"- {cat.name}: {cat.description}")
-        else:
-            lines.append(f"- {cat.name}")
-    return "\n".join(lines)
