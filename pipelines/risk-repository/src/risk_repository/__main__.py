@@ -22,11 +22,36 @@ from toolbox.airtable import AirtableClient
 from toolbox.concurrency import concurrent_map
 from toolbox.llm import OpenAIClient
 from toolbox.log import configure_logging
+from toolbox.text_processing.markdown import truncate_at_heading
 from toolbox.text_processing.pdf import convert_to_markdown
 
 logger = logging.getLogger(__name__)
 
 Document = tuple[DocumentRecord, Path]
+
+
+def _load_full_text(
+    pdf_path: Path,
+    *,
+    max_truncation_ratio: float,
+    max_document_length: int,
+) -> str:
+    truncation = truncate_at_heading(convert_to_markdown(pdf_path))
+    if truncation.truncation_ratio > max_truncation_ratio:
+        raise RuntimeError(
+            f"Truncation of {pdf_path.name} at {truncation.matched_heading!r}"
+            + f" would remove {truncation.truncation_ratio:.1%}, "
+            + f" exceeding {max_truncation_ratio:.1%}"
+        )
+    if len(truncation.text) > max_document_length:
+        logger.info(
+            f"{pdf_path.name} still exceeds maximum length after section"
+            + f" truncation. Reducing from {truncation.original_length:,d} to"
+            + f" {max_document_length:,d} characters"
+            + f" ({max_document_length / truncation.original_length:.1%} of original)."
+        )
+        truncation.text = truncation.text[:max_document_length]
+    return truncation.text
 
 
 async def _collect_records(
@@ -85,7 +110,11 @@ async def _screen_all(
         if not settings.force and output_path.exists():
             return
         first_page = convert_to_markdown(pdf_path, pages=[0])
-        full_text = convert_to_markdown(pdf_path)
+        full_text = _load_full_text(
+            pdf_path,
+            max_truncation_ratio=settings.document_max_truncation_ratio,
+            max_document_length=settings.document_length_limit,
+        )
         screening = await screen_document(
             client=llm,
             first_page=first_page,
@@ -136,7 +165,11 @@ async def _extract_all(
         )
         if not settings.force and output_path.exists():
             return
-        full_text = convert_to_markdown(pdf_path)
+        full_text = _load_full_text(
+            pdf_path=pdf_path,
+            max_truncation_ratio=settings.document_max_truncation_ratio,
+            max_document_length=settings.document_length_limit,
+        )
         extraction = await extract_risks(llm, full_text)
         save(output_path, extraction)
         invalidate_downstream(
