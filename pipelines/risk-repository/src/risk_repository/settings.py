@@ -35,6 +35,12 @@ class RiskRepositorySettings(
         default=DEFAULT_OUTPUT_DIR,
         description="Directory for pipeline output",
     )
+    log_path: Path | None = Field(
+        default=None,
+        description="""
+        Append log output to given path. Default: log.txt in the output directory.
+        """,
+    )
     model: str = Field(
         default=DEFAULT_MODEL,
         description="LLM model to use for all pipeline stages",
