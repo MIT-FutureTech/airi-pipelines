@@ -15,10 +15,18 @@ class Decision(StrEnum):
 
 
 class ScreeningResult(BaseModel):
-    reasoning: str = Field(
-        description="One sentence explaining your decision. Generate this before your decision."
+    criteria_breakdown: str = Field(
+        description=(
+            "Full list of all criteria and whether the document meets each one."
+            + " Write this before you make your decision."
+        ),
     )
-    decision: Decision
+    decision: Decision = Field(
+        description=(
+            "Your final decision. Write this after assessing the document"
+            + " against all the criteria."
+        ),
+    )
 
 
 async def screen_abstract(client: LLMClient, abstract: str) -> ScreeningResult:
@@ -113,8 +121,8 @@ Decide whether the following document should be included.
 
 </document>
 
-Provide your reasoning first. List all the criteria one-by-one and identify whether the
-document meets each one. Then give your decision.
+In your response, first list all the criteria one-by-one and identify whether or
+not the document meets each one. Then give your decision.
 """
 
 
