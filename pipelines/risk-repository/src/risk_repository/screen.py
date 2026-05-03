@@ -69,7 +69,7 @@ _SCREENING_CRITERIA = """
 Include a document if it:
 I1. Is a review, article, or report (peer-reviewed or gray literature)
 I2. Presents a novel framework, taxonomy, or other structured classification for AI risks
-I3. Enumerates a list of concrete AI risks which is stated or implied to be comprehensive (e.g. "Here are the risks from AI...")
+I3. Enumerates a list of concrete AI risks and applies the framework/taxonomy to them
 I4. Addresses AI risks broadly, across multiple locations and industry sectors
 
 ## Exclusion criteria
@@ -81,9 +81,8 @@ E3. Focused only on a single risk category (e.g. solely about fairness, solely a
 E4. Merely cites or discusses existing taxonomies/frameworks without proposing a new one
 E5. Discusses AI impacts, outcomes, or consequences without specifying or classifying concrete risks
 E6. Discusses sources of risk at a high level of abstraction (e.g. sociotechnical sources of risk in AI)
-E7. Explicitly presents an incomplete list of AI risks, containing merely examples (e.g. "Example risks include...")
-E8. Focuses on risk-assessment processes (e.g. how organizations can assess risks from AI) rather than classifying risks
-E9. Is not in English
+E7. Focuses on risk-assessment processes (e.g. how organizations can assess risks from AI) rather than classifying risks
+E8. Is not in English
 
 Interpret all the inclusion and exclusion criteria strictly. Have a high bar for
 including a document.
