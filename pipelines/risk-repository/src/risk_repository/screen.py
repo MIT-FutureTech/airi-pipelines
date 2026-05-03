@@ -80,8 +80,8 @@ Exclude a document if it:
 ## Decision
 
 Respond with one of
-- "include": the document clearly meets the inclusion criteria
-- "exclude": the document clearly meets one or more exclusion criteria
+- "include": the document clearly meets the all of the inclusion criteria and none of the exclusion criteria
+- "exclude": the document clearly fails one or more inclusion criteria or meets one or more exclusion criteria
 - "uncertain": you cannot confidently decide from the available text
 
 Provide your reasoning and then your decision.
