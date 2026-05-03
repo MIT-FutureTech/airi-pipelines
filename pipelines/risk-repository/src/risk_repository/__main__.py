@@ -239,7 +239,11 @@ async def _classify_all(
 
 async def main() -> None:
     settings = RiskRepositorySettings()
-    configure_logging(level=logging.INFO, loggers_to_silence=["httpx", "openai"])
+    configure_logging(
+        level=logging.INFO,
+        filepath=settings.log_path or settings.output_dir / "log.txt",
+        loggers_to_silence=["httpx", "openai"],
+    )
     install_log_context_filter()
     stages: set[PipelineStage] = set(settings.stages)
 
