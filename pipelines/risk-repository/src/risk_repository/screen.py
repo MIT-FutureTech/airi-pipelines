@@ -58,22 +58,22 @@ async def _screen(
 _SCREENING_CRITERIA = """
 ## Inclusion criteria
 
-Include documents that:
-- Are reviews, articles, or reports (peer-reviewed or gray literature)
-- Enumerate concrete risks from AI using novel frameworks, taxonomies, or other structured classifications
-- Address AI risks broadly, across multiple locations and industry sectors
+Include a document if it:
+- Is a review, article, or report (peer-reviewed or gray literature)
+- Enumerates concrete risks from AI using a novel framework, taxonomy, or other structured classification
+- Addresses AI risks broadly, across multiple locations and industry sectors
 
 ## Exclusion criteria
 
-Exclude documents that:
-- Are book chapters, theses, commentaries, editorials, or protocols
-- Focus only on a single location, sector, or specific AI tool (e.g. risks from DALL-E only, AI in radiology only)
-- Focus only on a single risk category (e.g. solely about fairness, solely about deepfakes)
-- Merely cite or discuss existing taxonomies/frameworks without proposing a new one
-- Discuss AI impacts, outcomes, or consequences without specifying or classifying concrete risks
-- Discuss sources of risk at a high level of abstraction (e.g. sociotechnical sources of risk in AI)
-- Focus on risk-assessment processes (e.g. how organizations can assess risks from AI) rather than classifying risks
-- Are not in English
+Exclude a document if it:
+- Is a book chapter, thesis, commentary, editorial, or protocol
+- Focuses only on a single location, sector, or specific AI tool (e.g. risks from DALL-E only, AI in radiology only)
+- Focused only on a single risk category (e.g. solely about fairness, solely about deepfakes)
+- Merely cites or discusses existing taxonomies/frameworks without proposing a new one
+- Discusses AI impacts, outcomes, or consequences without specifying or classifying concrete risks
+- Discusses sources of risk at a high level of abstraction (e.g. sociotechnical sources of risk in AI)
+- Focuses on risk-assessment processes (e.g. how organizations can assess risks from AI) rather than classifying risks
+- Is not in English
 
 ## Decision
 
