@@ -83,9 +83,6 @@ Respond with one of
 - "include": the document clearly meets the all of the inclusion criteria and none of the exclusion criteria
 - "exclude": the document clearly fails one or more inclusion criteria or meets one or more exclusion criteria
 - "uncertain": you cannot confidently decide from the available text
-
-First list all the one-by-one criteria and identify whether the document meets each one.
-Then provide your decision.
 """
 
 ABSTRACT_SCREENING_SYSTEM_PROMPT = f"""
@@ -112,6 +109,9 @@ Decide whether the following document should be included.
 {document}
 
 </document>
+
+Provide your reasoning first. List all the criteria one-by-one and identify whether the
+document meets each one. Then give your decision.
 """
 
 
