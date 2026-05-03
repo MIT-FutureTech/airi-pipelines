@@ -60,7 +60,8 @@ _SCREENING_CRITERIA = """
 
 Include a document if it:
 - Is a review, article, or report (peer-reviewed or gray literature)
-- Enumerates concrete risks from AI using a novel framework, taxonomy, or other structured classification
+- Presents a novel framework, taxonomy, or other structured classification for AI risks
+- Enumerates a list of concrete AI risks which is stated or implied to be comprehensive (e.g. "Here are the risks from AI...")
 - Addresses AI risks broadly, across multiple locations and industry sectors
 
 ## Exclusion criteria
@@ -72,6 +73,7 @@ Exclude a document if it:
 - Merely cites or discusses existing taxonomies/frameworks without proposing a new one
 - Discusses AI impacts, outcomes, or consequences without specifying or classifying concrete risks
 - Discusses sources of risk at a high level of abstraction (e.g. sociotechnical sources of risk in AI)
+- Explicitly presents an incomplete list of AI risks, containing merely examples (e.g. "Example risks include...")
 - Focuses on risk-assessment processes (e.g. how organizations can assess risks from AI) rather than classifying risks
 - Is not in English
 
