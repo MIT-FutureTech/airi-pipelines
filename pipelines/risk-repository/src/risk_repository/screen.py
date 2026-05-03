@@ -84,7 +84,8 @@ Respond with one of
 - "exclude": the document clearly fails one or more inclusion criteria or meets one or more exclusion criteria
 - "uncertain": you cannot confidently decide from the available text
 
-Provide your reasoning and then your decision.
+First list all the one-by-one criteria and identify whether the document meets each one.
+Then provide your decision.
 """
 
 ABSTRACT_SCREENING_SYSTEM_PROMPT = f"""
