@@ -77,6 +77,9 @@ E7. Explicitly presents an incomplete list of AI risks, containing merely exampl
 E8. Focuses on risk-assessment processes (e.g. how organizations can assess risks from AI) rather than classifying risks
 E9. Is not in English
 
+Interpret all the inclusion and exclusion criteria strictly. Have a high bar for
+including a document.
+
 ## Decision
 
 Respond with one of
