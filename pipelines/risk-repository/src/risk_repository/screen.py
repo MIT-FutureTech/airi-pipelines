@@ -68,7 +68,7 @@ Include a document if it:
 
 Exclude a document if it:
 - Is a book chapter, thesis, commentary, editorial, or protocol
-- Focuses only on a single location, sector, or specific AI tool (e.g. risks from DALL-E only, AI in radiology only)
+- Focuses only on a single location, sector, or individual AI system (e.g. risks from DALL-E only, AI in radiology only)
 - Focused only on a single risk category (e.g. solely about fairness, solely about deepfakes)
 - Merely cites or discusses existing taxonomies/frameworks without proposing a new one
 - Discusses AI impacts, outcomes, or consequences without specifying or classifying concrete risks
