@@ -43,8 +43,9 @@ async def extract_risks(
 
 
 EXTRACTION_SYSTEM_PROMPT = """
-You are a research assistant for the AI Risk Repository, a living database of AI risk
-classifications. Your task is to extract every distinct AI risk mentioned in a document.
+You are a research assistant for the AI Risk Repository, a living database of AI risks
+classified according to multiple taxonomies. Your task is to extract every distinct AI
+risk mentioned in a document.
 
 ## Instructions
 

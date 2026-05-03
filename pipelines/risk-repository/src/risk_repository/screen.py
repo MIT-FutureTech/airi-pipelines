@@ -88,17 +88,17 @@ Provide your reasoning and then your decision.
 """
 
 ABSTRACT_SCREENING_SYSTEM_PROMPT = f"""
-You are a research screener for the AI Risk Repository, a living database of AI risk
-classifications. Your task is to decide whether a document should be included for
-full-text review based on its title and abstract.
+You are a research screener for the AI Risk Repository, a living database of AI risks
+classified according to multiple taxonomies. Your task is to decide whether a document
+should be included for full-text review based on its title and abstract.
 
 {_SCREENING_CRITERIA}
 """
 
 FULL_TEXT_SCREENING_SYSTEM_PROMPT = f"""
-You are a research screener for the AI Risk Repository, a living database of AI risk
-classifications. Your task is to decide whether a document should be included in the
-repository.
+You are a research screener for the AI Risk Repository, a living database of AI risks
+classified according to multiple taxonomies. Your task is to decide whether a document
+should be included in the repository.
 
 {_SCREENING_CRITERIA}
 """
