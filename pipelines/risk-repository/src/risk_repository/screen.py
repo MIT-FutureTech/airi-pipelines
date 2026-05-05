@@ -1,3 +1,4 @@
+from collections.abc import Container
 from enum import StrEnum
 
 from pydantic import BaseModel, Field
@@ -38,27 +39,33 @@ class ScreeningResult(BaseModel):
 async def screen_document(
     client: LLMClient,
     *,
+    stages_to_run: Container[ScreenStage],
     first_page: str,
     full_text: str,
 ) -> ScreeningResult:
-    stage1 = await _screen(
-        client,
-        system_prompt=FIRST_PAGE_SCREENING_SYSTEM_PROMPT,
-        document=first_page,
-    )
-    stages = [
-        ScreenStageResult(screen_stage=ScreenStage.FIRST_PAGE, **stage1.model_dump())
-    ]
-    if stage1.decision == Decision.EXCLUDE:
-        return ScreeningResult(screen_stages=stages)
-    stage2 = await _screen(
-        client,
-        system_prompt=FULL_TEXT_SCREENING_SYSTEM_PROMPT,
-        document=full_text,
-    )
-    stages.append(
-        ScreenStageResult(screen_stage=ScreenStage.FULL_TEXT, **stage2.model_dump())
-    )
+    stages: list[ScreenStageResult] = []
+    if ScreenStage.FIRST_PAGE in stages_to_run:
+        stage1 = await _screen(
+            client,
+            system_prompt=FIRST_PAGE_SCREENING_SYSTEM_PROMPT,
+            document=first_page,
+        )
+        stages.append(
+            ScreenStageResult(
+                screen_stage=ScreenStage.FIRST_PAGE, **stage1.model_dump()
+            )
+        )
+        if stage1.decision == Decision.EXCLUDE:
+            return ScreeningResult(screen_stages=stages)
+    if ScreenStage.FULL_TEXT in stages_to_run:
+        stage2 = await _screen(
+            client,
+            system_prompt=FULL_TEXT_SCREENING_SYSTEM_PROMPT,
+            document=full_text,
+        )
+        stages.append(
+            ScreenStageResult(screen_stage=ScreenStage.FULL_TEXT, **stage2.model_dump())
+        )
     return ScreeningResult(screen_stages=stages)
 
 
