@@ -1,9 +1,12 @@
+import logging
 from collections.abc import Container
 from enum import StrEnum
 
 from pydantic import BaseModel, Field
 
 from toolbox.llm import LLMClient, Message
+
+logger = logging.getLogger(__name__)
 
 
 class Decision(StrEnum):
@@ -80,6 +83,10 @@ async def _screen(
         Message(role="user", content=format_screening_user_prompt(document)),
     ]
     result = await client.generate_structured(messages, _LLMScreeningResponse)
+    if result.usage is None:
+        logger.info("No LLM usage returned")
+    else:
+        logger.info(f"Usage: {result.usage.model_dump_json()}")
     return result.value
 
 

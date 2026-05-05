@@ -1,3 +1,4 @@
+import logging
 from enum import StrEnum
 
 from pydantic import BaseModel, Field
@@ -5,6 +6,8 @@ from pydantic import BaseModel, Field
 from risk_repository.extract import ExtractedRisk
 from toolbox.classification import LLMClassifier
 from toolbox.llm import LLMClient
+
+logger = logging.getLogger(__name__)
 
 
 class Entity(StrEnum):
@@ -60,6 +63,10 @@ async def classify_causal(
     risk: ExtractedRisk,
 ) -> CausalClassification:
     result = await classifier.classify(format_classification_user_prompt(risk))
+    if result.usage is None:
+        logger.info("No LLM usage returned")
+    else:
+        logger.info(f"Usage: {result.usage.model_dump_json()}")
     return result.value
 
 
