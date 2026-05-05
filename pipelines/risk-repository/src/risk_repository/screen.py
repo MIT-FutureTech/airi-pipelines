@@ -11,7 +11,7 @@ class Decision(StrEnum):
     UNCERTAIN = "uncertain"
 
 
-class Stage(StrEnum):
+class ScreenStage(StrEnum):
     FIRST_PAGE = "first_page"
     FULL_TEXT = "full_text"
 
@@ -23,16 +23,16 @@ class _LLMScreeningResponse(BaseModel):
     decision: Decision
 
 
-class StageResult(_LLMScreeningResponse):
-    stage: Stage
+class ScreenStageResult(_LLMScreeningResponse):
+    screen_stage: ScreenStage
 
 
 class ScreeningResult(BaseModel):
-    stages: list[StageResult]
+    screen_stages: list[ScreenStageResult]
 
     @property
     def decision(self) -> Decision:
-        return self.stages[-1].decision
+        return self.screen_stages[-1].decision
 
 
 async def screen_document(
@@ -46,16 +46,20 @@ async def screen_document(
         system_prompt=FIRST_PAGE_SCREENING_SYSTEM_PROMPT,
         document=first_page,
     )
-    stages = [StageResult(stage=Stage.FIRST_PAGE, **stage1.model_dump())]
+    stages = [
+        ScreenStageResult(screen_stage=ScreenStage.FIRST_PAGE, **stage1.model_dump())
+    ]
     if stage1.decision == Decision.EXCLUDE:
-        return ScreeningResult(stages=stages)
+        return ScreeningResult(screen_stages=stages)
     stage2 = await _screen(
         client,
         system_prompt=FULL_TEXT_SCREENING_SYSTEM_PROMPT,
         document=full_text,
     )
-    stages.append(StageResult(stage=Stage.FULL_TEXT, **stage2.model_dump()))
-    return ScreeningResult(stages=stages)
+    stages.append(
+        ScreenStageResult(screen_stage=ScreenStage.FULL_TEXT, **stage2.model_dump())
+    )
+    return ScreeningResult(screen_stages=stages)
 
 
 async def _screen(
