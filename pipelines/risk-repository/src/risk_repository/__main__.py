@@ -123,6 +123,7 @@ async def _screen_all(
             )
             screening = await screen_document(
                 client=llm,
+                stages_to_run=settings.screen_stages,
                 first_page=first_page,
                 full_text=full_text,
             )
