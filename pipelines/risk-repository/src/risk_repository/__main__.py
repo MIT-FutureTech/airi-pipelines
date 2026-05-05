@@ -239,30 +239,38 @@ async def _classify_all(
 
 async def main() -> None:
     settings = RiskRepositorySettings()
-    configure_logging(level=logging.INFO, loggers_to_silence=["httpx", "openai"])
-    install_log_context_filter()
-    stages: set[PipelineStage] = set(settings.stages)
+    configure_logging(
+        level=logging.INFO,
+        filepath=settings.log_path or settings.output_dir / "log.txt",
+        loggers_to_silence=["httpx", "openai"],
+    )
+    try:
+        install_log_context_filter()
+        stages: set[PipelineStage] = set(settings.stages)
 
-    async with (
-        AirtableClient(timeout=settings.airtable_timeout) as airtable,
-        OpenRouterClient(
-            model=settings.model,
-            rate_limit_rps=settings.llm_rate_limit_rps,
-            timeout=settings.llm_timeout,
-        ) as llm,
-    ):
-        records = await _collect_records(airtable, settings)
-        documents = await _download_all(records, settings)
+        async with (
+            AirtableClient(timeout=settings.airtable_timeout) as airtable,
+            OpenRouterClient(
+                model=settings.model,
+                rate_limit_rps=settings.llm_rate_limit_rps,
+                timeout=settings.llm_timeout,
+            ) as llm,
+        ):
+            records = await _collect_records(airtable, settings)
+            documents = await _download_all(records, settings)
 
-        if PipelineStage.SCREEN in stages:
-            await _screen_all(documents, llm, settings)
-        documents = _filter_screened(documents, output_dir=settings.output_dir)
+            if PipelineStage.SCREEN in stages:
+                await _screen_all(documents, llm, settings)
+            documents = _filter_screened(documents, output_dir=settings.output_dir)
 
-        if PipelineStage.EXTRACT in stages:
-            await _extract_all(documents, llm, settings)
+            if PipelineStage.EXTRACT in stages:
+                await _extract_all(documents, llm, settings)
 
-        if PipelineStage.CLASSIFY in stages:
-            await _classify_all(documents, llm, settings)
+            if PipelineStage.CLASSIFY in stages:
+                await _classify_all(documents, llm, settings)
+    except:
+        logger.exception("Uncaught exception")
+        raise
 
 
 if __name__ == "__main__":
