@@ -1,6 +1,10 @@
+import logging
+
 from pydantic import BaseModel, Field
 
 from toolbox.llm import LLMClient, Message
+
+logger = logging.getLogger(__name__)
 
 
 class ExtractedRisk(BaseModel):
@@ -31,6 +35,10 @@ async def extract_risks(
         Message(role="user", content=format_extraction_user_prompt(document)),
     ]
     result = await client.generate_structured(messages, ExtractionResult)
+    if result.usage is None:
+        logger.info("No LLM usage returned")
+    else:
+        logger.info(f"Usage: {result.usage.model_dump_json()}")
     return result.value
 
 
