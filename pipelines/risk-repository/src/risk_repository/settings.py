@@ -5,7 +5,6 @@ from pydantic_settings import BaseSettings
 
 from risk_repository.records import TestTrainSplit
 from risk_repository.results import STAGE_ORDER, PipelineStage
-from risk_repository.screen import ScreenStage
 
 DEFAULT_DOWNLOAD_CACHE_DIR = Path(__file__).parent.parent.parent / "download_cache"
 DEFAULT_MODEL = "openai/gpt-5-mini"
@@ -68,10 +67,6 @@ class RiskRepositorySettings(
     stages: list[PipelineStage] = Field(
         default=STAGE_ORDER,
         description="Comma-separated list of pipeline stages to run",
-    )
-    screen_stages: list[ScreenStage] = Field(
-        default=list(ScreenStage),
-        description="Comma-separated list screen stages to run",
     )
     force: bool = Field(
         default=False,
