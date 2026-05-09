@@ -108,13 +108,11 @@ async def _prefetch_full_text(
     settings: RiskRepositorySettings,
 ) -> list[DocumentRecord]:
     async def fetch_one(record: DocumentRecord) -> DocumentRecord | None:
-        full_text = await record.get_full_text(
+        pdf_path = await record.get_pdf(
             cache_dir=settings.download_cache_dir,
             client=http_client,
-            max_truncation_ratio=settings.document_max_truncation_ratio,
-            max_document_length=settings.document_length_limit,
         )
-        return record if full_text is not None else None
+        return record if pdf_path is not None else None
 
     available: list[DocumentRecord] = []
     async for result in concurrent_map(
