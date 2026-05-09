@@ -53,6 +53,7 @@ class DocumentRecord(BaseModel, metaclass=ABCMeta):
                 quick_ref=self.quick_ref,
                 url=None,
                 reason="record has no full-text URL",
+                details=None,
             )
             return None
         return await download_pdf(
@@ -86,6 +87,7 @@ class DocumentRecord(BaseModel, metaclass=ABCMeta):
                 quick_ref=self.quick_ref,
                 url=self._full_text_url(),
                 reason=repr(error),
+                details=None,
             )
             return None
 
@@ -216,6 +218,7 @@ async def download_pdf(
             quick_ref=quick_ref,
             url=url,
             reason=f"HTTP {response.status_code}",
+            details=response.text,
         )
         return None
     response.raise_for_status()
@@ -227,6 +230,7 @@ async def download_pdf(
             quick_ref=quick_ref,
             url=url,
             reason=f"expected PDF, got {content_type}",
+            details=None,
         )
         return None
 
@@ -240,6 +244,7 @@ class DownloadFailure(BaseModel):
     quick_ref: str
     url: str | None
     reason: str
+    details: str | None
     timestamp: datetime
 
 
@@ -253,12 +258,14 @@ def _record_failure(
     quick_ref: str,
     url: str | None,
     reason: str,
+    details: str | None,
 ) -> None:
     cache_dir.mkdir(parents=True, exist_ok=True)
     failure = DownloadFailure(
         quick_ref=quick_ref,
         url=url,
         reason=reason,
+        details=details,
         timestamp=datetime.now(UTC),
     )
     _failure_path(cache_dir, quick_ref).write_text(failure.model_dump_json(indent=2))
