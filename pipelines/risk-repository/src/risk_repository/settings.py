@@ -7,7 +7,6 @@ from risk_repository.records import TestTrainSplit
 from risk_repository.results import STAGE_ORDER, PipelineStage
 from risk_repository.screen import ScreenStage
 
-DEFAULT_OUTPUT_DIR = Path(__file__).parent.parent.parent / "output"
 DEFAULT_DOWNLOAD_CACHE_DIR = Path(__file__).parent.parent.parent / "download_cache"
 DEFAULT_MODEL = "openai/gpt-5-mini"
 DEFAULT_CONCURRENCY = 5
@@ -33,7 +32,7 @@ class RiskRepositorySettings(
     """
 
     output_dir: Path = Field(
-        default=DEFAULT_OUTPUT_DIR,
+        default=...,
         description="Directory for pipeline output",
     )
     download_cache_dir: Path = Field(
@@ -134,7 +133,7 @@ class EvaluationSettings(
     """
 
     results_dir: Path = Field(
-        default=DEFAULT_OUTPUT_DIR,
+        default=...,
         description="Directory containing pipeline results to evaluate",
     )
     model: str = Field(

@@ -11,7 +11,7 @@ First, make sure you've done [the one-time setup instructions](/README.md#setup)
 Then from the root folder of the repository, run
 
 ```bash
-uv run --env-file=.env -m risk_repository
+uv run --env-file=.env -m risk_repository --output-dir results/
 ```
 
 Use `--help` to list the available options.
@@ -24,7 +24,7 @@ truth. It reports several metrics, including precision and recall.
 To evaluate pipeline results against ground truth:
 
 ```bash
-uv run --env-file=.env -m risk_repository.evaluate
+uv run --env-file=.env -m risk_repository.evaluate --results-dir results/
 ```
 
 Use `--help` to list the available options.
