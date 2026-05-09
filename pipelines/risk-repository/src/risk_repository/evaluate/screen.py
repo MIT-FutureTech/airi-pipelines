@@ -12,6 +12,14 @@ def _is_positive(decision: Decision) -> bool:
     return decision in {Decision.INCLUDE, Decision.UNCERTAIN}
 
 
+def _latest_screening_result(results_dir: Path, quick_ref: str) -> Path | None:
+    for stage in (PipelineStage.SCREEN_FULL_TEXT, PipelineStage.SCREEN_ABSTRACT):
+        path = result_path(results_dir, stage, quick_ref)
+        if path.exists():
+            return path
+    return None
+
+
 class DecisionCounts(BaseModel):
     include: int = 0
     exclude: int = 0
@@ -53,8 +61,8 @@ def evaluate_screening(
     for gt_doc in ground_truth_docs:
         if gt_doc.screening_result is None:
             continue
-        path = result_path(results_dir, PipelineStage.SCREEN, gt_doc.quick_ref)
-        if not path.exists():
+        path = _latest_screening_result(results_dir, gt_doc.quick_ref)
+        if path is None:
             continue
 
         gt_decision = gt_doc.screening_result
