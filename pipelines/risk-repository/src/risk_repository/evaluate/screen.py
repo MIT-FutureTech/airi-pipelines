@@ -84,7 +84,7 @@ def evaluate_screening(
             case Decision.UNCERTAIN:
                 pipeline_counts.uncertain += 1
 
-        gt_positive = _is_positive(gt_decision)
+        gt_positive = gt_decision == Decision.INCLUDE
         pred_positive = _is_positive(pipeline_decision)
 
         if pred_positive and gt_positive:
