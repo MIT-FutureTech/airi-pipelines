@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from collections.abc import AsyncIterator
 from pathlib import Path
 
 import httpx
@@ -13,7 +14,8 @@ from risk_repository.classify import (
 from risk_repository.extract import ExtractionResult, extract_risks
 from risk_repository.records import (
     DocumentRecord,
-    fetch_records,
+    fetch_records_from_airtable,
+    fetch_records_from_csv,
     include_record,
     make_http_client,
 )
@@ -45,17 +47,30 @@ async def _collect_records(
 ) -> list[DocumentRecord]:
     docs_to_process = settings.document_ids
     records: list[DocumentRecord] = []
-    async for record in fetch_records(
-        client=airtable,
-        base_id=settings.airtable_base_id,
-        table_name=settings.airtable_documents_table,
-    ):
+    async for record in _iterate_source(airtable, settings):
         if include_record(record, docs_to_process, settings.split):
             records.append(record)
         if settings.limit is not None and len(records) >= settings.limit:
             break
     logger.info(f"Fetched {len(records)} records")
     return records
+
+
+async def _iterate_source(
+    airtable: AirtableClient,
+    settings: RiskRepositorySettings,
+) -> AsyncIterator[DocumentRecord]:
+    if settings.csv_path is not None:
+        async for record in fetch_records_from_csv(settings.csv_path):
+            yield record
+    else:
+        assert settings.airtable_documents_table is not None
+        async for record in fetch_records_from_airtable(
+            client=airtable,
+            base_id=settings.airtable_base_id,
+            table_name=settings.airtable_documents_table,
+        ):
+            yield record
 
 
 async def _prefetch_abstracts(

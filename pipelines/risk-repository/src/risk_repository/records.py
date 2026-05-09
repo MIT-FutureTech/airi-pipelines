@@ -1,4 +1,6 @@
+import csv
 import logging
+import re
 from abc import ABCMeta, abstractmethod
 from collections.abc import AsyncIterator, Container
 from datetime import UTC, datetime
@@ -23,7 +25,11 @@ class TestTrainSplit(StrEnum):
 
 class DocumentRecord(BaseModel, metaclass=ABCMeta):
     quick_ref: str
-    split: TestTrainSplit
+    url: str | None
+    split: TestTrainSplit | None = None
+
+    @abstractmethod
+    def _full_text_url(self) -> str | None: ...
 
     @abstractmethod
     async def get_abstract(
@@ -32,23 +38,6 @@ class DocumentRecord(BaseModel, metaclass=ABCMeta):
         cache_dir: Path,
         client: httpx.AsyncClient,
     ) -> str | None: ...
-
-    @abstractmethod
-    async def get_full_text(
-        self,
-        *,
-        cache_dir: Path,
-        client: httpx.AsyncClient,
-        max_truncation_ratio: float,
-        max_document_length: int,
-    ) -> str | None: ...
-
-
-class AirtableDocumentRecord(DocumentRecord):
-    record_id: str
-    quick_ref: str = Field(validation_alias="QuickRef")
-    url: str | None = Field(default=None, validation_alias="URL")
-    split: TestTrainSplit = Field(validation_alias="Split")
 
     async def _get_pdf(
         self,
@@ -56,35 +45,23 @@ class AirtableDocumentRecord(DocumentRecord):
         cache_dir: Path,
         client: httpx.AsyncClient,
     ) -> Path | None:
-        if self.url is None:
-            logger.warning(f"Paper {self.quick_ref} is missing a URL")
+        url = self._full_text_url()
+        if url is None:
+            logger.warning(f"{self.quick_ref} has no URL to fetch full text")
             _record_failure(
                 cache_dir=cache_dir,
                 quick_ref=self.quick_ref,
                 url=None,
-                reason="record has no URL",
+                reason="record has no full-text URL",
             )
             return None
         return await download_pdf(
-            url=self.url,
+            url=url,
             cache_dir=cache_dir,
             quick_ref=self.quick_ref,
             client=client,
         )
 
-    @override
-    async def get_abstract(
-        self,
-        *,
-        cache_dir: Path,
-        client: httpx.AsyncClient,
-    ) -> str | None:
-        pdf_path = await self._get_pdf(cache_dir=cache_dir, client=client)
-        if pdf_path is None:
-            return None
-        return convert_to_markdown(pdf_path, pages=[0])
-
-    @override
     async def get_full_text(
         self,
         *,
@@ -107,13 +84,79 @@ class AirtableDocumentRecord(DocumentRecord):
             _record_failure(
                 cache_dir=cache_dir,
                 quick_ref=self.quick_ref,
-                url=self.url,
+                url=self._full_text_url(),
                 reason=repr(error),
             )
             return None
 
 
-async def fetch_records(
+class AirtableDocumentRecord(DocumentRecord):
+    record_id: str
+    quick_ref: str = Field(validation_alias="QuickRef")
+    url: str | None = Field(default=None, validation_alias="URL")
+    split: TestTrainSplit | None = Field(default=None, validation_alias="Split")
+
+    @override
+    def _full_text_url(self) -> str | None:
+        return self.url
+
+    @override
+    async def get_abstract(
+        self,
+        *,
+        cache_dir: Path,
+        client: httpx.AsyncClient,
+    ) -> str | None:
+        pdf_path = await self._get_pdf(cache_dir=cache_dir, client=client)
+        if pdf_path is None:
+            return None
+        return convert_to_markdown(pdf_path, pages=[0])
+
+
+class CsvDocumentRecord(DocumentRecord):
+    title: str
+    abstract: str
+    doi: str | None = None
+    url: str | None = Field(default=None, alias="link")
+    author_keywords: str | None = None
+
+    @override
+    def _full_text_url(self) -> str | None:
+        if self.doi:
+            return f"https://doi.org/{self.doi}"
+        return self.url
+
+    @override
+    async def get_abstract(
+        self,
+        *,
+        cache_dir: Path,
+        client: httpx.AsyncClient,
+    ) -> str | None:
+        del cache_dir, client
+        sections = [f"# {self.title}", f"## Abstract\n\n{self.abstract}"]
+        if self.author_keywords:
+            sections.append(f"## Keywords\n\n{self.author_keywords}")
+        return "\n\n".join(sections)
+
+
+async def fetch_records_from_csv(csv_path: Path) -> AsyncIterator[CsvDocumentRecord]:
+    with csv_path.open(newline="") as f:
+        reader = csv.DictReader(f)
+        for idx, row in enumerate(reader):
+            yield CsvDocumentRecord.model_validate(
+                {"quick_ref": _csv_quick_ref(row, idx), **row}
+            )
+
+
+def _csv_quick_ref(row: dict[str, str], idx: int) -> str:
+    doi = row.get("doi")
+    if doi:
+        return re.sub(r"[^A-Za-z0-9._-]", "_", doi)
+    return f"csv-{idx:04d}"
+
+
+async def fetch_records_from_airtable(
     client: AirtableClient,
     *,
     base_id: str,
@@ -131,7 +174,7 @@ def include_record(
     document_ids: Container[str] | None,
     split: TestTrainSplit,
 ) -> bool:
-    if record.split != split:
+    if record.split is not None and record.split != split:
         return False
     if document_ids is None:
         return True
