@@ -53,27 +53,64 @@ async def _collect_records(
     return records
 
 
-async def _download_all(
+async def _prefetch_abstracts(
     records: list[DocumentRecord],
     http_client: httpx.AsyncClient,
     settings: RiskRepositorySettings,
 ) -> list[DocumentRecord]:
-    async def download_one(record: DocumentRecord) -> DocumentRecord | None:
-        abstract = await record.get_abstract(cache_dir=settings.download_cache_dir, client=http_client)
-        if abstract is None:
-            return None
-        return record
+    async def fetch_one(record: DocumentRecord) -> DocumentRecord | None:
+        abstract = await record.get_abstract(
+            cache_dir=settings.download_cache_dir, client=http_client
+        )
+        return record if abstract is not None else None
 
     available: list[DocumentRecord] = []
     async for result in concurrent_map(
         items=records,
-        func=download_one,
+        func=fetch_one,
         max_concurrency=settings.concurrency,
-        progress_description="Downloading",
+        progress_description="Fetching abstracts",
     ):
         if result is not None:
             available.append(result)
-    logger.info(f"Downloaded {len(available)} abstracts")
+    failed = len(records) - len(available)
+    logger.info(f"Abstracts: {len(available)} ok, {failed} failed")
+    if failed:
+        logger.info(
+            f"See {settings.download_cache_dir}/*.failed.json for failure details"
+        )
+    return available
+
+
+async def _prefetch_full_text(
+    records: list[DocumentRecord],
+    http_client: httpx.AsyncClient,
+    settings: RiskRepositorySettings,
+) -> list[DocumentRecord]:
+    async def fetch_one(record: DocumentRecord) -> DocumentRecord | None:
+        full_text = await record.get_full_text(
+            cache_dir=settings.download_cache_dir,
+            client=http_client,
+            max_truncation_ratio=settings.document_max_truncation_ratio,
+            max_document_length=settings.document_length_limit,
+        )
+        return record if full_text is not None else None
+
+    available: list[DocumentRecord] = []
+    async for result in concurrent_map(
+        items=records,
+        func=fetch_one,
+        max_concurrency=settings.concurrency,
+        progress_description="Fetching full texts",
+    ):
+        if result is not None:
+            available.append(result)
+    failed = len(records) - len(available)
+    logger.info(f"Full texts: {len(available)} ok, {failed} failed")
+    if failed:
+        logger.info(
+            f"See {settings.download_cache_dir}/*.failed.json for failure details"
+        )
     return available
 
 
@@ -246,13 +283,14 @@ async def main() -> None:
             make_http_client() as http_client,
         ):
             records = await _collect_records(airtable, settings)
-            records = await _download_all(records, http_client, settings)
 
             if PipelineStage.SCREEN in stages:
+                records = await _prefetch_abstracts(records, http_client, settings)
                 await _screen_all(records, llm, http_client, settings)
             records = _filter_screened(records, output_dir=settings.output_dir)
 
             if PipelineStage.EXTRACT in stages:
+                records = await _prefetch_full_text(records, http_client, settings)
                 await _extract_all(records, llm, http_client, settings)
 
             if PipelineStage.CLASSIFY in stages:
