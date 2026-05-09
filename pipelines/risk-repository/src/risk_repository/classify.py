@@ -71,8 +71,9 @@ async def classify_causal(
 
 
 CAUSAL_TAXONOMY_SYSTEM_PROMPT = """
-You are a classifier for the AI Risk Repository. Your task is to classify an AI risk
-entry using the Causal Taxonomy of AI Risks.
+You are a classifier for the AI Risk Repository, a living database of AI risks
+classified according to multiple taxonomies. Your task is to classify an AI risk entry
+using the Causal Taxonomy of AI Risks.
 
 The Causal Taxonomy has three independent categories. Assign one value per category.
 
