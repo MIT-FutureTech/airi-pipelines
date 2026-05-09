@@ -59,7 +59,7 @@ async def _download_all(
     settings: RiskRepositorySettings,
 ) -> list[DocumentRecord]:
     async def download_one(record: DocumentRecord) -> DocumentRecord | None:
-        abstract = await record.get_abstract(settings.output_dir, client=http_client)
+        abstract = await record.get_abstract(cache_dir=settings.download_cache_dir, client=http_client)
         if abstract is None:
             return None
         return record
@@ -91,14 +91,14 @@ async def _screen_all(
             if not settings.force and output_path.exists():
                 return
             first_page = await record.get_abstract(
-                settings.output_dir,
+                cache_dir=settings.download_cache_dir,
                 client=http_client,
             )
             if first_page is None:
                 logger.warning("Skipping screening: no abstract available")
                 return
             full_text = await record.get_full_text(
-                settings.output_dir,
+                cache_dir=settings.download_cache_dir,
                 client=http_client,
                 max_truncation_ratio=settings.document_max_truncation_ratio,
                 max_document_length=settings.document_length_limit,
@@ -159,7 +159,7 @@ async def _extract_all(
             if not settings.force and output_path.exists():
                 return
             full_text = await record.get_full_text(
-                settings.output_dir,
+                cache_dir=settings.download_cache_dir,
                 client=http_client,
                 max_truncation_ratio=settings.document_max_truncation_ratio,
                 max_document_length=settings.document_length_limit,

@@ -8,14 +8,12 @@ logger = logging.getLogger(__name__)
 
 
 class PipelineStage(StrEnum):
-    COLLECT = "collect"
     SCREEN = "screen"
     EXTRACT = "extract"
     CLASSIFY = "classify"
 
 
 STAGE_ORDER = [
-    PipelineStage.COLLECT,
     PipelineStage.SCREEN,
     PipelineStage.EXTRACT,
     PipelineStage.CLASSIFY,
