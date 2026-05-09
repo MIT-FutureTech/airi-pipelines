@@ -39,7 +39,7 @@ class DocumentRecord(BaseModel, metaclass=ABCMeta):
         client: httpx.AsyncClient,
     ) -> str | None: ...
 
-    async def _get_pdf(
+    async def get_pdf(
         self,
         *,
         cache_dir: Path,
@@ -71,7 +71,7 @@ class DocumentRecord(BaseModel, metaclass=ABCMeta):
         max_truncation_ratio: float,
         max_document_length: int,
     ) -> str | None:
-        pdf_path = await self._get_pdf(cache_dir=cache_dir, client=client)
+        pdf_path = await self.get_pdf(cache_dir=cache_dir, client=client)
         if pdf_path is None:
             return None
         try:
@@ -109,7 +109,7 @@ class AirtableDocumentRecord(DocumentRecord):
         cache_dir: Path,
         client: httpx.AsyncClient,
     ) -> str | None:
-        pdf_path = await self._get_pdf(cache_dir=cache_dir, client=client)
+        pdf_path = await self.get_pdf(cache_dir=cache_dir, client=client)
         if pdf_path is None:
             return None
         return convert_to_markdown(pdf_path, pages=[0])
