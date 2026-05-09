@@ -15,10 +15,18 @@ class Decision(StrEnum):
 
 
 class ScreeningResult(BaseModel):
-    reasoning: str = Field(
-        description="One sentence explaining your decision. Generate this before your decision."
+    criteria_breakdown: str = Field(
+        description=(
+            "Full list of all criteria and whether the document meets each one."
+            + " Write this before you make your decision."
+        ),
     )
-    decision: Decision
+    decision: Decision = Field(
+        description=(
+            "Your final decision. Write this after assessing the document"
+            + " against all the criteria."
+        ),
+    )
 
 
 async def screen_abstract(client: LLMClient, abstract: str) -> ScreeningResult:
@@ -58,45 +66,47 @@ async def _screen(
 _SCREENING_CRITERIA = """
 ## Inclusion criteria
 
-Include documents that:
-- Are reviews, articles, or reports (peer-reviewed or gray literature)
-- Enumerate concrete risks from AI using novel frameworks, taxonomies, or other structured classifications
-- Address AI risks broadly, across multiple locations and industry sectors
+Include a document if it:
+I1. Is a review, article, or report (peer-reviewed or gray literature)
+I2. Presents a novel framework, taxonomy, or other structured classification for AI risks
+I3. Enumerates a list of concrete AI risks and applies the framework/taxonomy to them
+I4. Addresses AI risks broadly, across multiple locations and industry sectors
 
 ## Exclusion criteria
 
-Exclude documents that:
-- Are book chapters, theses, commentaries, editorials, or protocols
-- Focus only on a single location, sector, or specific AI tool (e.g. risks from DALL-E only, AI in radiology only)
-- Focus only on a single risk category (e.g. solely about fairness, solely about deepfakes)
-- Merely cite or discuss existing taxonomies/frameworks without proposing a new one
-- Discuss AI impacts, outcomes, or consequences without specifying or classifying concrete risks
-- Discuss sources of risk at a high level of abstraction (e.g. sociotechnical sources of risk in AI)
-- Focus on risk-assessment processes (e.g. how organizations can assess risks from AI) rather than classifying risks
-- Are not in English
+Exclude a document if it:
+E1. Is a book chapter, thesis, commentary, editorial, or protocol
+E2. Focuses only on a single location, sector, or individual AI system (e.g. risks from DALL-E only, AI in radiology only)
+E3. Focused only on a single risk category (e.g. solely about fairness, solely about deepfakes)
+E4. Merely cites or discusses existing taxonomies/frameworks without proposing a new one
+E5. Discusses AI impacts, outcomes, or consequences without specifying or classifying concrete risks
+E6. Discusses sources of risk at a high level of abstraction (e.g. sociotechnical sources of risk in AI)
+E7. Focuses on risk-assessment processes (e.g. how organizations can assess risks from AI) rather than classifying risks
+E8. Is not in English
+
+Interpret all the inclusion and exclusion criteria strictly. Have a high bar for
+including a document.
 
 ## Decision
 
 Respond with one of
-- "include": the document clearly meets the inclusion criteria
-- "exclude": the document clearly meets one or more exclusion criteria
+- "include": the document clearly meets the all of the inclusion criteria and none of the exclusion criteria
+- "exclude": the document clearly fails one or more inclusion criteria or meets one or more exclusion criteria
 - "uncertain": you cannot confidently decide from the available text
-
-Provide your reasoning and then your decision.
 """
 
 ABSTRACT_SCREENING_SYSTEM_PROMPT = f"""
-You are a research screener for the AI Risk Repository, a living database of AI risk
-classifications. Your task is to decide whether a document should be included for
-full-text review based on its title and abstract.
+You are a research screener for the AI Risk Repository, a living database of AI risks
+classified according to multiple taxonomies. Your task is to decide whether a document
+should be included for full-text review based on its title and abstract.
 
 {_SCREENING_CRITERIA}
 """
 
 FULL_TEXT_SCREENING_SYSTEM_PROMPT = f"""
-You are a research screener for the AI Risk Repository, a living database of AI risk
-classifications. Your task is to decide whether a document should be included in the
-repository.
+You are a research screener for the AI Risk Repository, a living database of AI risks
+classified according to multiple taxonomies. Your task is to decide whether a document
+should be included in the repository.
 
 {_SCREENING_CRITERIA}
 """
@@ -109,6 +119,9 @@ Decide whether the following document should be included.
 {document}
 
 </document>
+
+In your response, first list all the criteria one-by-one and identify whether or
+not the document meets each one. Then give your decision.
 """
 
 
