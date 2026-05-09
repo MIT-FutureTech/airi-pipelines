@@ -1,6 +1,7 @@
 import logging
 from abc import ABCMeta, abstractmethod
 from collections.abc import AsyncIterator, Container
+from datetime import UTC, datetime
 from enum import StrEnum
 from pathlib import Path
 from typing import override
@@ -58,6 +59,12 @@ class AirtableDocumentRecord(DocumentRecord):
     ) -> Path | None:
         if self.url is None:
             logger.warning(f"Paper {self.quick_ref} is missing a URL")
+            _record_failure(
+                cache_dir=cache_dir,
+                quick_ref=self.quick_ref,
+                url=None,
+                reason="record has no URL",
+            )
             return None
         return await download_pdf(
             url=self.url,
@@ -90,11 +97,21 @@ class AirtableDocumentRecord(DocumentRecord):
         pdf_path = await self._get_pdf(output_dir, client=client)
         if pdf_path is None:
             return None
-        return _load_full_text(
-            pdf_path,
-            max_truncation_ratio=max_truncation_ratio,
-            max_document_length=max_document_length,
-        )
+        try:
+            return _load_full_text(
+                pdf_path,
+                max_truncation_ratio=max_truncation_ratio,
+                max_document_length=max_document_length,
+            )
+        except RuntimeError as error:
+            logger.warning(f"Skipping {self.quick_ref}: {error!r}")
+            _record_failure(
+                cache_dir=cache_dir,
+                quick_ref=self.quick_ref,
+                url=self.url,
+                reason=repr(error),
+            )
+            return None
 
 
 async def fetch_records(
@@ -152,16 +169,63 @@ async def download_pdf(
             f"Skipping {quick_ref} due to fetch error: {response.status_code}"
         )
         logger.debug(f"Request for {fetch_url} returned response\n{response.text}")
+        _record_failure(
+            cache_dir=cache_dir,
+            quick_ref=quick_ref,
+            url=url,
+            reason=f"HTTP {response.status_code}",
+        )
         return None
     response.raise_for_status()
     content_type = response.headers.get("content-type", "").split(";")[0].strip()
     if content_type != "application/pdf":
         logger.warning(f"Skipping {quick_ref}: expected PDF, got {content_type}")
+        _record_failure(
+            cache_dir=cache_dir,
+            quick_ref=quick_ref,
+            url=url,
+            reason=f"expected PDF, got {content_type}",
+        )
         return None
 
     cached.write_bytes(response.content)
+    _clear_failure(cache_dir=cache_dir, quick_ref=quick_ref)
     logger.info(f"Downloaded {url} -> {cached}")
     return cached
+
+
+class DownloadFailure(BaseModel):
+    quick_ref: str
+    url: str | None
+    reason: str
+    timestamp: datetime
+
+
+def _failure_path(cache_dir: Path, quick_ref: str) -> Path:
+    return cache_dir / f"{quick_ref}.failed.json"
+
+
+def _record_failure(
+    *,
+    cache_dir: Path,
+    quick_ref: str,
+    url: str | None,
+    reason: str,
+) -> None:
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    failure = DownloadFailure(
+        quick_ref=quick_ref,
+        url=url,
+        reason=reason,
+        timestamp=datetime.now(UTC),
+    )
+    _failure_path(cache_dir, quick_ref).write_text(failure.model_dump_json(indent=2))
+
+
+def _clear_failure(*, cache_dir: Path, quick_ref: str) -> None:
+    path = _failure_path(cache_dir, quick_ref)
+    if path.exists():
+        path.unlink()
 
 
 def _load_full_text(
