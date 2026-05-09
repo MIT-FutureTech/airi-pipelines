@@ -1,13 +1,17 @@
 import logging
+from abc import ABCMeta, abstractmethod
 from collections.abc import AsyncIterator, Container
 from enum import StrEnum
 from pathlib import Path
+from typing import override
 
 import httpx
 from pydantic import BaseModel, Field
 
 from risk_repository.results import PipelineStage, stage_dir
 from toolbox.airtable import AirtableClient, Table
+from toolbox.text_processing.markdown import truncate_at_heading
+from toolbox.text_processing.pdf import convert_to_markdown
 
 logger = logging.getLogger(__name__)
 
@@ -17,11 +21,80 @@ class TestTrainSplit(StrEnum):
     TEST = "test"
 
 
-class DocumentRecord(BaseModel):
+class DocumentRecord(BaseModel, metaclass=ABCMeta):
+    quick_ref: str
+    split: TestTrainSplit
+
+    @abstractmethod
+    async def get_abstract(
+        self,
+        output_dir: Path,
+        *,
+        client: httpx.AsyncClient,
+    ) -> str | None: ...
+
+    @abstractmethod
+    async def get_full_text(
+        self,
+        output_dir: Path,
+        *,
+        client: httpx.AsyncClient,
+        max_truncation_ratio: float,
+        max_document_length: int,
+    ) -> str | None: ...
+
+
+class AirtableDocumentRecord(DocumentRecord):
     record_id: str
     quick_ref: str = Field(validation_alias="QuickRef")
     url: str | None = Field(default=None, validation_alias="URL")
     split: TestTrainSplit = Field(validation_alias="Split")
+
+    async def _get_pdf(
+        self,
+        output_dir: Path,
+        *,
+        client: httpx.AsyncClient,
+    ) -> Path | None:
+        if self.url is None:
+            logger.warning(f"Paper {self.quick_ref} is missing a URL")
+            return None
+        return await download_pdf(
+            url=self.url,
+            cache_dir=stage_dir(output_dir, PipelineStage.COLLECT),
+            quick_ref=self.quick_ref,
+            client=client,
+        )
+
+    @override
+    async def get_abstract(
+        self,
+        output_dir: Path,
+        *,
+        client: httpx.AsyncClient,
+    ) -> str | None:
+        pdf_path = await self._get_pdf(output_dir, client=client)
+        if pdf_path is None:
+            return None
+        return convert_to_markdown(pdf_path, pages=[0])
+
+    @override
+    async def get_full_text(
+        self,
+        output_dir: Path,
+        *,
+        client: httpx.AsyncClient,
+        max_truncation_ratio: float,
+        max_document_length: int,
+    ) -> str | None:
+        pdf_path = await self._get_pdf(output_dir, client=client)
+        if pdf_path is None:
+            return None
+        return _load_full_text(
+            pdf_path,
+            max_truncation_ratio=max_truncation_ratio,
+            max_document_length=max_document_length,
+        )
 
 
 async def fetch_records(
@@ -29,10 +102,12 @@ async def fetch_records(
     *,
     base_id: str,
     table_name: str,
-) -> AsyncIterator[DocumentRecord]:
+) -> AsyncIterator[AirtableDocumentRecord]:
     table = Table(client, base_id=base_id, table_name=table_name)
     async for record in table.iterate():
-        yield DocumentRecord.model_validate({"record_id": record.id, **record.fields})
+        yield AirtableDocumentRecord.model_validate(
+            {"record_id": record.id, **record.fields}
+        )
 
 
 def include_record(
@@ -47,42 +122,67 @@ def include_record(
     return record.quick_ref in document_ids
 
 
-async def download_paper(
-    record: DocumentRecord,
-    output_dir: Path,
-) -> Path | None:
-    download_cache = stage_dir(output_dir, PipelineStage.COLLECT)
-    cached = download_cache / f"{record.quick_ref}.pdf"
-    if cached.exists():
-        logger.debug(f"Cache hit: {cached}")
-        return cached
-
-    if (url := record.url) is None:
-        logger.warning(f"Paper {record.quick_ref} is missing a URL")
-        return None
-    url = url.replace("https://arxiv.org/abs/", "https://arxiv.org/pdf/")
-
-    download_cache.mkdir(parents=True, exist_ok=True)
-    async with httpx.AsyncClient(
+def make_http_client() -> httpx.AsyncClient:
+    return httpx.AsyncClient(
         follow_redirects=True,
         headers={
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:149.0) Gecko/20100101 Firefox/149.0"
         },
-    ) as http:
-        response = await http.get(url)
-        if response.status_code in {403, 404}:
-            logger.warning(
-                f"Skipping {record.quick_ref} due to fetch error: {response.status_code}"
-            )
-            logger.debug(f"Request for {url} returned response\n{response.text}")
-            return None
-        response.raise_for_status()
+    )
+
+
+async def download_pdf(
+    *,
+    url: str,
+    cache_dir: Path,
+    quick_ref: str,
+    client: httpx.AsyncClient,
+) -> Path | None:
+    cached = cache_dir / f"{quick_ref}.pdf"
+    if cached.exists():
+        logger.debug(f"Cache hit: {cached}")
+        return cached
+
+    fetch_url = url.replace("https://arxiv.org/abs/", "https://arxiv.org/pdf/")
+    cache_dir.mkdir(parents=True, exist_ok=True)
+
+    response = await client.get(fetch_url)
+    if response.status_code in {403, 404}:
+        logger.warning(
+            f"Skipping {quick_ref} due to fetch error: {response.status_code}"
+        )
+        logger.debug(f"Request for {fetch_url} returned response\n{response.text}")
+        return None
+    response.raise_for_status()
     content_type = response.headers.get("content-type", "").split(";")[0].strip()
     if content_type != "application/pdf":
-        logger.warning(f"Skipping {record.quick_ref}: expected PDF, got {content_type}")
+        logger.warning(f"Skipping {quick_ref}: expected PDF, got {content_type}")
         return None
 
-    local_path = download_cache / f"{record.quick_ref}.pdf"
-    local_path.write_bytes(response.content)
-    logger.info(f"Downloaded {record.url} -> {local_path}")
-    return local_path
+    cached.write_bytes(response.content)
+    logger.info(f"Downloaded {url} -> {cached}")
+    return cached
+
+
+def _load_full_text(
+    pdf_path: Path,
+    *,
+    max_truncation_ratio: float,
+    max_document_length: int,
+) -> str:
+    truncation = truncate_at_heading(convert_to_markdown(pdf_path))
+    if truncation.truncation_ratio > max_truncation_ratio:
+        raise RuntimeError(
+            f"Truncation at {truncation.matched_heading!r}"
+            + f" would remove {truncation.truncation_ratio:.1%}, "
+            + f" exceeding {max_truncation_ratio:.1%}"
+        )
+    if len(truncation.text) > max_document_length:
+        logger.info(
+            "Document still exceeds maximum length after section truncation."
+            + f" Reducing from {truncation.original_length:,d} to"
+            + f" {max_document_length:,d} characters"
+            + f" ({max_document_length / truncation.original_length:.1%} of original)."
+        )
+        truncation.text = truncation.text[:max_document_length]
+    return truncation.text
