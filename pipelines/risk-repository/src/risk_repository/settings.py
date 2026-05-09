@@ -1,6 +1,7 @@
 from pathlib import Path
+from typing import Self
 
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings
 
 from risk_repository.records import TestTrainSplit
@@ -107,10 +108,30 @@ class RiskRepositorySettings(
         default=DEFAULT_AIRTABLE_BASE_ID,
         description="Airtable ID for the AI Risk Repository base",
     )
-    airtable_documents_table: str = Field(
-        default="Documents: Training Set",
-        description="Airtable table name to fetch documents from",
+    airtable_documents_table: str | None = Field(
+        default=None,
+        description=(
+            "Airtable table name to fetch documents from. Mutually exclusive"
+            " with --csv-path."
+        ),
     )
+    csv_path: Path | None = Field(
+        default=None,
+        description=(
+            "Path to a CSV file of documents to process. Mutually exclusive"
+            " with --airtable-documents-table."
+        ),
+    )
+
+    @model_validator(mode="after")
+    def _validate_input_source(self) -> Self:
+        has_airtable = self.airtable_documents_table is not None
+        has_csv = self.csv_path is not None
+        if has_airtable == has_csv:
+            raise ValueError(
+                "Provide exactly one of --airtable-documents-table or --csv-path"
+            )
+        return self
 
 
 class EvaluationSettings(
