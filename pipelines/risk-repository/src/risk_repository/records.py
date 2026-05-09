@@ -9,7 +9,6 @@ from typing import override
 import httpx
 from pydantic import BaseModel, Field
 
-from risk_repository.results import PipelineStage, stage_dir
 from toolbox.airtable import AirtableClient, Table
 from toolbox.text_processing.markdown import truncate_at_heading
 from toolbox.text_processing.pdf import convert_to_markdown
@@ -29,16 +28,16 @@ class DocumentRecord(BaseModel, metaclass=ABCMeta):
     @abstractmethod
     async def get_abstract(
         self,
-        output_dir: Path,
         *,
+        cache_dir: Path,
         client: httpx.AsyncClient,
     ) -> str | None: ...
 
     @abstractmethod
     async def get_full_text(
         self,
-        output_dir: Path,
         *,
+        cache_dir: Path,
         client: httpx.AsyncClient,
         max_truncation_ratio: float,
         max_document_length: int,
@@ -53,8 +52,8 @@ class AirtableDocumentRecord(DocumentRecord):
 
     async def _get_pdf(
         self,
-        output_dir: Path,
         *,
+        cache_dir: Path,
         client: httpx.AsyncClient,
     ) -> Path | None:
         if self.url is None:
@@ -68,7 +67,7 @@ class AirtableDocumentRecord(DocumentRecord):
             return None
         return await download_pdf(
             url=self.url,
-            cache_dir=stage_dir(output_dir, PipelineStage.COLLECT),
+            cache_dir=cache_dir,
             quick_ref=self.quick_ref,
             client=client,
         )
@@ -76,11 +75,11 @@ class AirtableDocumentRecord(DocumentRecord):
     @override
     async def get_abstract(
         self,
-        output_dir: Path,
         *,
+        cache_dir: Path,
         client: httpx.AsyncClient,
     ) -> str | None:
-        pdf_path = await self._get_pdf(output_dir, client=client)
+        pdf_path = await self._get_pdf(cache_dir=cache_dir, client=client)
         if pdf_path is None:
             return None
         return convert_to_markdown(pdf_path, pages=[0])
@@ -88,13 +87,13 @@ class AirtableDocumentRecord(DocumentRecord):
     @override
     async def get_full_text(
         self,
-        output_dir: Path,
         *,
+        cache_dir: Path,
         client: httpx.AsyncClient,
         max_truncation_ratio: float,
         max_document_length: int,
     ) -> str | None:
-        pdf_path = await self._get_pdf(output_dir, client=client)
+        pdf_path = await self._get_pdf(cache_dir=cache_dir, client=client)
         if pdf_path is None:
             return None
         try:

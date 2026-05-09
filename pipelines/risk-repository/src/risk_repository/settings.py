@@ -8,6 +8,7 @@ from risk_repository.results import STAGE_ORDER, PipelineStage
 from risk_repository.screen import ScreenStage
 
 DEFAULT_OUTPUT_DIR = Path(__file__).parent.parent.parent / "output"
+DEFAULT_DOWNLOAD_CACHE_DIR = Path(__file__).parent.parent.parent / "download_cache"
 DEFAULT_MODEL = "openai/gpt-5-mini"
 DEFAULT_CONCURRENCY = 5
 DEFAULT_LLM_RATE_LIMIT_RPS = 10.0
@@ -34,6 +35,14 @@ class RiskRepositorySettings(
     output_dir: Path = Field(
         default=DEFAULT_OUTPUT_DIR,
         description="Directory for pipeline output",
+    )
+    download_cache_dir: Path = Field(
+        default=DEFAULT_DOWNLOAD_CACHE_DIR,
+        description="""
+        Directory for cached PDF downloads and per-document fetch failure records.
+        This directory lives outside the output directory so it can be shared
+        across runs.
+        """,
     )
     log_path: Path | None = Field(
         default=None,
