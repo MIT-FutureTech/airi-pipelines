@@ -1,6 +1,9 @@
 import asyncio
 import logging
+from collections.abc import AsyncIterator
 from pathlib import Path
+
+import httpx
 
 from risk_repository.classify import (
     ClassificationResult,
@@ -11,9 +14,10 @@ from risk_repository.classify import (
 from risk_repository.extract import ExtractionResult, extract_risks
 from risk_repository.records import (
     DocumentRecord,
-    download_paper,
-    fetch_records,
+    fetch_records_from_airtable,
+    fetch_records_from_csv,
     include_record,
+    make_http_client,
 )
 from risk_repository.results import (
     PipelineStage,
@@ -22,42 +26,19 @@ from risk_repository.results import (
     result_path,
     save,
 )
-from risk_repository.screen import Decision, ScreeningResult, screen_document
+from risk_repository.screen import (
+    Decision,
+    ScreeningResult,
+    screen_abstract,
+    screen_full_text,
+)
 from risk_repository.settings import RiskRepositorySettings
 from toolbox.airtable import AirtableClient
 from toolbox.concurrency import concurrent_map
 from toolbox.llm import LLMClient, OpenRouterClient
 from toolbox.log import configure_logging, install_log_context_filter, log_context
-from toolbox.text_processing.markdown import truncate_at_heading
-from toolbox.text_processing.pdf import convert_to_markdown
 
 logger = logging.getLogger(__name__)
-
-Document = tuple[DocumentRecord, Path]
-
-
-def _load_full_text(
-    pdf_path: Path,
-    *,
-    max_truncation_ratio: float,
-    max_document_length: int,
-) -> str:
-    truncation = truncate_at_heading(convert_to_markdown(pdf_path))
-    if truncation.truncation_ratio > max_truncation_ratio:
-        raise RuntimeError(
-            f"Truncation at {truncation.matched_heading!r}"
-            + f" would remove {truncation.truncation_ratio:.1%}, "
-            + f" exceeding {max_truncation_ratio:.1%}"
-        )
-    if len(truncation.text) > max_document_length:
-        logger.info(
-            "Document still exceeds maximum length after section truncation."
-            + f" Reducing from {truncation.original_length:,d} to"
-            + f" {max_document_length:,d} characters"
-            + f" ({max_document_length / truncation.original_length:.1%} of original)."
-        )
-        truncation.text = truncation.text[:max_document_length]
-    return truncation.text
 
 
 async def _collect_records(
@@ -66,11 +47,7 @@ async def _collect_records(
 ) -> list[DocumentRecord]:
     docs_to_process = settings.document_ids
     records: list[DocumentRecord] = []
-    async for record in fetch_records(
-        client=airtable,
-        base_id=settings.airtable_base_id,
-        table_name=settings.airtable_documents_table,
-    ):
+    async for record in _iterate_source(airtable, settings):
         if include_record(record, docs_to_process, settings.split):
             records.append(record)
         if settings.limit is not None and len(records) >= settings.limit:
@@ -79,105 +56,212 @@ async def _collect_records(
     return records
 
 
-async def _download_all(
-    records: list[DocumentRecord],
+async def _iterate_source(
+    airtable: AirtableClient,
     settings: RiskRepositorySettings,
-) -> list[Document]:
-    async def download_one(record: DocumentRecord) -> Document | None:
-        pdf_path = await download_paper(record, settings.output_dir)
-        if pdf_path is None:
-            return None
-        return record, pdf_path
+) -> AsyncIterator[DocumentRecord]:
+    if settings.csv_path is not None:
+        async for record in fetch_records_from_csv(settings.csv_path):
+            yield record
+    else:
+        assert settings.airtable_documents_table is not None
+        async for record in fetch_records_from_airtable(
+            client=airtable,
+            base_id=settings.airtable_base_id,
+            table_name=settings.airtable_documents_table,
+        ):
+            yield record
 
-    documents: list[Document] = []
+
+async def _prefetch_abstracts(
+    records: list[DocumentRecord],
+    http_client: httpx.AsyncClient,
+    settings: RiskRepositorySettings,
+) -> list[DocumentRecord]:
+    async def fetch_one(record: DocumentRecord) -> DocumentRecord | None:
+        abstract = await record.get_abstract(
+            cache_dir=settings.download_cache_dir, client=http_client
+        )
+        return record if abstract is not None else None
+
+    available: list[DocumentRecord] = []
     async for result in concurrent_map(
         items=records,
-        func=download_one,
+        func=fetch_one,
         max_concurrency=settings.concurrency,
-        progress_description="Downloading",
+        progress_description="Fetching abstracts",
     ):
         if result is not None:
-            documents.append(result)
-    logger.info(f"Downloaded {len(documents)} PDFs")
-    return documents
+            available.append(result)
+    failed = len(records) - len(available)
+    logger.info(f"Abstracts: {len(available)} ok, {failed} failed")
+    if failed:
+        logger.info(
+            f"See {settings.download_cache_dir}/*.failed.json for failure details"
+        )
+    return available
 
 
-async def _screen_all(
-    documents: list[Document],
+async def _prefetch_full_text(
+    records: list[DocumentRecord],
+    http_client: httpx.AsyncClient,
+    settings: RiskRepositorySettings,
+) -> list[DocumentRecord]:
+    async def fetch_one(record: DocumentRecord) -> DocumentRecord | None:
+        pdf_path = await record.get_pdf(
+            cache_dir=settings.download_cache_dir,
+            client=http_client,
+        )
+        return record if pdf_path is not None else None
+
+    available: list[DocumentRecord] = []
+    async for result in concurrent_map(
+        items=records,
+        func=fetch_one,
+        max_concurrency=settings.concurrency,
+        progress_description="Fetching full texts",
+    ):
+        if result is not None:
+            available.append(result)
+    failed = len(records) - len(available)
+    logger.info(f"Full texts: {len(available)} ok, {failed} failed")
+    if failed:
+        logger.info(
+            f"See {settings.download_cache_dir}/*.failed.json for failure details"
+        )
+    return available
+
+
+async def _screen_abstract_all(
+    records: list[DocumentRecord],
     llm: LLMClient,
+    http_client: httpx.AsyncClient,
     settings: RiskRepositorySettings,
 ) -> None:
-    async def screen_one(doc: Document) -> None:
-        record, pdf_path = doc
+    async def screen_one(record: DocumentRecord) -> None:
         with log_context(quick_ref=record.quick_ref):
             output_path = result_path(
-                settings.output_dir, PipelineStage.SCREEN, record.quick_ref
+                settings.output_dir,
+                PipelineStage.SCREEN_ABSTRACT,
+                record.quick_ref,
             )
             if not settings.force and output_path.exists():
                 return
-            first_page = convert_to_markdown(pdf_path, pages=[0])
-            full_text = _load_full_text(
-                pdf_path,
-                max_truncation_ratio=settings.document_max_truncation_ratio,
-                max_document_length=settings.document_length_limit,
+            abstract = await record.get_abstract(
+                cache_dir=settings.download_cache_dir,
+                client=http_client,
             )
-            screening = await screen_document(
-                client=llm,
-                stages_to_run=settings.screen_stages,
-                first_page=first_page,
-                full_text=full_text,
-            )
+            if abstract is None:
+                logger.warning("Skipping screening: no abstract available")
+                return
+            screening = await screen_abstract(llm, abstract)
             save(output_path, screening)
             invalidate_downstream(
-                settings.output_dir, PipelineStage.SCREEN, record.quick_ref
+                settings.output_dir,
+                PipelineStage.SCREEN_ABSTRACT,
+                record.quick_ref,
             )
-            logger.info(f"Screening decision: {screening.decision}")
+            logger.info(f"Abstract screening decision: {screening.decision}")
 
     async for _ in concurrent_map(
-        items=documents,
+        items=records,
         func=screen_one,
         max_concurrency=settings.concurrency,
-        progress_description="Screening",
+        progress_description="Screening abstracts",
     ):
         pass
 
 
-def _filter_screened(
-    documents: list[Document],
+async def _screen_full_text_all(
+    records: list[DocumentRecord],
+    llm: LLMClient,
+    http_client: httpx.AsyncClient,
+    settings: RiskRepositorySettings,
+) -> None:
+    async def screen_one(record: DocumentRecord) -> None:
+        with log_context(quick_ref=record.quick_ref):
+            output_path = result_path(
+                settings.output_dir,
+                PipelineStage.SCREEN_FULL_TEXT,
+                record.quick_ref,
+            )
+            if not settings.force and output_path.exists():
+                return
+            full_text = await record.get_full_text(
+                cache_dir=settings.download_cache_dir,
+                client=http_client,
+                max_truncation_ratio=settings.document_max_truncation_ratio,
+                max_document_length=settings.document_length_limit,
+            )
+            if full_text is None:
+                logger.warning("Skipping screening: no full text available")
+                return
+            screening = await screen_full_text(llm, full_text)
+            save(output_path, screening)
+            invalidate_downstream(
+                settings.output_dir,
+                PipelineStage.SCREEN_FULL_TEXT,
+                record.quick_ref,
+            )
+            logger.info(f"Full-text screening decision: {screening.decision}")
+
+    async for _ in concurrent_map(
+        items=records,
+        func=screen_one,
+        max_concurrency=settings.concurrency,
+        progress_description="Screening full texts",
+    ):
+        pass
+
+
+def _filter_by_screening(
+    records: list[DocumentRecord],
     output_dir: Path,
-) -> list[Document]:
-    included: list[Document] = []
-    for record, pdf_path in documents:
-        output_path = result_path(output_dir, PipelineStage.SCREEN, record.quick_ref)
+    stage: PipelineStage,
+) -> list[DocumentRecord]:
+    included: list[DocumentRecord] = []
+    unscreened = 0
+    for record in records:
+        output_path = result_path(output_dir, stage, record.quick_ref)
         if not output_path.exists():
-            logger.warning(f"Skipping {record.quick_ref}: no screening results")
+            unscreened += 1
+            included.append(record)
             continue
         screening = load(output_path, ScreeningResult)
         if screening.decision == Decision.EXCLUDE:
             continue
-        included.append((record, pdf_path))
-    logger.info(f"{len(included)} records passed screening")
+        included.append(record)
+    if unscreened:
+        logger.info(
+            f"{unscreened}/{len(records)} records have no {stage.value} result;"
+            + " passing through unfiltered"
+        )
+    logger.info(f"{len(included)} records passed {stage.value}")
     return included
 
 
 async def _extract_all(
-    documents: list[Document],
+    records: list[DocumentRecord],
     llm: LLMClient,
+    http_client: httpx.AsyncClient,
     settings: RiskRepositorySettings,
 ) -> None:
-    async def extract_one(doc: Document) -> None:
-        record, pdf_path = doc
+    async def extract_one(record: DocumentRecord) -> None:
         with log_context(quick_ref=record.quick_ref):
             output_path = result_path(
                 settings.output_dir, PipelineStage.EXTRACT, record.quick_ref
             )
             if not settings.force and output_path.exists():
                 return
-            full_text = _load_full_text(
-                pdf_path=pdf_path,
+            full_text = await record.get_full_text(
+                cache_dir=settings.download_cache_dir,
+                client=http_client,
                 max_truncation_ratio=settings.document_max_truncation_ratio,
                 max_document_length=settings.document_length_limit,
             )
+            if full_text is None:
+                logger.warning("Skipping extraction: no full text available")
+                return
             extraction = await extract_risks(llm, full_text)
             save(output_path, extraction)
             invalidate_downstream(
@@ -186,7 +270,7 @@ async def _extract_all(
             logger.info(f"Extracted {len(extraction.risks)} risks")
 
     async for _ in concurrent_map(
-        items=documents,
+        items=records,
         func=extract_one,
         max_concurrency=settings.concurrency,
         progress_description="Extracting",
@@ -195,14 +279,13 @@ async def _extract_all(
 
 
 async def _classify_all(
-    documents: list[Document],
+    records: list[DocumentRecord],
     llm: LLMClient,
     settings: RiskRepositorySettings,
 ) -> None:
     classifier = make_causal_classifier(llm)
 
-    async def classify_one(doc: Document) -> None:
-        record, _ = doc
+    async def classify_one(record: DocumentRecord) -> None:
         with log_context(quick_ref=record.quick_ref):
             classify_path = result_path(
                 settings.output_dir, PipelineStage.CLASSIFY, record.quick_ref
@@ -229,7 +312,7 @@ async def _classify_all(
             logger.info(f"Classified {len(classified_risks)} risks")
 
     async for _ in concurrent_map(
-        items=documents,
+        items=records,
         func=classify_one,
         max_concurrency=settings.concurrency,
         progress_description="Classifying",
@@ -255,19 +338,33 @@ async def main() -> None:
                 rate_limit_rps=settings.llm_rate_limit_rps,
                 timeout=settings.llm_timeout,
             ) as llm,
+            make_http_client() as http_client,
         ):
             records = await _collect_records(airtable, settings)
-            documents = await _download_all(records, settings)
 
-            if PipelineStage.SCREEN in stages:
-                await _screen_all(documents, llm, settings)
-            documents = _filter_screened(documents, output_dir=settings.output_dir)
+            if PipelineStage.SCREEN_ABSTRACT in stages:
+                records = await _prefetch_abstracts(records, http_client, settings)
+                await _screen_abstract_all(records, llm, http_client, settings)
+            records = _filter_by_screening(
+                records, settings.output_dir, PipelineStage.SCREEN_ABSTRACT
+            )
+
+            full_text_prefetched = False
+            if PipelineStage.SCREEN_FULL_TEXT in stages:
+                records = await _prefetch_full_text(records, http_client, settings)
+                full_text_prefetched = True
+                await _screen_full_text_all(records, llm, http_client, settings)
+            records = _filter_by_screening(
+                records, settings.output_dir, PipelineStage.SCREEN_FULL_TEXT
+            )
 
             if PipelineStage.EXTRACT in stages:
-                await _extract_all(documents, llm, settings)
+                if not full_text_prefetched:
+                    records = await _prefetch_full_text(records, http_client, settings)
+                await _extract_all(records, llm, http_client, settings)
 
             if PipelineStage.CLASSIFY in stages:
-                await _classify_all(documents, llm, settings)
+                await _classify_all(records, llm, settings)
     except:
         logger.exception("Uncaught exception")
         raise

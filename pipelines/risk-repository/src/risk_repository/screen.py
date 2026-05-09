@@ -1,5 +1,4 @@
 import logging
-from collections.abc import Container
 from enum import StrEnum
 
 from pydantic import BaseModel, Field
@@ -15,61 +14,27 @@ class Decision(StrEnum):
     UNCERTAIN = "uncertain"
 
 
-class ScreenStage(StrEnum):
-    FIRST_PAGE = "first_page"
-    FULL_TEXT = "full_text"
-
-
-class _LLMScreeningResponse(BaseModel):
+class ScreeningResult(BaseModel):
     reasoning: str = Field(
         description="One sentence explaining your decision. Generate this before your decision."
     )
     decision: Decision
 
 
-class ScreenStageResult(_LLMScreeningResponse):
-    screen_stage: ScreenStage
+async def screen_abstract(client: LLMClient, abstract: str) -> ScreeningResult:
+    return await _screen(
+        client,
+        system_prompt=ABSTRACT_SCREENING_SYSTEM_PROMPT,
+        document=abstract,
+    )
 
 
-class ScreeningResult(BaseModel):
-    screen_stages: list[ScreenStageResult]
-
-    @property
-    def decision(self) -> Decision:
-        return self.screen_stages[-1].decision
-
-
-async def screen_document(
-    client: LLMClient,
-    *,
-    stages_to_run: Container[ScreenStage],
-    first_page: str,
-    full_text: str,
-) -> ScreeningResult:
-    stages: list[ScreenStageResult] = []
-    if ScreenStage.FIRST_PAGE in stages_to_run:
-        stage1 = await _screen(
-            client,
-            system_prompt=FIRST_PAGE_SCREENING_SYSTEM_PROMPT,
-            document=first_page,
-        )
-        stages.append(
-            ScreenStageResult(
-                screen_stage=ScreenStage.FIRST_PAGE, **stage1.model_dump()
-            )
-        )
-        if stage1.decision == Decision.EXCLUDE:
-            return ScreeningResult(screen_stages=stages)
-    if ScreenStage.FULL_TEXT in stages_to_run:
-        stage2 = await _screen(
-            client,
-            system_prompt=FULL_TEXT_SCREENING_SYSTEM_PROMPT,
-            document=full_text,
-        )
-        stages.append(
-            ScreenStageResult(screen_stage=ScreenStage.FULL_TEXT, **stage2.model_dump())
-        )
-    return ScreeningResult(screen_stages=stages)
+async def screen_full_text(client: LLMClient, full_text: str) -> ScreeningResult:
+    return await _screen(
+        client,
+        system_prompt=FULL_TEXT_SCREENING_SYSTEM_PROMPT,
+        document=full_text,
+    )
 
 
 async def _screen(
@@ -77,12 +42,12 @@ async def _screen(
     *,
     system_prompt: str,
     document: str,
-) -> _LLMScreeningResponse:
+) -> ScreeningResult:
     messages = [
         Message(role="system", content=system_prompt),
-        Message(role="user", content=format_screening_user_prompt(document)),
+        Message(role="user", content=_format_screening_user_prompt(document)),
     ]
-    result = await client.generate_structured(messages, _LLMScreeningResponse)
+    result = await client.generate_structured(messages, ScreeningResult)
     if result.usage is None:
         logger.info("No LLM usage returned")
     else:
@@ -120,7 +85,7 @@ Respond with one of
 Provide your reasoning and then your decision.
 """
 
-FIRST_PAGE_SCREENING_SYSTEM_PROMPT = f"""
+ABSTRACT_SCREENING_SYSTEM_PROMPT = f"""
 You are a research screener for the AI Risk Repository, a living database of AI risk
 classifications. Your task is to decide whether a document should be included for
 full-text review based on its title and abstract.
@@ -147,5 +112,5 @@ Decide whether the following document should be included.
 """
 
 
-def format_screening_user_prompt(document: str) -> str:
+def _format_screening_user_prompt(document: str) -> str:
     return _SCREENING_USER_PROMPT.format(document=document)

@@ -1,13 +1,13 @@
 from pathlib import Path
+from typing import Self
 
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings
 
 from risk_repository.records import TestTrainSplit
 from risk_repository.results import STAGE_ORDER, PipelineStage
-from risk_repository.screen import ScreenStage
 
-DEFAULT_OUTPUT_DIR = Path(__file__).parent.parent.parent / "output"
+DEFAULT_DOWNLOAD_CACHE_DIR = Path(__file__).parent.parent.parent / "download_cache"
 DEFAULT_MODEL = "openai/gpt-5-mini"
 DEFAULT_CONCURRENCY = 5
 DEFAULT_LLM_RATE_LIMIT_RPS = 10.0
@@ -32,8 +32,16 @@ class RiskRepositorySettings(
     """
 
     output_dir: Path = Field(
-        default=DEFAULT_OUTPUT_DIR,
+        default=...,
         description="Directory for pipeline output",
+    )
+    download_cache_dir: Path = Field(
+        default=DEFAULT_DOWNLOAD_CACHE_DIR,
+        description="""
+        Directory for cached PDF downloads and per-document fetch failure records.
+        This directory lives outside the output directory so it can be shared
+        across runs.
+        """,
     )
     log_path: Path | None = Field(
         default=None,
@@ -60,10 +68,6 @@ class RiskRepositorySettings(
     stages: list[PipelineStage] = Field(
         default=STAGE_ORDER,
         description="Comma-separated list of pipeline stages to run",
-    )
-    screen_stages: list[ScreenStage] = Field(
-        default=list(ScreenStage),
-        description="Comma-separated list screen stages to run",
     )
     force: bool = Field(
         default=False,
@@ -104,10 +108,30 @@ class RiskRepositorySettings(
         default=DEFAULT_AIRTABLE_BASE_ID,
         description="Airtable ID for the AI Risk Repository base",
     )
-    airtable_documents_table: str = Field(
-        default="Documents: Training Set",
-        description="Airtable table name to fetch documents from",
+    airtable_documents_table: str | None = Field(
+        default=None,
+        description=(
+            "Airtable table name to fetch documents from. Mutually exclusive"
+            " with --csv-path."
+        ),
     )
+    csv_path: Path | None = Field(
+        default=None,
+        description=(
+            "Path to a CSV file of documents to process. Mutually exclusive"
+            " with --airtable-documents-table."
+        ),
+    )
+
+    @model_validator(mode="after")
+    def _validate_input_source(self) -> Self:
+        has_airtable = self.airtable_documents_table is not None
+        has_csv = self.csv_path is not None
+        if has_airtable == has_csv:
+            raise ValueError(
+                "Provide exactly one of --airtable-documents-table or --csv-path"
+            )
+        return self
 
 
 class EvaluationSettings(
@@ -125,7 +149,7 @@ class EvaluationSettings(
     """
 
     results_dir: Path = Field(
-        default=DEFAULT_OUTPUT_DIR,
+        default=...,
         description="Directory containing pipeline results to evaluate",
     )
     model: str = Field(
