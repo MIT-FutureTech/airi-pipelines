@@ -322,6 +322,8 @@ async def _classify_all(
 
 async def main() -> None:
     settings = RiskRepositorySettings()
+    settings.output_dir.mkdir(parents=True, exist_ok=True)
+    settings.download_cache_dir.mkdir(parents=True, exist_ok=True)
     configure_logging(
         level=logging.INFO,
         filepath=settings.log_path or settings.output_dir / "log.txt",
