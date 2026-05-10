@@ -1,6 +1,5 @@
 import csv
 import logging
-import re
 from abc import ABCMeta, abstractmethod
 from collections.abc import AsyncIterator, Container
 from datetime import UTC, datetime
@@ -145,17 +144,10 @@ class CsvDocumentRecord(DocumentRecord):
 async def fetch_records_from_csv(csv_path: Path) -> AsyncIterator[CsvDocumentRecord]:
     with csv_path.open(newline="") as f:
         reader = csv.DictReader(f)
-        for idx, row in enumerate(reader):
+        for row in reader:
             yield CsvDocumentRecord.model_validate(
-                {"readable_id": _csv_readable_id(row, idx), **row}
+                {"readable_id": f"csv-{int(row['id']):04d}", **row}
             )
-
-
-def _csv_readable_id(row: dict[str, str], idx: int) -> str:
-    doi = row.get("doi")
-    if doi:
-        return re.sub(r"[^A-Za-z0-9._-]", "_", doi)
-    return f"csv-{idx:04d}"
 
 
 async def fetch_records_from_airtable(
