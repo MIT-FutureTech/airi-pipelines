@@ -194,7 +194,7 @@ Decision: exclude
 ## Decision
 
 In your response, reason through the four criteria one by one. Avoid anchoring on a
-decision until you've through all of them.
+decision until you've reasoned through all of them.
 
 For your final decision, choose from
 - "include": the document clearly meets the all of the inclusion criteria and none of the exclusion criteria
