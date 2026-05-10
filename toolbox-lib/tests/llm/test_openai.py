@@ -6,8 +6,7 @@ from httpx import Request, Response
 from openai import RateLimitError
 from pydantic import BaseModel
 
-from toolbox.llm import Message, OpenAIClient
-from toolbox.llm.openai import ToolboxOpenAIError
+from toolbox.llm import Message, OpenAIClient, ToolboxLLMInvalidResponseError
 
 from .helpers import (
     FAKE_MODEL,
@@ -135,7 +134,7 @@ class TestGenerateStructured:
 
         async with make_mock_openai_client([response]) as client:
             with pytest.raises(
-                ToolboxOpenAIError,
+                ToolboxLLMInvalidResponseError,
                 match="LLM did not generate response",
             ):
                 await client.generate_structured(
