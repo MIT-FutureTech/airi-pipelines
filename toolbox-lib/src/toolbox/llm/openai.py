@@ -24,7 +24,7 @@ from toolbox.llm.data_types import (
     StructuredResult,
     TextResult,
     TokenUsage,
-    ToolboxLLMError,
+    ToolboxLLMInvalidResponseError,
 )
 from toolbox.rate_limit import RateLimiter
 
@@ -40,10 +40,6 @@ _GENERATION_RETRY_CONFIG = retry(
     after=after_log(logger, logging.INFO),
     reraise=True,
 )
-
-
-class ToolboxOpenAIError(ToolboxLLMError):
-    pass
 
 
 class OpenAIClient:
@@ -130,7 +126,7 @@ class OpenAIClient:
             logger.debug(
                 f"No response from {self._model}: messages={serialized_messages}",
             )
-            raise ToolboxOpenAIError("LLM did not generate response")
+            raise ToolboxLLMInvalidResponseError("LLM did not generate response")
         return StructuredResult[T](
             value=value,
             model=response.model,

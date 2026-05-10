@@ -5,6 +5,7 @@ from toolbox.llm.data_types import (
     TextResult,
     TokenUsage,
     ToolboxLLMError,
+    ToolboxLLMInvalidResponseError,
 )
 from toolbox.llm.open_router import OpenRouterClient
 from toolbox.llm.openai import OpenAIClient
@@ -18,4 +19,5 @@ __all__ = [
     "TextResult",
     "TokenUsage",
     "ToolboxLLMError",
+    "ToolboxLLMInvalidResponseError",
 ]
