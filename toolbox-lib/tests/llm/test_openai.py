@@ -7,7 +7,6 @@ from openai import RateLimitError
 from pydantic import BaseModel
 
 from toolbox.llm import Message, OpenAIClient
-from toolbox.llm.openai import ToolboxOpenAIError
 
 from .helpers import (
     FAKE_MODEL,
@@ -125,23 +124,27 @@ class TestGenerateStructured:
             assert result.value.score == 0.95
             assert result.model == FAKE_MODEL
 
-    async def test_raises_if_parsed_response_is_none(self) -> None:
-        response = make_structured_response(SENTIMENT_RESPONSE)
-        output0 = response.output[0]
+    async def test_retries_if_parsed_response_is_none(self) -> None:
+        response0 = make_structured_response(SENTIMENT_RESPONSE)
+        output0 = response0.output[0]
         assert output0.type == "message"
         content0 = output0.content[0]
         assert content0.type == "output_text"
         content0.parsed = None
+        response1 = make_structured_response(SENTIMENT_RESPONSE)
 
-        async with make_mock_openai_client([response]) as client:
-            with pytest.raises(
-                ToolboxOpenAIError,
-                match="LLM did not generate response",
-            ):
-                await client.generate_structured(
-                    [Message(role="user", content="I love this!")],
-                    Sentiment,
-                )
+        async with make_mock_openai_client([response0, response1]) as client:
+            result = await client.generate_structured(
+                [Message(role="user", content="I love this!")],
+                Sentiment,
+            )
+
+            assert isinstance(result.value, Sentiment)
+            assert result.value.label == "positive"
+            assert result.value.score == 0.95
+            assert result.model == FAKE_MODEL
+            mock_parse = cast(AsyncMock, client._client.responses.parse)
+            assert mock_parse.call_count == 2
 
 
 class Capital(BaseModel):
