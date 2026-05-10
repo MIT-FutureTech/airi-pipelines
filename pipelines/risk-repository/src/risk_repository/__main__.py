@@ -139,11 +139,11 @@ async def _screen_abstract_all(
     settings: RiskRepositorySettings,
 ) -> None:
     async def screen_one(record: DocumentRecord) -> None:
-        with log_context(quick_ref=record.quick_ref):
+        with log_context(readable_id=record.readable_id):
             output_path = result_path(
                 settings.output_dir,
                 PipelineStage.SCREEN_ABSTRACT,
-                record.quick_ref,
+                record.readable_id,
             )
             if not settings.force and output_path.exists():
                 return
@@ -159,7 +159,7 @@ async def _screen_abstract_all(
             invalidate_downstream(
                 settings.output_dir,
                 PipelineStage.SCREEN_ABSTRACT,
-                record.quick_ref,
+                record.readable_id,
             )
             logger.info(f"Abstract screening decision: {screening.decision}")
 
@@ -179,11 +179,11 @@ async def _screen_full_text_all(
     settings: RiskRepositorySettings,
 ) -> None:
     async def screen_one(record: DocumentRecord) -> None:
-        with log_context(quick_ref=record.quick_ref):
+        with log_context(readable_id=record.readable_id):
             output_path = result_path(
                 settings.output_dir,
                 PipelineStage.SCREEN_FULL_TEXT,
-                record.quick_ref,
+                record.readable_id,
             )
             if not settings.force and output_path.exists():
                 return
@@ -201,7 +201,7 @@ async def _screen_full_text_all(
             invalidate_downstream(
                 settings.output_dir,
                 PipelineStage.SCREEN_FULL_TEXT,
-                record.quick_ref,
+                record.readable_id,
             )
             logger.info(f"Full-text screening decision: {screening.decision}")
 
@@ -222,7 +222,7 @@ def _filter_by_screening(
     included: list[DocumentRecord] = []
     unscreened = 0
     for record in records:
-        output_path = result_path(output_dir, stage, record.quick_ref)
+        output_path = result_path(output_dir, stage, record.readable_id)
         if not output_path.exists():
             unscreened += 1
             included.append(record)
@@ -247,9 +247,9 @@ async def _extract_all(
     settings: RiskRepositorySettings,
 ) -> None:
     async def extract_one(record: DocumentRecord) -> None:
-        with log_context(quick_ref=record.quick_ref):
+        with log_context(readable_id=record.readable_id):
             output_path = result_path(
-                settings.output_dir, PipelineStage.EXTRACT, record.quick_ref
+                settings.output_dir, PipelineStage.EXTRACT, record.readable_id
             )
             if not settings.force and output_path.exists():
                 return
@@ -265,7 +265,7 @@ async def _extract_all(
             extraction = await extract_risks(llm, full_text)
             save(output_path, extraction)
             invalidate_downstream(
-                settings.output_dir, PipelineStage.EXTRACT, record.quick_ref
+                settings.output_dir, PipelineStage.EXTRACT, record.readable_id
             )
             logger.info(f"Extracted {len(extraction.risks)} risks")
 
@@ -286,14 +286,14 @@ async def _classify_all(
     classifier = make_causal_classifier(llm)
 
     async def classify_one(record: DocumentRecord) -> None:
-        with log_context(quick_ref=record.quick_ref):
+        with log_context(readable_id=record.readable_id):
             classify_path = result_path(
-                settings.output_dir, PipelineStage.CLASSIFY, record.quick_ref
+                settings.output_dir, PipelineStage.CLASSIFY, record.readable_id
             )
             if not settings.force and classify_path.exists():
                 return
             extract_path = result_path(
-                settings.output_dir, PipelineStage.EXTRACT, record.quick_ref
+                settings.output_dir, PipelineStage.EXTRACT, record.readable_id
             )
             if not extract_path.exists():
                 logger.warning("Skipping document: no extraction results")
@@ -301,7 +301,7 @@ async def _classify_all(
             extraction = load(extract_path, ExtractionResult)
             classified_risks: list[ClassifiedRisk] = []
             for i, risk in enumerate(extraction.risks):
-                risk_id = f"{record.quick_ref}-{i:03}"
+                risk_id = f"{record.readable_id}-{i:03}"
                 with log_context(risk_id=risk_id):
                     causal = await classify_causal(classifier, risk)
                     serialized = causal.model_dump_json(exclude={"reasoning"})
@@ -322,6 +322,8 @@ async def _classify_all(
 
 async def main() -> None:
     settings = RiskRepositorySettings()
+    settings.output_dir.mkdir(parents=True, exist_ok=True)
+    settings.download_cache_dir.mkdir(parents=True, exist_ok=True)
     configure_logging(
         level=logging.INFO,
         filepath=settings.log_path or settings.output_dir / "log.txt",

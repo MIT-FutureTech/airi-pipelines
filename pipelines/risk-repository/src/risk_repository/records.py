@@ -1,6 +1,5 @@
 import csv
 import logging
-import re
 from abc import ABCMeta, abstractmethod
 from collections.abc import AsyncIterator, Container
 from datetime import UTC, datetime
@@ -24,7 +23,7 @@ class TestTrainSplit(StrEnum):
 
 
 class DocumentRecord(BaseModel, metaclass=ABCMeta):
-    quick_ref: str
+    readable_id: str
     url: str | None
     split: TestTrainSplit | None = None
 
@@ -47,10 +46,10 @@ class DocumentRecord(BaseModel, metaclass=ABCMeta):
     ) -> Path | None:
         url = self._full_text_url()
         if url is None:
-            logger.warning(f"{self.quick_ref} has no URL to fetch full text")
+            logger.warning(f"{self.readable_id} has no URL to fetch full text")
             _record_failure(
                 cache_dir=cache_dir,
-                quick_ref=self.quick_ref,
+                readable_id=self.readable_id,
                 url=None,
                 reason="record has no full-text URL",
                 details=None,
@@ -59,7 +58,7 @@ class DocumentRecord(BaseModel, metaclass=ABCMeta):
         return await download_pdf(
             url=url,
             cache_dir=cache_dir,
-            quick_ref=self.quick_ref,
+            readable_id=self.readable_id,
             client=client,
         )
 
@@ -81,10 +80,10 @@ class DocumentRecord(BaseModel, metaclass=ABCMeta):
                 max_document_length=max_document_length,
             )
         except RuntimeError as error:
-            logger.warning(f"Skipping {self.quick_ref}: {error!r}")
+            logger.warning(f"Skipping {self.readable_id}: {error!r}")
             _record_failure(
                 cache_dir=cache_dir,
-                quick_ref=self.quick_ref,
+                readable_id=self.readable_id,
                 url=self._full_text_url(),
                 reason=repr(error),
                 details=None,
@@ -94,7 +93,7 @@ class DocumentRecord(BaseModel, metaclass=ABCMeta):
 
 class AirtableDocumentRecord(DocumentRecord):
     record_id: str
-    quick_ref: str = Field(validation_alias="QuickRef")
+    readable_id: str = Field(validation_alias="QuickRef")
     url: str | None = Field(default=None, validation_alias="URL")
     split: TestTrainSplit | None = Field(default=None, validation_alias="Split")
 
@@ -145,17 +144,10 @@ class CsvDocumentRecord(DocumentRecord):
 async def fetch_records_from_csv(csv_path: Path) -> AsyncIterator[CsvDocumentRecord]:
     with csv_path.open(newline="") as f:
         reader = csv.DictReader(f)
-        for idx, row in enumerate(reader):
+        for row in reader:
             yield CsvDocumentRecord.model_validate(
-                {"quick_ref": _csv_quick_ref(row, idx), **row}
+                {"readable_id": f"csv-{int(row['id']):04d}", **row}
             )
-
-
-def _csv_quick_ref(row: dict[str, str], idx: int) -> str:
-    doi = row.get("doi")
-    if doi:
-        return re.sub(r"[^A-Za-z0-9._-]", "_", doi)
-    return f"csv-{idx:04d}"
 
 
 async def fetch_records_from_airtable(
@@ -180,7 +172,7 @@ def include_record(
         return False
     if document_ids is None:
         return True
-    return record.quick_ref in document_ids
+    return record.readable_id in document_ids
 
 
 def make_http_client() -> httpx.AsyncClient:
@@ -196,26 +188,24 @@ async def download_pdf(
     *,
     url: str,
     cache_dir: Path,
-    quick_ref: str,
+    readable_id: str,
     client: httpx.AsyncClient,
 ) -> Path | None:
-    cached = cache_dir / f"{quick_ref}.pdf"
+    cached = cache_dir / f"{readable_id}.pdf"
     if cached.exists():
         logger.debug(f"Cache hit: {cached}")
         return cached
 
     fetch_url = url.replace("https://arxiv.org/abs/", "https://arxiv.org/pdf/")
-    cache_dir.mkdir(parents=True, exist_ok=True)
-
     response = await client.get(fetch_url)
     if response.status_code in {403, 404}:
         logger.warning(
-            f"Skipping {quick_ref} due to fetch error: {response.status_code}"
+            f"Skipping {readable_id} due to fetch error: {response.status_code}"
         )
         logger.debug(f"Request for {fetch_url} returned response\n{response.text}")
         _record_failure(
             cache_dir=cache_dir,
-            quick_ref=quick_ref,
+            readable_id=readable_id,
             url=url,
             reason=f"HTTP {response.status_code}",
             details=response.text,
@@ -224,10 +214,10 @@ async def download_pdf(
     response.raise_for_status()
     content_type = response.headers.get("content-type", "").split(";")[0].strip()
     if content_type != "application/pdf":
-        logger.warning(f"Skipping {quick_ref}: expected PDF, got {content_type}")
+        logger.warning(f"Skipping {readable_id}: expected PDF, got {content_type}")
         _record_failure(
             cache_dir=cache_dir,
-            quick_ref=quick_ref,
+            readable_id=readable_id,
             url=url,
             reason=f"expected PDF, got {content_type}",
             details=None,
@@ -235,44 +225,43 @@ async def download_pdf(
         return None
 
     cached.write_bytes(response.content)
-    _clear_failure(cache_dir=cache_dir, quick_ref=quick_ref)
+    _clear_failure(cache_dir=cache_dir, readable_id=readable_id)
     logger.info(f"Downloaded {url} -> {cached}")
     return cached
 
 
 class DownloadFailure(BaseModel):
-    quick_ref: str
+    readable_id: str
     url: str | None
     reason: str
     details: str | None
     timestamp: datetime
 
 
-def _failure_path(cache_dir: Path, quick_ref: str) -> Path:
-    return cache_dir / f"{quick_ref}.failed.json"
+def _failure_path(cache_dir: Path, readable_id: str) -> Path:
+    return cache_dir / f"{readable_id}.failed.json"
 
 
 def _record_failure(
     *,
     cache_dir: Path,
-    quick_ref: str,
+    readable_id: str,
     url: str | None,
     reason: str,
     details: str | None,
 ) -> None:
-    cache_dir.mkdir(parents=True, exist_ok=True)
     failure = DownloadFailure(
-        quick_ref=quick_ref,
+        readable_id=readable_id,
         url=url,
         reason=reason,
         details=details,
         timestamp=datetime.now(UTC),
     )
-    _failure_path(cache_dir, quick_ref).write_text(failure.model_dump_json(indent=2))
+    _failure_path(cache_dir, readable_id).write_text(failure.model_dump_json(indent=2))
 
 
-def _clear_failure(*, cache_dir: Path, quick_ref: str) -> None:
-    path = _failure_path(cache_dir, quick_ref)
+def _clear_failure(*, cache_dir: Path, readable_id: str) -> None:
+    path = _failure_path(cache_dir, readable_id)
     if path.exists():
         path.unlink()
 
