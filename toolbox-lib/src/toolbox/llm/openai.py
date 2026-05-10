@@ -10,7 +10,7 @@ from openai.types.responses import (
     ResponseInputParam,
     ResponseUsage,
 )
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 from tenacity import (
     after_log,
     retry,
@@ -32,7 +32,13 @@ logger = logging.getLogger(__name__)
 
 T = TypeVar("T", bound=BaseModel)
 
-_RETRYABLE_EXCEPTIONS = (RateLimitError, APIConnectionError, APITimeoutError)
+_RETRYABLE_EXCEPTIONS = (
+    APIConnectionError,
+    APITimeoutError,
+    RateLimitError,
+    ToolboxLLMInvalidResponseError,
+    ValidationError,
+)
 _GENERATION_RETRY_CONFIG = retry(
     retry=retry_if_exception_type(_RETRYABLE_EXCEPTIONS),
     wait=wait_exponential(multiplier=1, max=30),
