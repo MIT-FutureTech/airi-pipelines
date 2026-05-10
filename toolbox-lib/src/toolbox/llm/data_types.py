@@ -8,6 +8,10 @@ class ToolboxLLMError(Exception):
     pass
 
 
+class ToolboxLLMInvalidResponseError(ToolboxLLMError):
+    pass
+
+
 class Message(BaseModel, frozen=True):
     role: Literal["user", "assistant", "system"]
     content: str

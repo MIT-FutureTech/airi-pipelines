@@ -10,7 +10,7 @@ from openai.types.responses import (
     ResponseInputParam,
     ResponseUsage,
 )
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 from tenacity import (
     after_log,
     retry,
@@ -24,7 +24,7 @@ from toolbox.llm.data_types import (
     StructuredResult,
     TextResult,
     TokenUsage,
-    ToolboxLLMError,
+    ToolboxLLMInvalidResponseError,
 )
 from toolbox.rate_limit import RateLimiter
 
@@ -32,7 +32,13 @@ logger = logging.getLogger(__name__)
 
 T = TypeVar("T", bound=BaseModel)
 
-_RETRYABLE_EXCEPTIONS = (RateLimitError, APIConnectionError, APITimeoutError)
+_RETRYABLE_EXCEPTIONS = (
+    APIConnectionError,
+    APITimeoutError,
+    RateLimitError,
+    ToolboxLLMInvalidResponseError,
+    ValidationError,
+)
 _GENERATION_RETRY_CONFIG = retry(
     retry=retry_if_exception_type(_RETRYABLE_EXCEPTIONS),
     wait=wait_exponential(multiplier=1, max=30),
@@ -40,10 +46,6 @@ _GENERATION_RETRY_CONFIG = retry(
     after=after_log(logger, logging.INFO),
     reraise=True,
 )
-
-
-class ToolboxOpenAIError(ToolboxLLMError):
-    pass
 
 
 class OpenAIClient:
@@ -130,7 +132,7 @@ class OpenAIClient:
             logger.debug(
                 f"No response from {self._model}: messages={serialized_messages}",
             )
-            raise ToolboxOpenAIError("LLM did not generate response")
+            raise ToolboxLLMInvalidResponseError("LLM did not generate response")
         return StructuredResult[T](
             value=value,
             model=response.model,
