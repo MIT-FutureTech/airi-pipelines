@@ -197,8 +197,6 @@ async def download_pdf(
         return cached
 
     fetch_url = url.replace("https://arxiv.org/abs/", "https://arxiv.org/pdf/")
-    cache_dir.mkdir(parents=True, exist_ok=True)
-
     response = await client.get(fetch_url)
     if response.status_code in {403, 404}:
         logger.warning(
@@ -252,7 +250,6 @@ def _record_failure(
     reason: str,
     details: str | None,
 ) -> None:
-    cache_dir.mkdir(parents=True, exist_ok=True)
     failure = DownloadFailure(
         readable_id=readable_id,
         url=url,
