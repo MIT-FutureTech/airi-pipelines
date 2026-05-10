@@ -43,7 +43,7 @@ class _UnresolvedRisk(BaseModel):
 
 class GroundTruthDocument(BaseModel):
     record_id: str
-    quick_ref: str = Field(validation_alias="QuickRef")
+    readable_id: str = Field(validation_alias="QuickRef")
     screening_result: Decision | None = Field(
         default=None,
         validation_alias="ScreeningResult",
@@ -59,7 +59,7 @@ class GroundTruthDocument(BaseModel):
 
 class GroundTruthRisk(BaseModel):
     ev_id: str
-    document_quick_ref: str
+    document_readable_id: str
     category: str
     subcategory: str | None
     description: str
@@ -77,7 +77,7 @@ class GroundTruth(BaseModel):
     def risks_by_document(self) -> dict[str, list[GroundTruthRisk]]:
         by_doc: dict[str, list[GroundTruthRisk]] = {}
         for risk in self.risks:
-            by_doc.setdefault(risk.document_quick_ref, []).append(risk)
+            by_doc.setdefault(risk.document_readable_id, []).append(risk)
         return by_doc
 
 
@@ -92,13 +92,13 @@ async def fetch_ground_truth(
         base_id=base_id,
         documents_table_name=documents_table_name,
     )
-    doc_id_to_quick_ref = await _fetch_doc_id_to_quick_ref(client, base_id)
+    doc_id_to_readable_id = await _fetch_id_map(client, base_id)
     causal_map = await _fetch_causal_map(client, base_id)
     subdomain_map = await _fetch_subdomain_map(client, base_id)
     risks = await _fetch_risks(
         client,
         base_id=base_id,
-        doc_id_to_quick_ref=doc_id_to_quick_ref,
+        doc_id_to_readable_id=doc_id_to_readable_id,
         causal_map=causal_map,
         subdomain_map=subdomain_map,
     )
@@ -106,11 +106,11 @@ async def fetch_ground_truth(
     return GroundTruth(documents=documents, risks=risks)
 
 
-async def _fetch_doc_id_to_quick_ref(
+async def _fetch_id_map(
     client: AirtableClient,
     base_id: str,
 ) -> dict[str, str]:
-    """Map record IDs in the production Documents table to QuickRef values.
+    """Map record IDs in the production Documents table to readable ones.
 
     The AI Risk Database table links to Documents via record IDs, so this
     mapping must always come from the production table regardless of which
@@ -118,13 +118,13 @@ async def _fetch_doc_id_to_quick_ref(
     """
 
     class _RecordModel(BaseModel):
-        quick_ref: str = Field(validation_alias="QuickRef")
+        readable_id: str = Field(validation_alias="QuickRef")
 
     table = Table(client, base_id=base_id, table_name="Documents")
     result: dict[str, str] = {}
     async for raw_record in table.iterate(fields=["QuickRef"]):
         record = _RecordModel.model_validate(raw_record.fields)
-        result[raw_record.id] = record.quick_ref
+        result[raw_record.id] = record.readable_id
     return result
 
 
@@ -195,7 +195,7 @@ async def _fetch_risks(
     client: AirtableClient,
     *,
     base_id: str,
-    doc_id_to_quick_ref: dict[str, str],
+    doc_id_to_readable_id: dict[str, str],
     causal_map: dict[str, str],
     subdomain_map: dict[str, str],
 ) -> list[GroundTruthRisk]:
@@ -203,11 +203,11 @@ async def _fetch_risks(
     risks: list[GroundTruthRisk] = []
     async for record in table.iterate():
         raw = _UnresolvedRisk.model_validate(record.fields)
-        doc_quick_ref = doc_id_to_quick_ref[raw.document_ids[0]]
+        readable_id = doc_id_to_readable_id[raw.document_ids[0]]
         risks.append(
             GroundTruthRisk(
                 ev_id=raw.ev_id,
-                document_quick_ref=doc_quick_ref,
+                document_readable_id=readable_id,
                 category=raw.category,
                 subcategory=raw.subcategory,
                 description=raw.description or "",

@@ -12,9 +12,9 @@ def _is_positive(decision: Decision) -> bool:
     return decision in {Decision.INCLUDE, Decision.UNCERTAIN}
 
 
-def _latest_screening_result(results_dir: Path, quick_ref: str) -> Path | None:
+def _latest_screening_result(results_dir: Path, readable_id: str) -> Path | None:
     for stage in (PipelineStage.SCREEN_FULL_TEXT, PipelineStage.SCREEN_ABSTRACT):
-        path = result_path(results_dir, stage, quick_ref)
+        path = result_path(results_dir, stage, readable_id)
         if path.exists():
             return path
     return None
@@ -61,7 +61,7 @@ def evaluate_screening(
     for gt_doc in ground_truth_docs:
         if gt_doc.screening_result is None:
             continue
-        path = _latest_screening_result(results_dir, gt_doc.quick_ref)
+        path = _latest_screening_result(results_dir, gt_doc.readable_id)
         if path is None:
             continue
 
@@ -91,10 +91,10 @@ def evaluate_screening(
             tp += 1
         elif pred_positive and not gt_positive:
             fp += 1
-            false_positive_refs.append(gt_doc.quick_ref)
+            false_positive_refs.append(gt_doc.readable_id)
         elif not pred_positive and gt_positive:
             fn += 1
-            false_negative_refs.append(gt_doc.quick_ref)
+            false_negative_refs.append(gt_doc.readable_id)
         else:
             tn += 1
 

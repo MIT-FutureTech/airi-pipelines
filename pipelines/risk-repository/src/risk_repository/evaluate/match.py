@@ -18,7 +18,7 @@ class MatchPair(BaseModel):
 
 
 class DocumentMatchResult(BaseModel):
-    quick_ref: str
+    readable_id: str
     gt_risks: list[GroundTruthRisk]
     pipeline_risks: list[ExtractedRisk]
     matches: list[MatchPair]
@@ -55,20 +55,24 @@ async def match_all(
     gt_by_doc = ground_truth.risks_by_document()
 
     class _Input(BaseModel):
-        quick_ref: str
+        readable_id: str
         gt_risks: list[GroundTruthRisk]
         pipeline_risks: list[ExtractedRisk]
 
     inputs: list[_Input] = []
     for doc in ground_truth.documents:
-        extraction_path = result_path(results_dir, PipelineStage.EXTRACT, doc.quick_ref)
+        extraction_path = result_path(
+            output_dir=results_dir,
+            stage=PipelineStage.EXTRACT,
+            readable_id=doc.readable_id,
+        )
         if not extraction_path.exists():
             continue
         extraction = load(extraction_path, ExtractionResult)
         inputs.append(
             _Input(
-                quick_ref=doc.quick_ref,
-                gt_risks=gt_by_doc.get(doc.quick_ref, []),
+                readable_id=doc.readable_id,
+                gt_risks=gt_by_doc.get(doc.readable_id, []),
                 pipeline_risks=extraction.risks,
             )
         )
@@ -80,12 +84,12 @@ async def match_all(
             )
             matches = [_to_match_pair(m) for m in llm_matches]
             logger.info(
-                f"{inp.quick_ref}: {len(matches)} matches (GT={len(inp.gt_risks)}, pipeline={len(inp.pipeline_risks)})"
+                f"{inp.readable_id}: {len(matches)} matches (GT={len(inp.gt_risks)}, pipeline={len(inp.pipeline_risks)})"
             )
         else:
             matches = []
         return DocumentMatchResult(
-            quick_ref=inp.quick_ref,
+            readable_id=inp.readable_id,
             gt_risks=inp.gt_risks,
             pipeline_risks=inp.pipeline_risks,
             matches=matches,

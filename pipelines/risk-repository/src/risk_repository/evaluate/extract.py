@@ -4,7 +4,7 @@ from risk_repository.evaluate.match import DocumentMatchResult
 
 
 class DocumentExtractionMetrics(BaseModel):
-    quick_ref: str
+    readable_id: str
     gt_risk_count: int
     pipeline_risk_count: int
     matched_count: int
@@ -26,7 +26,7 @@ def evaluate_extraction(
 ) -> ExtractionMetrics:
     per_document = [
         DocumentExtractionMetrics(
-            quick_ref=doc.quick_ref,
+            readable_id=doc.readable_id,
             gt_risk_count=len(doc.gt_risks),
             pipeline_risk_count=len(doc.pipeline_risks),
             matched_count=len(doc.matches),

@@ -40,7 +40,7 @@ def evaluate_classification(
 
     for doc in match_results:
         classification_path = result_path(
-            results_dir, PipelineStage.CLASSIFY, doc.quick_ref
+            results_dir, PipelineStage.CLASSIFY, doc.readable_id
         )
         if not classification_path.exists():
             continue
@@ -50,7 +50,7 @@ def evaluate_classification(
             gt_risk = doc.gt_risks[match.gt_index]
             if match.pipeline_index >= len(classification.risks):
                 logger.warning(
-                    f"{doc.quick_ref}: pipeline index {match.pipeline_index} out of range for classification results"
+                    f"{doc.readable_id}: pipeline index {match.pipeline_index} out of range for classification results"
                 )
                 continue
             pipeline_causal = classification.risks[match.pipeline_index].causal

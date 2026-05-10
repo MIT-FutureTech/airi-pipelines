@@ -26,8 +26,12 @@ def stage_dir(output_dir: Path, stage: PipelineStage) -> Path:
     return output_dir / stage.value
 
 
-def result_path(output_dir: Path, stage: PipelineStage, quick_ref: str) -> Path:
-    return stage_dir(output_dir, stage) / f"{quick_ref}.json"
+def result_path(
+    output_dir: Path,
+    stage: PipelineStage,
+    readable_id: str,
+) -> Path:
+    return stage_dir(output_dir, stage) / f"{readable_id}.json"
 
 
 def save(path: Path, result: BaseModel) -> None:
@@ -43,11 +47,11 @@ def load[T: BaseModel](path: Path, schema: type[T]) -> T:
 def invalidate_downstream(
     output_dir: Path,
     stage: PipelineStage,
-    quick_ref: str,
+    readable_id: str,
 ) -> None:
     stage_idx = STAGE_ORDER.index(stage)
     for downstream in STAGE_ORDER[stage_idx + 1 :]:
-        path = result_path(output_dir, downstream, quick_ref)
+        path = result_path(output_dir, downstream, readable_id)
         if path.exists():
             path.unlink()
-            logger.info(f"Invalidated {downstream.value} for {quick_ref}")
+            logger.info(f"Invalidated {downstream.value} for {readable_id}")
