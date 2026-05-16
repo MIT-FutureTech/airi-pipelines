@@ -1,8 +1,20 @@
 import logging
 
+import httpx
 from pydantic import BaseModel, Field
 
+from risk_repository.documents import get_full_text
+from risk_repository.records import DocumentRecord
+from risk_repository.results import (
+    PipelineStage,
+    invalidate_downstream,
+    result_path,
+    save,
+)
+from risk_repository.settings import RiskRepositorySettings
+from toolbox.concurrency import concurrent_map
 from toolbox.llm import LLMClient, Message
+from toolbox.log import log_context
 
 logger = logging.getLogger(__name__)
 
@@ -72,3 +84,43 @@ Extract all AI risks from the following document.
 
 def format_extraction_user_prompt(document: str) -> str:
     return _EXTRACTION_USER_PROMPT.format(document=document)
+
+
+async def run_extraction(
+    records: list[DocumentRecord],
+    *,
+    llm: LLMClient,
+    http_client: httpx.AsyncClient,
+    settings: RiskRepositorySettings,
+) -> None:
+    async def extract_one(record: DocumentRecord) -> None:
+        with log_context(readable_id=record.readable_id):
+            output_path = result_path(
+                settings.output_dir, PipelineStage.EXTRACT, record.readable_id
+            )
+            if not settings.force and output_path.exists():
+                return
+            full_text = await get_full_text(
+                record,
+                cache_dir=settings.download_cache_dir,
+                client=http_client,
+                max_truncation_ratio=settings.document_max_truncation_ratio,
+                max_document_length=settings.document_length_limit,
+            )
+            if full_text is None:
+                logger.warning("Skipping extraction: no full text available")
+                return
+            extraction = await extract_risks(llm, full_text)
+            save(output_path, extraction)
+            invalidate_downstream(
+                settings.output_dir, PipelineStage.EXTRACT, record.readable_id
+            )
+            logger.info(f"Extracted {len(extraction.risks)} risks")
+
+    async for _ in concurrent_map(
+        items=records,
+        func=extract_one,
+        max_concurrency=settings.concurrency,
+        progress_description="Extracting",
+    ):
+        pass
