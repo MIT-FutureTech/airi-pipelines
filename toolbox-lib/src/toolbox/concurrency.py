@@ -121,23 +121,6 @@ class ConcurrentMap:
             await asyncio.gather(producer, *workers, return_exceptions=True)
 
 
-async def concurrent_map[T, R](
-    items: AsyncIterable[T] | Iterable[T],
-    func: Callable[[T], Awaitable[R]],
-    *,
-    max_concurrency: int,
-    progress_description: str | None = None,
-    progress_total: int | None = None,
-) -> AsyncGenerator[R]:
-    mapper = ConcurrentMap(
-        max_concurrency=max_concurrency,
-        progress_description=progress_description,
-        progress_total=progress_total,
-    )
-    async for result in mapper.map(items, func):
-        yield result
-
-
 async def _producer[T](
     items: AsyncIterable[T] | Iterable[T],
     in_queue: asyncio.Queue[T | _Sentinel],
