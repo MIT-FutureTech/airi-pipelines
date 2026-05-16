@@ -39,8 +39,6 @@ class RiskRepositorySettings(
         default=DEFAULT_DOWNLOAD_CACHE_DIR,
         description="""
         Directory for cached PDF downloads and per-document fetch failure records.
-        This directory lives outside the output directory so it can be shared
-        across runs.
         """,
     )
     log_path: Path | None = Field(
