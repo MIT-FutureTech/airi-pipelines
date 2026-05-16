@@ -1,7 +1,6 @@
 import asyncio
 import logging
 from collections.abc import AsyncIterator
-from pathlib import Path
 
 import httpx
 
@@ -12,7 +11,6 @@ from risk_repository.classify import (
     make_causal_classifier,
 )
 from risk_repository.documents import (
-    get_abstract,
     get_full_text,
     prefetch_abstracts,
     prefetch_full_text,
@@ -33,10 +31,9 @@ from risk_repository.results import (
     save,
 )
 from risk_repository.screen import (
-    Decision,
-    ScreeningResult,
-    screen_abstract,
-    screen_full_text,
+    filter_by_screening,
+    run_abstract_screening,
+    run_full_text_screening,
 )
 from risk_repository.settings import RiskRepositorySettings
 from toolbox.airtable import AirtableClient
@@ -77,116 +74,6 @@ async def _iterate_source(
             table_name=settings.airtable_documents_table,
         ):
             yield record
-
-
-async def _screen_abstract_all(
-    records: list[DocumentRecord],
-    llm: LLMClient,
-    http_client: httpx.AsyncClient,
-    settings: RiskRepositorySettings,
-) -> None:
-    async def screen_one(record: DocumentRecord) -> None:
-        with log_context(readable_id=record.readable_id):
-            output_path = result_path(
-                settings.output_dir,
-                PipelineStage.SCREEN_ABSTRACT,
-                record.readable_id,
-            )
-            if not settings.force and output_path.exists():
-                return
-            abstract = await get_abstract(
-                record,
-                cache_dir=settings.download_cache_dir,
-                client=http_client,
-            )
-            if abstract is None:
-                logger.warning("Skipping screening: no abstract available")
-                return
-            screening = await screen_abstract(llm, abstract)
-            save(output_path, screening)
-            invalidate_downstream(
-                settings.output_dir,
-                PipelineStage.SCREEN_ABSTRACT,
-                record.readable_id,
-            )
-            logger.info(f"Abstract screening decision: {screening.decision}")
-
-    async for _ in concurrent_map(
-        items=records,
-        func=screen_one,
-        max_concurrency=settings.concurrency,
-        progress_description="Screening abstracts",
-    ):
-        pass
-
-
-async def _screen_full_text_all(
-    records: list[DocumentRecord],
-    llm: LLMClient,
-    http_client: httpx.AsyncClient,
-    settings: RiskRepositorySettings,
-) -> None:
-    async def screen_one(record: DocumentRecord) -> None:
-        with log_context(readable_id=record.readable_id):
-            output_path = result_path(
-                settings.output_dir,
-                PipelineStage.SCREEN_FULL_TEXT,
-                record.readable_id,
-            )
-            if not settings.force and output_path.exists():
-                return
-            full_text = await get_full_text(
-                record,
-                cache_dir=settings.download_cache_dir,
-                client=http_client,
-                max_truncation_ratio=settings.document_max_truncation_ratio,
-                max_document_length=settings.document_length_limit,
-            )
-            if full_text is None:
-                logger.warning("Skipping screening: no full text available")
-                return
-            screening = await screen_full_text(llm, full_text)
-            save(output_path, screening)
-            invalidate_downstream(
-                settings.output_dir,
-                PipelineStage.SCREEN_FULL_TEXT,
-                record.readable_id,
-            )
-            logger.info(f"Full-text screening decision: {screening.decision}")
-
-    async for _ in concurrent_map(
-        items=records,
-        func=screen_one,
-        max_concurrency=settings.concurrency,
-        progress_description="Screening full texts",
-    ):
-        pass
-
-
-def _filter_by_screening(
-    records: list[DocumentRecord],
-    output_dir: Path,
-    stage: PipelineStage,
-) -> list[DocumentRecord]:
-    included: list[DocumentRecord] = []
-    unscreened = 0
-    for record in records:
-        output_path = result_path(output_dir, stage, record.readable_id)
-        if not output_path.exists():
-            unscreened += 1
-            included.append(record)
-            continue
-        screening = load(output_path, ScreeningResult)
-        if screening.decision == Decision.EXCLUDE:
-            continue
-        included.append(record)
-    if unscreened:
-        logger.info(
-            f"{unscreened}/{len(records)} records have no {stage.value} result;"
-            + " passing through unfiltered"
-        )
-    logger.info(f"{len(included)} records passed {stage.value}")
-    return included
 
 
 async def _extract_all(
@@ -301,9 +188,11 @@ async def main() -> None:
                     client=http_client,
                     concurrency=settings.concurrency,
                 )
-                await _screen_abstract_all(records, llm, http_client, settings)
-            records = _filter_by_screening(
-                records, settings.output_dir, PipelineStage.SCREEN_ABSTRACT
+                await run_abstract_screening(
+                    records, llm=llm, http_client=http_client, settings=settings
+                )
+            records = filter_by_screening(
+                records, settings=settings, stage=PipelineStage.SCREEN_ABSTRACT
             )
 
             full_text_prefetched = False
@@ -315,9 +204,11 @@ async def main() -> None:
                     concurrency=settings.concurrency,
                 )
                 full_text_prefetched = True
-                await _screen_full_text_all(records, llm, http_client, settings)
-            records = _filter_by_screening(
-                records, settings.output_dir, PipelineStage.SCREEN_FULL_TEXT
+                await run_full_text_screening(
+                    records, llm=llm, http_client=http_client, settings=settings
+                )
+            records = filter_by_screening(
+                records, settings=settings, stage=PipelineStage.SCREEN_FULL_TEXT
             )
 
             if PipelineStage.EXTRACT in stages:
