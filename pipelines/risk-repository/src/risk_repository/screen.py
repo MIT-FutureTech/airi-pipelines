@@ -14,7 +14,7 @@ from risk_repository.results import (
     save,
 )
 from risk_repository.settings import RiskRepositorySettings
-from toolbox.concurrency import concurrent_map
+from toolbox.concurrency import ConcurrentMap
 from toolbox.llm import LLMClient, Message
 from toolbox.log import log_context
 
@@ -142,6 +142,39 @@ def _format_screening_user_prompt(document: str) -> str:
     return _SCREENING_USER_PROMPT.format(document=document)
 
 
+async def _screen_abstract_one(
+    record: DocumentRecord,
+    *,
+    llm: LLMClient,
+    http_client: httpx.AsyncClient,
+    settings: RiskRepositorySettings,
+) -> None:
+    with log_context(readable_id=record.readable_id):
+        output_path = result_path(
+            settings.output_dir,
+            PipelineStage.SCREEN_ABSTRACT,
+            record.readable_id,
+        )
+        if not settings.force and output_path.exists():
+            return
+        abstract = await get_abstract(
+            record,
+            cache_dir=settings.download_cache_dir,
+            client=http_client,
+        )
+        if abstract is None:
+            logger.warning("Skipping screening: no abstract available")
+            return
+        screening = await screen_abstract(llm, abstract)
+        save(output_path, screening)
+        invalidate_downstream(
+            settings.output_dir,
+            PipelineStage.SCREEN_ABSTRACT,
+            record.readable_id,
+        )
+        logger.info(f"Abstract screening decision: {screening.decision}")
+
+
 async def run_abstract_screening(
     records: list[DocumentRecord],
     *,
@@ -149,39 +182,53 @@ async def run_abstract_screening(
     http_client: httpx.AsyncClient,
     settings: RiskRepositorySettings,
 ) -> None:
-    async def screen_one(record: DocumentRecord) -> None:
-        with log_context(readable_id=record.readable_id):
-            output_path = result_path(
-                settings.output_dir,
-                PipelineStage.SCREEN_ABSTRACT,
-                record.readable_id,
-            )
-            if not settings.force and output_path.exists():
-                return
-            abstract = await get_abstract(
-                record,
-                cache_dir=settings.download_cache_dir,
-                client=http_client,
-            )
-            if abstract is None:
-                logger.warning("Skipping screening: no abstract available")
-                return
-            screening = await screen_abstract(llm, abstract)
-            save(output_path, screening)
-            invalidate_downstream(
-                settings.output_dir,
-                PipelineStage.SCREEN_ABSTRACT,
-                record.readable_id,
-            )
-            logger.info(f"Abstract screening decision: {screening.decision}")
-
-    async for _ in concurrent_map(
-        items=records,
-        func=screen_one,
+    runner = ConcurrentMap(
         max_concurrency=settings.concurrency,
         progress_description="Screening abstracts",
+    )
+    async for _ in runner.map(
+        records,
+        _screen_abstract_one,
+        llm=llm,
+        http_client=http_client,
+        settings=settings,
     ):
         pass
+
+
+async def _screen_full_text_one(
+    record: DocumentRecord,
+    *,
+    llm: LLMClient,
+    http_client: httpx.AsyncClient,
+    settings: RiskRepositorySettings,
+) -> None:
+    with log_context(readable_id=record.readable_id):
+        output_path = result_path(
+            settings.output_dir,
+            PipelineStage.SCREEN_FULL_TEXT,
+            record.readable_id,
+        )
+        if not settings.force and output_path.exists():
+            return
+        full_text = await get_full_text(
+            record,
+            cache_dir=settings.download_cache_dir,
+            client=http_client,
+            max_truncation_ratio=settings.document_max_truncation_ratio,
+            max_document_length=settings.document_length_limit,
+        )
+        if full_text is None:
+            logger.warning("Skipping screening: no full text available")
+            return
+        screening = await screen_full_text(llm, full_text)
+        save(output_path, screening)
+        invalidate_downstream(
+            settings.output_dir,
+            PipelineStage.SCREEN_FULL_TEXT,
+            record.readable_id,
+        )
+        logger.info(f"Full-text screening decision: {screening.decision}")
 
 
 async def run_full_text_screening(
@@ -191,39 +238,16 @@ async def run_full_text_screening(
     http_client: httpx.AsyncClient,
     settings: RiskRepositorySettings,
 ) -> None:
-    async def screen_one(record: DocumentRecord) -> None:
-        with log_context(readable_id=record.readable_id):
-            output_path = result_path(
-                settings.output_dir,
-                PipelineStage.SCREEN_FULL_TEXT,
-                record.readable_id,
-            )
-            if not settings.force and output_path.exists():
-                return
-            full_text = await get_full_text(
-                record,
-                cache_dir=settings.download_cache_dir,
-                client=http_client,
-                max_truncation_ratio=settings.document_max_truncation_ratio,
-                max_document_length=settings.document_length_limit,
-            )
-            if full_text is None:
-                logger.warning("Skipping screening: no full text available")
-                return
-            screening = await screen_full_text(llm, full_text)
-            save(output_path, screening)
-            invalidate_downstream(
-                settings.output_dir,
-                PipelineStage.SCREEN_FULL_TEXT,
-                record.readable_id,
-            )
-            logger.info(f"Full-text screening decision: {screening.decision}")
-
-    async for _ in concurrent_map(
-        items=records,
-        func=screen_one,
+    runner = ConcurrentMap(
         max_concurrency=settings.concurrency,
         progress_description="Screening full texts",
+    )
+    async for _ in runner.map(
+        records,
+        _screen_full_text_one,
+        llm=llm,
+        http_client=http_client,
+        settings=settings,
     ):
         pass
 
