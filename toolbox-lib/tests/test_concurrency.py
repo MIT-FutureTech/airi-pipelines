@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from toolbox.concurrency import concurrent_map
+from toolbox.concurrency import ConcurrentMap
 
 
 async def slow_double(x: int) -> int:
@@ -20,9 +20,8 @@ async def failing(x: int) -> int:
 
 class TestConcurrentMap:
     async def test_processes_all_items(self) -> None:
-        results = [
-            r async for r in concurrent_map(range(20), slow_double, max_concurrency=5)
-        ]
+        runner = ConcurrentMap(max_concurrency=5)
+        results = [r async for r in runner.map(range(20), slow_double)]
         assert sorted(results) == [x * 2 for x in range(20)]
 
     async def test_respects_concurrency_limit(self) -> None:
@@ -40,12 +39,8 @@ class TestConcurrentMap:
                 current -= 1
             return x
 
-        results = [
-            r
-            async for r in concurrent_map(
-                range(20), track_concurrency, max_concurrency=3
-            )
-        ]
+        runner = ConcurrentMap(max_concurrency=3)
+        results = [r async for r in runner.map(range(20), track_concurrency)]
         assert len(results) == 20
         assert peak <= 3
 
@@ -59,10 +54,9 @@ class TestConcurrentMap:
                 consumed_count += 1
                 yield i
 
+        runner = ConcurrentMap(max_concurrency=3)
         count = 0
-        async for _ in concurrent_map(
-            counting_source(), slow_double, max_concurrency=3
-        ):
+        async for _ in runner.map(counting_source(), slow_double):
             count += 1
             if count == 5:
                 break
@@ -71,9 +65,8 @@ class TestConcurrentMap:
         assert consumed_count < 20
 
     async def test_accepts_sync_iterable(self) -> None:
-        results = [
-            r async for r in concurrent_map([1, 2, 3], slow_double, max_concurrency=2)
-        ]
+        runner = ConcurrentMap(max_concurrency=2)
+        results = [r async for r in runner.map([1, 2, 3], slow_double)]
         assert sorted(results) == [2, 4, 6]
 
     async def test_accepts_async_iterable(self) -> None:
@@ -81,26 +74,25 @@ class TestConcurrentMap:
             for i in [1, 2, 3]:
                 yield i
 
-        results = [
-            r
-            async for r in concurrent_map(async_items(), slow_double, max_concurrency=2)
-        ]
+        runner = ConcurrentMap(max_concurrency=2)
+        results = [r async for r in runner.map(async_items(), slow_double)]
         assert sorted(results) == [2, 4, 6]
 
     async def test_empty_input(self) -> None:
-        results = [r async for r in concurrent_map([], slow_double, max_concurrency=5)]
+        runner = ConcurrentMap(max_concurrency=5)
+        results = [r async for r in runner.map([], slow_double)]
         assert results == []
 
     async def test_single_concurrency(self) -> None:
-        results = [
-            r async for r in concurrent_map(range(5), slow_double, max_concurrency=1)
-        ]
+        runner = ConcurrentMap(max_concurrency=1)
+        results = [r async for r in runner.map(range(5), slow_double)]
         # With concurrency=1, items should be processed in order
         assert results == [0, 2, 4, 6, 8]
 
     async def test_propagates_exception(self) -> None:
+        runner = ConcurrentMap(max_concurrency=2)
         with pytest.raises(ValueError, match="bad item") as err_info:
-            async for _ in concurrent_map(range(10), failing, max_concurrency=2):
+            async for _ in runner.map(range(10), failing):
                 pass
 
         # Assert that traceback points to original raise in failing()
@@ -114,12 +106,8 @@ class TestConcurrentMapProgress:
     async def test_updates_once_per_result(self, mock_tqdm_cls: MagicMock) -> None:
         progress_bar = mock_tqdm_cls.return_value
         items = list(range(10))
-        async for _ in concurrent_map(
-            items=items,
-            func=slow_double,
-            max_concurrency=3,
-            progress_description="test",
-        ):
+        runner = ConcurrentMap(max_concurrency=3, progress_description="test")
+        async for _ in runner.map(items, slow_double):
             pass
         assert progress_bar.update.call_count == len(items)
 
@@ -129,12 +117,8 @@ class TestConcurrentMapProgress:
         mock_tqdm_cls: MagicMock,
     ) -> None:
         items = list(range(7))
-        async for _ in concurrent_map(
-            items=items,
-            func=slow_double,
-            max_concurrency=3,
-            progress_description="test",
-        ):
+        runner = ConcurrentMap(max_concurrency=3, progress_description="test")
+        async for _ in runner.map(items, slow_double):
             pass
         mock_tqdm_cls.assert_called_once_with(desc="test", total=7)
 
@@ -144,12 +128,8 @@ class TestConcurrentMapProgress:
         mock_tqdm_cls: MagicMock,
     ) -> None:
         items = (num for num in range(7))
-        async for _ in concurrent_map(
-            items=items,
-            func=slow_double,
-            max_concurrency=3,
-            progress_description="test",
-        ):
+        runner = ConcurrentMap(max_concurrency=3, progress_description="test")
+        async for _ in runner.map(items, slow_double):
             pass
         mock_tqdm_cls.assert_called_once_with(desc="test", total=None)
 
@@ -158,38 +138,27 @@ class TestConcurrentMapProgress:
         self,
         mock_tqdm_cls: MagicMock,
     ) -> None:
-        async for _ in concurrent_map(
-            items=list(range(5)),
-            func=slow_double,
-            max_concurrency=3,
-            progress_description="test",
-            progress_total=99,
-        ):
+        runner = ConcurrentMap(
+            max_concurrency=3, progress_description="test", progress_total=99
+        )
+        async for _ in runner.map(list(range(5)), slow_double):
             pass
         mock_tqdm_cls.assert_called_once_with(desc="test", total=99)
 
     @patch("toolbox.concurrency.tqdm.tqdm")
     async def test_closed_on_completion(self, mock_tqdm_cls: MagicMock) -> None:
         progress_bar = mock_tqdm_cls.return_value
-        async for _ in concurrent_map(
-            items=[1, 2],
-            func=slow_double,
-            max_concurrency=2,
-            progress_description="test",
-        ):
+        runner = ConcurrentMap(max_concurrency=2, progress_description="test")
+        async for _ in runner.map([1, 2], slow_double):
             pass
         progress_bar.close.assert_called_once()
 
     @patch("toolbox.concurrency.tqdm.tqdm")
     async def test_closed_on_exception(self, mock_tqdm_cls: MagicMock) -> None:
         progress_bar = mock_tqdm_cls.return_value
+        runner = ConcurrentMap(max_concurrency=2, progress_description="test")
         with pytest.raises(ValueError, match="bad item"):
-            async for _ in concurrent_map(
-                items=range(10),
-                func=failing,
-                max_concurrency=2,
-                progress_description="test",
-            ):
+            async for _ in runner.map(range(10), failing):
                 pass
         progress_bar.close.assert_called_once()
 
@@ -197,12 +166,8 @@ class TestConcurrentMapProgress:
     async def test_closed_on_early_break(self, mock_tqdm_cls: MagicMock) -> None:
         progress_bar = mock_tqdm_cls.return_value
         count = 0
-        generator = concurrent_map(
-            items=range(100),
-            func=slow_double,
-            max_concurrency=3,
-            progress_description="test",
-        )
+        runner = ConcurrentMap(max_concurrency=3, progress_description="test")
+        generator = runner.map(range(100), slow_double)
         async for _ in generator:
             count += 1
             if count == 3:
@@ -212,6 +177,7 @@ class TestConcurrentMapProgress:
 
     @patch("toolbox.concurrency.tqdm.tqdm")
     async def test_no_bar_without_description(self, mock_tqdm_cls: MagicMock) -> None:
-        async for _ in concurrent_map([1, 2], slow_double, max_concurrency=1):
+        runner = ConcurrentMap(max_concurrency=1)
+        async for _ in runner.map([1, 2], slow_double):
             pass
         mock_tqdm_cls.assert_not_called()
