@@ -22,6 +22,7 @@ class DocumentRecord(BaseModel):
 class AirtableDocumentRecord(DocumentRecord):
     record_id: str
     readable_id: str = Field(validation_alias="QuickRef")
+    title: str | None = Field(validation_alias="DocTitle")
     url: str | None = Field(default=None, validation_alias="URL")
     split: TestTrainSplit | None = Field(default=None, validation_alias="Split")
 
