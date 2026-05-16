@@ -13,7 +13,7 @@ from risk_repository.results import (
 )
 from risk_repository.settings import RiskRepositorySettings
 from toolbox.classification import LLMClassifier
-from toolbox.concurrency import concurrent_map
+from toolbox.concurrency import ConcurrentMap
 from toolbox.llm import LLMClient
 from toolbox.log import log_context
 
@@ -137,6 +137,38 @@ def format_classification_user_prompt(risk: ExtractedRisk) -> str:
     )
 
 
+async def _classify_one(
+    record: DocumentRecord,
+    *,
+    classifier: LLMClassifier[CausalClassification],
+    settings: RiskRepositorySettings,
+) -> None:
+    with log_context(readable_id=record.readable_id):
+        classify_path = result_path(
+            settings.output_dir, PipelineStage.CLASSIFY, record.readable_id
+        )
+        if not settings.force and classify_path.exists():
+            return
+        extract_path = result_path(
+            settings.output_dir, PipelineStage.EXTRACT, record.readable_id
+        )
+        if not extract_path.exists():
+            logger.warning("Skipping document: no extraction results")
+            return
+        extraction = load(extract_path, ExtractionResult)
+        classified_risks: list[ClassifiedRisk] = []
+        for i, risk in enumerate(extraction.risks):
+            risk_id = f"{record.readable_id}-{i:03}"
+            with log_context(risk_id=risk_id):
+                causal = await classify_causal(classifier, risk)
+                serialized = causal.model_dump_json(exclude={"reasoning"})
+                logger.info(f"Classified risk as {serialized}")
+            classified_risks.append(ClassifiedRisk(risk_id=risk_id, causal=causal))
+        classification = ClassificationResult(risks=classified_risks)
+        save(classify_path, classification)
+        logger.info(f"Classified {len(classified_risks)} risks")
+
+
 async def run_classification(
     records: list[DocumentRecord],
     *,
@@ -144,37 +176,14 @@ async def run_classification(
     settings: RiskRepositorySettings,
 ) -> None:
     classifier = make_causal_classifier(llm)
-
-    async def classify_one(record: DocumentRecord) -> None:
-        with log_context(readable_id=record.readable_id):
-            classify_path = result_path(
-                settings.output_dir, PipelineStage.CLASSIFY, record.readable_id
-            )
-            if not settings.force and classify_path.exists():
-                return
-            extract_path = result_path(
-                settings.output_dir, PipelineStage.EXTRACT, record.readable_id
-            )
-            if not extract_path.exists():
-                logger.warning("Skipping document: no extraction results")
-                return
-            extraction = load(extract_path, ExtractionResult)
-            classified_risks: list[ClassifiedRisk] = []
-            for i, risk in enumerate(extraction.risks):
-                risk_id = f"{record.readable_id}-{i:03}"
-                with log_context(risk_id=risk_id):
-                    causal = await classify_causal(classifier, risk)
-                    serialized = causal.model_dump_json(exclude={"reasoning"})
-                    logger.info(f"Classified risk as {serialized}")
-                classified_risks.append(ClassifiedRisk(risk_id=risk_id, causal=causal))
-            classification = ClassificationResult(risks=classified_risks)
-            save(classify_path, classification)
-            logger.info(f"Classified {len(classified_risks)} risks")
-
-    async for _ in concurrent_map(
-        items=records,
-        func=classify_one,
+    runner = ConcurrentMap(
         max_concurrency=settings.concurrency,
         progress_description="Classifying",
+    )
+    async for _ in runner.map(
+        records,
+        _classify_one,
+        classifier=classifier,
+        settings=settings,
     ):
         pass
