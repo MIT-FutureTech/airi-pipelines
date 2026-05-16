@@ -9,7 +9,7 @@ from collections.abc import (
     Iterable,
     Sized,
 )
-from typing import NoReturn
+from typing import Concatenate, NoReturn
 
 import tqdm
 
@@ -29,6 +29,98 @@ _DONE = _Sentinel()
 logger = logging.getLogger(__name__)
 
 
+class ConcurrentMap:
+    """Dispatcher for mapping async function over an iterable.
+
+    Items are consumed lazily from the input iterable, and results are yielded
+    as they complete (not necessarily in input order).
+
+    Enable progress reporting by setting `progress_description`. If the iterable
+    is sized, the total number of items will be determined automatically.
+    Otherwise, set `progress_total`.
+
+    Usage:
+
+        mapper = ConcurrentMap(max_concurrency=5)
+        for result in mapper.map(my_func, range(10)):
+            print(result)
+    """
+
+    max_concurrency: int
+    progress_description: str | None
+    progress_total: int | None
+
+    def __init__(
+        self,
+        *,
+        max_concurrency: int,
+        progress_description: str | None = None,
+        progress_total: int | None = None,
+    ) -> None:
+        self.max_concurrency = max_concurrency
+        self.progress_description = progress_description
+        self.progress_total = progress_total
+
+    async def map[T, **P, R](
+        self,
+        items: AsyncIterable[T] | Iterable[T],
+        func: Callable[Concatenate[T, P], Awaitable[R]],
+        /,
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> AsyncGenerator[R]:
+        async def bound(item: T) -> R:
+            return await func(item, *args, **kwargs)
+
+        in_queue: asyncio.Queue[T | _Sentinel] = asyncio.Queue(
+            maxsize=self.max_concurrency
+        )
+        out_queue: asyncio.Queue[R | _Sentinel | _Failure] = asyncio.Queue()
+        progress: tqdm.tqdm[NoReturn] | None = None
+        progress_total = self.progress_total
+        if self.progress_description:
+            if progress_total is None and isinstance(items, Sized):
+                progress_total = len(items)
+            progress = tqdm.tqdm(desc=self.progress_description, total=progress_total)
+
+        producer = asyncio.create_task(
+            _producer(
+                items=items,
+                in_queue=in_queue,
+                max_concurrency=self.max_concurrency,
+            ),
+        )
+        workers = [
+            asyncio.create_task(
+                _worker(in_queue=in_queue, func=bound, out_queue=out_queue)
+            )
+            for _ in range(self.max_concurrency)
+        ]
+
+        try:
+            finished_worker_count = 0
+            while finished_worker_count < self.max_concurrency:
+                item = await out_queue.get()
+                if isinstance(item, _Sentinel):
+                    finished_worker_count += 1
+                elif isinstance(item, _Failure):
+                    raise item.exception
+                else:
+                    if progress is not None:
+                        progress.update()
+                    yield item
+        except:
+            logger.info("Cancelling workers")
+            raise
+        finally:
+            if progress is not None:
+                progress.close()
+            producer.cancel()
+            for w in workers:
+                w.cancel()
+            await asyncio.gather(producer, *workers, return_exceptions=True)
+
+
 async def concurrent_map[T, R](
     items: AsyncIterable[T] | Iterable[T],
     func: Callable[[T], Awaitable[R]],
@@ -37,53 +129,13 @@ async def concurrent_map[T, R](
     progress_description: str | None = None,
     progress_total: int | None = None,
 ) -> AsyncGenerator[R]:
-    """Apply an async function to items with bounded concurrency.
-
-    Items are consumed lazily from the input iterable, and results are yielded
-    as they complete (not necessarily in input order).
-
-    Enable progress reporting by specifying progress_description. If the iterable is
-    sized, the total number of items will be determined automatically. Otherwise,
-    specify progress_total as the total number of items in the iterable.
-    """
-    in_queue: asyncio.Queue[T | _Sentinel] = asyncio.Queue(maxsize=max_concurrency)
-    out_queue: asyncio.Queue[R | _Sentinel | _Failure] = asyncio.Queue()
-    progress: tqdm.tqdm[NoReturn] | None = None
-    if progress_description:
-        if progress_total is None and isinstance(items, Sized):
-            progress_total = len(items)
-        progress = tqdm.tqdm(desc=progress_description, total=progress_total)
-
-    producer = asyncio.create_task(
-        _producer(items=items, in_queue=in_queue, max_concurrency=max_concurrency),
+    mapper = ConcurrentMap(
+        max_concurrency=max_concurrency,
+        progress_description=progress_description,
+        progress_total=progress_total,
     )
-    workers = [
-        asyncio.create_task(_worker(in_queue=in_queue, func=func, out_queue=out_queue))
-        for _ in range(max_concurrency)
-    ]
-
-    try:
-        finished_worker_count = 0
-        while finished_worker_count < max_concurrency:
-            item = await out_queue.get()
-            if isinstance(item, _Sentinel):
-                finished_worker_count += 1
-            elif isinstance(item, _Failure):
-                raise item.exception
-            else:
-                if progress is not None:
-                    progress.update()
-                yield item
-    except:
-        logger.info("Cancelling workers")
-        raise
-    finally:
-        if progress is not None:
-            progress.close()
-        producer.cancel()
-        for w in workers:
-            w.cancel()
-        await asyncio.gather(producer, *workers, return_exceptions=True)
+    async for result in mapper.map(items, func):
+        yield result
 
 
 async def _producer[T](
