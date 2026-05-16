@@ -11,6 +11,12 @@ from risk_repository.classify import (
     classify_causal,
     make_causal_classifier,
 )
+from risk_repository.documents import (
+    get_abstract,
+    get_full_text,
+    prefetch_abstracts,
+    prefetch_full_text,
+)
 from risk_repository.download import make_http_client
 from risk_repository.extract import ExtractionResult, extract_risks
 from risk_repository.records import (
@@ -73,65 +79,6 @@ async def _iterate_source(
             yield record
 
 
-async def _prefetch_abstracts(
-    records: list[DocumentRecord],
-    http_client: httpx.AsyncClient,
-    settings: RiskRepositorySettings,
-) -> list[DocumentRecord]:
-    async def fetch_one(record: DocumentRecord) -> DocumentRecord | None:
-        abstract = await record.get_abstract(
-            cache_dir=settings.download_cache_dir, client=http_client
-        )
-        return record if abstract is not None else None
-
-    available: list[DocumentRecord] = []
-    async for result in concurrent_map(
-        items=records,
-        func=fetch_one,
-        max_concurrency=settings.concurrency,
-        progress_description="Fetching abstracts",
-    ):
-        if result is not None:
-            available.append(result)
-    failed = len(records) - len(available)
-    logger.info(f"Abstracts: {len(available)} ok, {failed} failed")
-    if failed:
-        logger.info(
-            f"See {settings.download_cache_dir}/*.failed.json for failure details"
-        )
-    return available
-
-
-async def _prefetch_full_text(
-    records: list[DocumentRecord],
-    http_client: httpx.AsyncClient,
-    settings: RiskRepositorySettings,
-) -> list[DocumentRecord]:
-    async def fetch_one(record: DocumentRecord) -> DocumentRecord | None:
-        pdf_path = await record.get_pdf(
-            cache_dir=settings.download_cache_dir,
-            client=http_client,
-        )
-        return record if pdf_path is not None else None
-
-    available: list[DocumentRecord] = []
-    async for result in concurrent_map(
-        items=records,
-        func=fetch_one,
-        max_concurrency=settings.concurrency,
-        progress_description="Fetching full texts",
-    ):
-        if result is not None:
-            available.append(result)
-    failed = len(records) - len(available)
-    logger.info(f"Full texts: {len(available)} ok, {failed} failed")
-    if failed:
-        logger.info(
-            f"See {settings.download_cache_dir}/*.failed.json for failure details"
-        )
-    return available
-
-
 async def _screen_abstract_all(
     records: list[DocumentRecord],
     llm: LLMClient,
@@ -147,7 +94,8 @@ async def _screen_abstract_all(
             )
             if not settings.force and output_path.exists():
                 return
-            abstract = await record.get_abstract(
+            abstract = await get_abstract(
+                record,
                 cache_dir=settings.download_cache_dir,
                 client=http_client,
             )
@@ -187,7 +135,8 @@ async def _screen_full_text_all(
             )
             if not settings.force and output_path.exists():
                 return
-            full_text = await record.get_full_text(
+            full_text = await get_full_text(
+                record,
                 cache_dir=settings.download_cache_dir,
                 client=http_client,
                 max_truncation_ratio=settings.document_max_truncation_ratio,
@@ -253,7 +202,8 @@ async def _extract_all(
             )
             if not settings.force and output_path.exists():
                 return
-            full_text = await record.get_full_text(
+            full_text = await get_full_text(
+                record,
                 cache_dir=settings.download_cache_dir,
                 client=http_client,
                 max_truncation_ratio=settings.document_max_truncation_ratio,
@@ -345,7 +295,12 @@ async def main() -> None:
             records = await _collect_records(airtable, settings)
 
             if PipelineStage.SCREEN_ABSTRACT in stages:
-                records = await _prefetch_abstracts(records, http_client, settings)
+                records = await prefetch_abstracts(
+                    records,
+                    cache_dir=settings.download_cache_dir,
+                    client=http_client,
+                    concurrency=settings.concurrency,
+                )
                 await _screen_abstract_all(records, llm, http_client, settings)
             records = _filter_by_screening(
                 records, settings.output_dir, PipelineStage.SCREEN_ABSTRACT
@@ -353,7 +308,12 @@ async def main() -> None:
 
             full_text_prefetched = False
             if PipelineStage.SCREEN_FULL_TEXT in stages:
-                records = await _prefetch_full_text(records, http_client, settings)
+                records = await prefetch_full_text(
+                    records,
+                    cache_dir=settings.download_cache_dir,
+                    client=http_client,
+                    concurrency=settings.concurrency,
+                )
                 full_text_prefetched = True
                 await _screen_full_text_all(records, llm, http_client, settings)
             records = _filter_by_screening(
@@ -362,7 +322,12 @@ async def main() -> None:
 
             if PipelineStage.EXTRACT in stages:
                 if not full_text_prefetched:
-                    records = await _prefetch_full_text(records, http_client, settings)
+                    records = await prefetch_full_text(
+                        records,
+                        cache_dir=settings.download_cache_dir,
+                        client=http_client,
+                        concurrency=settings.concurrency,
+                    )
                 await _extract_all(records, llm, http_client, settings)
 
             if PipelineStage.CLASSIFY in stages:
