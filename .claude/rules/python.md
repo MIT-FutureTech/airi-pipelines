@@ -38,3 +38,5 @@ Run from the repository root:
 ```bash
 uv run ruff format && uv run ruff check --fix && uv run basedpyright && uv run pytest -x
 ```
+
+There's no need to import a module to check its validity. The checks above are sufficient.
