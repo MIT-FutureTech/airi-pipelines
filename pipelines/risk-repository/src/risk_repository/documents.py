@@ -9,7 +9,7 @@ from risk_repository.records import (
     CsvDocumentRecord,
     DocumentRecord,
 )
-from toolbox.concurrency import concurrent_map
+from toolbox.concurrency import ConcurrentMap
 from toolbox.text_processing.markdown import truncate_at_heading
 from toolbox.text_processing.pdf import convert_to_markdown
 
@@ -91,6 +91,16 @@ async def get_full_text(
         return None
 
 
+async def _prefetch_abstract_one(
+    record: DocumentRecord,
+    *,
+    cache_dir: Path,
+    client: httpx.AsyncClient,
+) -> DocumentRecord | None:
+    abstract = await get_abstract(record, cache_dir=cache_dir, client=client)
+    return record if abstract is not None else None
+
+
 async def prefetch_abstracts(
     records: list[DocumentRecord],
     *,
@@ -98,16 +108,15 @@ async def prefetch_abstracts(
     client: httpx.AsyncClient,
     concurrency: int,
 ) -> list[DocumentRecord]:
-    async def fetch_one(record: DocumentRecord) -> DocumentRecord | None:
-        abstract = await get_abstract(record, cache_dir=cache_dir, client=client)
-        return record if abstract is not None else None
-
+    runner = ConcurrentMap(
+        max_concurrency=concurrency, progress_description="Fetching abstracts"
+    )
     available: list[DocumentRecord] = []
-    async for result in concurrent_map(
-        items=records,
-        func=fetch_one,
-        max_concurrency=concurrency,
-        progress_description="Fetching abstracts",
+    async for result in runner.map(
+        records,
+        _prefetch_abstract_one,
+        cache_dir=cache_dir,
+        client=client,
     ):
         if result is not None:
             available.append(result)
@@ -118,6 +127,16 @@ async def prefetch_abstracts(
     return available
 
 
+async def _prefetch_full_text_one(
+    record: DocumentRecord,
+    *,
+    cache_dir: Path,
+    client: httpx.AsyncClient,
+) -> DocumentRecord | None:
+    pdf_path = await get_pdf(record, cache_dir=cache_dir, client=client)
+    return record if pdf_path is not None else None
+
+
 async def prefetch_full_text(
     records: list[DocumentRecord],
     *,
@@ -125,16 +144,15 @@ async def prefetch_full_text(
     client: httpx.AsyncClient,
     concurrency: int,
 ) -> list[DocumentRecord]:
-    async def fetch_one(record: DocumentRecord) -> DocumentRecord | None:
-        pdf_path = await get_pdf(record, cache_dir=cache_dir, client=client)
-        return record if pdf_path is not None else None
-
+    runner = ConcurrentMap(
+        max_concurrency=concurrency, progress_description="Fetching full texts"
+    )
     available: list[DocumentRecord] = []
-    async for result in concurrent_map(
-        items=records,
-        func=fetch_one,
-        max_concurrency=concurrency,
-        progress_description="Fetching full texts",
+    async for result in runner.map(
+        records,
+        _prefetch_full_text_one,
+        cache_dir=cache_dir,
+        client=client,
     ):
         if result is not None:
             available.append(result)
