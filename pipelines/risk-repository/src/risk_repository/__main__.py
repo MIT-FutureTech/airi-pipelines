@@ -2,30 +2,20 @@ import asyncio
 import logging
 from collections.abc import AsyncIterator
 
-from risk_repository.classify import (
-    ClassificationResult,
-    ClassifiedRisk,
-    classify_causal,
-    make_causal_classifier,
-)
+from risk_repository.classify import run_classification
 from risk_repository.documents import (
     prefetch_abstracts,
     prefetch_full_text,
 )
 from risk_repository.download import make_http_client
-from risk_repository.extract import ExtractionResult, run_extraction
+from risk_repository.extract import run_extraction
 from risk_repository.records import (
     DocumentRecord,
     fetch_records_from_airtable,
     fetch_records_from_csv,
     include_record,
 )
-from risk_repository.results import (
-    PipelineStage,
-    load,
-    result_path,
-    save,
-)
+from risk_repository.results import PipelineStage
 from risk_repository.screen import (
     filter_by_screening,
     run_abstract_screening,
@@ -33,9 +23,8 @@ from risk_repository.screen import (
 )
 from risk_repository.settings import RiskRepositorySettings
 from toolbox.airtable import AirtableClient
-from toolbox.concurrency import concurrent_map
-from toolbox.llm import LLMClient, OpenRouterClient
-from toolbox.log import configure_logging, install_log_context_filter, log_context
+from toolbox.llm import OpenRouterClient
+from toolbox.log import configure_logging, install_log_context_filter
 
 logger = logging.getLogger(__name__)
 
@@ -70,48 +59,6 @@ async def _iterate_source(
             table_name=settings.airtable_documents_table,
         ):
             yield record
-
-
-async def _classify_all(
-    records: list[DocumentRecord],
-    llm: LLMClient,
-    settings: RiskRepositorySettings,
-) -> None:
-    classifier = make_causal_classifier(llm)
-
-    async def classify_one(record: DocumentRecord) -> None:
-        with log_context(readable_id=record.readable_id):
-            classify_path = result_path(
-                settings.output_dir, PipelineStage.CLASSIFY, record.readable_id
-            )
-            if not settings.force and classify_path.exists():
-                return
-            extract_path = result_path(
-                settings.output_dir, PipelineStage.EXTRACT, record.readable_id
-            )
-            if not extract_path.exists():
-                logger.warning("Skipping document: no extraction results")
-                return
-            extraction = load(extract_path, ExtractionResult)
-            classified_risks: list[ClassifiedRisk] = []
-            for i, risk in enumerate(extraction.risks):
-                risk_id = f"{record.readable_id}-{i:03}"
-                with log_context(risk_id=risk_id):
-                    causal = await classify_causal(classifier, risk)
-                    serialized = causal.model_dump_json(exclude={"reasoning"})
-                    logger.info(f"Classified risk as {serialized}")
-                classified_risks.append(ClassifiedRisk(risk_id=risk_id, causal=causal))
-            classification = ClassificationResult(risks=classified_risks)
-            save(classify_path, classification)
-            logger.info(f"Classified {len(classified_risks)} risks")
-
-    async for _ in concurrent_map(
-        items=records,
-        func=classify_one,
-        max_concurrency=settings.concurrency,
-        progress_description="Classifying",
-    ):
-        pass
 
 
 async def main() -> None:
@@ -181,7 +128,7 @@ async def main() -> None:
                 )
 
             if PipelineStage.CLASSIFY in stages:
-                await _classify_all(records, llm, settings)
+                await run_classification(records, llm=llm, settings=settings)
     except:
         logger.exception("Uncaught exception")
         raise
