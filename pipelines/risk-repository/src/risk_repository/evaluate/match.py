@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 from risk_repository.evaluate.ground_truth import GroundTruth, GroundTruthRisk
 from risk_repository.extract import ExtractedRisk, ExtractionResult
 from risk_repository.results import PipelineStage, load, result_path
-from toolbox.concurrency import concurrent_map
+from toolbox.concurrency import ConcurrentMap
 from toolbox.llm import LLMClient, Message
 
 logger = logging.getLogger(__name__)
@@ -44,6 +44,36 @@ class _MatchValidationError(Exception):
         super().__init__("\n".join(errors))
 
 
+class _MatchInput(BaseModel):
+    readable_id: str
+    gt_risks: list[GroundTruthRisk]
+    pipeline_risks: list[ExtractedRisk]
+
+
+async def _match_one(
+    inp: _MatchInput,
+    *,
+    llm: LLMClient,
+    max_attempts: int,
+) -> DocumentMatchResult:
+    if inp.gt_risks and inp.pipeline_risks:
+        llm_matches = await _match_risks(
+            llm, inp.gt_risks, inp.pipeline_risks, max_attempts=max_attempts
+        )
+        matches = [_to_match_pair(m) for m in llm_matches]
+        logger.info(
+            f"{inp.readable_id}: {len(matches)} matches (GT={len(inp.gt_risks)}, pipeline={len(inp.pipeline_risks)})"
+        )
+    else:
+        matches = []
+    return DocumentMatchResult(
+        readable_id=inp.readable_id,
+        gt_risks=inp.gt_risks,
+        pipeline_risks=inp.pipeline_risks,
+        matches=matches,
+    )
+
+
 async def match_all(
     ground_truth: GroundTruth,
     results_dir: Path,
@@ -54,12 +84,7 @@ async def match_all(
 ) -> list[DocumentMatchResult]:
     gt_by_doc = ground_truth.risks_by_document()
 
-    class _Input(BaseModel):
-        readable_id: str
-        gt_risks: list[GroundTruthRisk]
-        pipeline_risks: list[ExtractedRisk]
-
-    inputs: list[_Input] = []
+    inputs: list[_MatchInput] = []
     for doc in ground_truth.documents:
         extraction_path = result_path(
             output_dir=results_dir,
@@ -70,37 +95,20 @@ async def match_all(
             continue
         extraction = load(extraction_path, ExtractionResult)
         inputs.append(
-            _Input(
+            _MatchInput(
                 readable_id=doc.readable_id,
                 gt_risks=gt_by_doc.get(doc.readable_id, []),
                 pipeline_risks=extraction.risks,
             )
         )
 
-    async def match_one(inp: _Input) -> DocumentMatchResult:
-        if inp.gt_risks and inp.pipeline_risks:
-            llm_matches = await _match_risks(
-                llm, inp.gt_risks, inp.pipeline_risks, max_attempts=max_attempts
-            )
-            matches = [_to_match_pair(m) for m in llm_matches]
-            logger.info(
-                f"{inp.readable_id}: {len(matches)} matches (GT={len(inp.gt_risks)}, pipeline={len(inp.pipeline_risks)})"
-            )
-        else:
-            matches = []
-        return DocumentMatchResult(
-            readable_id=inp.readable_id,
-            gt_risks=inp.gt_risks,
-            pipeline_risks=inp.pipeline_risks,
-            matches=matches,
-        )
-
+    runner = ConcurrentMap(max_concurrency=concurrency, progress_description="Matching")
     results: list[DocumentMatchResult] = []
-    async for result in concurrent_map(
-        items=inputs,
-        func=match_one,
-        max_concurrency=concurrency,
-        progress_description="Matching",
+    async for result in runner.map(
+        inputs,
+        _match_one,
+        llm=llm,
+        max_attempts=max_attempts,
     ):
         results.append(result)
     return results
