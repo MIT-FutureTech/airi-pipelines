@@ -2,8 +2,6 @@ import asyncio
 import logging
 from collections.abc import AsyncIterator
 
-import httpx
-
 from risk_repository.classify import (
     ClassificationResult,
     ClassifiedRisk,
@@ -11,12 +9,11 @@ from risk_repository.classify import (
     make_causal_classifier,
 )
 from risk_repository.documents import (
-    get_full_text,
     prefetch_abstracts,
     prefetch_full_text,
 )
 from risk_repository.download import make_http_client
-from risk_repository.extract import ExtractionResult, extract_risks
+from risk_repository.extract import ExtractionResult, run_extraction
 from risk_repository.records import (
     DocumentRecord,
     fetch_records_from_airtable,
@@ -25,7 +22,6 @@ from risk_repository.records import (
 )
 from risk_repository.results import (
     PipelineStage,
-    invalidate_downstream,
     load,
     result_path,
     save,
@@ -74,45 +70,6 @@ async def _iterate_source(
             table_name=settings.airtable_documents_table,
         ):
             yield record
-
-
-async def _extract_all(
-    records: list[DocumentRecord],
-    llm: LLMClient,
-    http_client: httpx.AsyncClient,
-    settings: RiskRepositorySettings,
-) -> None:
-    async def extract_one(record: DocumentRecord) -> None:
-        with log_context(readable_id=record.readable_id):
-            output_path = result_path(
-                settings.output_dir, PipelineStage.EXTRACT, record.readable_id
-            )
-            if not settings.force and output_path.exists():
-                return
-            full_text = await get_full_text(
-                record,
-                cache_dir=settings.download_cache_dir,
-                client=http_client,
-                max_truncation_ratio=settings.document_max_truncation_ratio,
-                max_document_length=settings.document_length_limit,
-            )
-            if full_text is None:
-                logger.warning("Skipping extraction: no full text available")
-                return
-            extraction = await extract_risks(llm, full_text)
-            save(output_path, extraction)
-            invalidate_downstream(
-                settings.output_dir, PipelineStage.EXTRACT, record.readable_id
-            )
-            logger.info(f"Extracted {len(extraction.risks)} risks")
-
-    async for _ in concurrent_map(
-        items=records,
-        func=extract_one,
-        max_concurrency=settings.concurrency,
-        progress_description="Extracting",
-    ):
-        pass
 
 
 async def _classify_all(
@@ -219,7 +176,9 @@ async def main() -> None:
                         client=http_client,
                         concurrency=settings.concurrency,
                     )
-                await _extract_all(records, llm, http_client, settings)
+                await run_extraction(
+                    records, llm=llm, http_client=http_client, settings=settings
+                )
 
             if PipelineStage.CLASSIFY in stages:
                 await _classify_all(records, llm, settings)
