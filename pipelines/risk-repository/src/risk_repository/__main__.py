@@ -11,13 +11,13 @@ from risk_repository.classify import (
     classify_causal,
     make_causal_classifier,
 )
+from risk_repository.download import make_http_client
 from risk_repository.extract import ExtractionResult, extract_risks
 from risk_repository.records import (
     DocumentRecord,
     fetch_records_from_airtable,
     fetch_records_from_csv,
     include_record,
-    make_http_client,
 )
 from risk_repository.results import (
     PipelineStage,
