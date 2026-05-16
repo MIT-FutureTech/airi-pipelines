@@ -17,6 +17,7 @@ class EvaluationSettings(
     cli_parse_args=True,
     cli_enforce_required=True,
     cli_kebab_case=True,
+    cli_implicit_flags=True,
     cli_hide_none_type=True,
     cli_prog_name="risk_repository.evaluate",
 ):
