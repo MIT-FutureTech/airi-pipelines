@@ -8,8 +8,12 @@ from risk_repository.results import PipelineStage, load, result_path
 from risk_repository.screen import Decision, ScreeningResult
 
 
-def _is_positive(decision: Decision) -> bool:
+def is_positive_pipeline(decision: Decision) -> bool:
     return decision in {Decision.INCLUDE, Decision.UNCERTAIN}
+
+
+def is_positive_ground_truth(decision: Decision) -> bool:
+    return decision == Decision.INCLUDE
 
 
 def _latest_screening_result(results_dir: Path, readable_id: str) -> Path | None:
@@ -84,8 +88,8 @@ def evaluate_screening(
             case Decision.UNCERTAIN:
                 pipeline_counts.uncertain += 1
 
-        gt_positive = gt_decision == Decision.INCLUDE
-        pred_positive = _is_positive(pipeline_decision)
+        gt_positive = is_positive_ground_truth(gt_decision)
+        pred_positive = is_positive_pipeline(pipeline_decision)
 
         if pred_positive and gt_positive:
             tp += 1
