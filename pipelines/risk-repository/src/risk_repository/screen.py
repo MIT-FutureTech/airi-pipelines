@@ -1,9 +1,22 @@
 import logging
 from enum import StrEnum
 
+import httpx
 from pydantic import BaseModel, Field
 
+from risk_repository.documents import get_abstract, get_full_text
+from risk_repository.records import DocumentRecord
+from risk_repository.results import (
+    PipelineStage,
+    invalidate_downstream,
+    load,
+    result_path,
+    save,
+)
+from risk_repository.settings import RiskRepositorySettings
+from toolbox.concurrency import concurrent_map
 from toolbox.llm import LLMClient, Message
+from toolbox.log import log_context
 
 logger = logging.getLogger(__name__)
 
@@ -127,3 +140,116 @@ not the document meets each one. Then give your decision.
 
 def _format_screening_user_prompt(document: str) -> str:
     return _SCREENING_USER_PROMPT.format(document=document)
+
+
+async def run_abstract_screening(
+    records: list[DocumentRecord],
+    *,
+    llm: LLMClient,
+    http_client: httpx.AsyncClient,
+    settings: RiskRepositorySettings,
+) -> None:
+    async def screen_one(record: DocumentRecord) -> None:
+        with log_context(readable_id=record.readable_id):
+            output_path = result_path(
+                settings.output_dir,
+                PipelineStage.SCREEN_ABSTRACT,
+                record.readable_id,
+            )
+            if not settings.force and output_path.exists():
+                return
+            abstract = await get_abstract(
+                record,
+                cache_dir=settings.download_cache_dir,
+                client=http_client,
+            )
+            if abstract is None:
+                logger.warning("Skipping screening: no abstract available")
+                return
+            screening = await screen_abstract(llm, abstract)
+            save(output_path, screening)
+            invalidate_downstream(
+                settings.output_dir,
+                PipelineStage.SCREEN_ABSTRACT,
+                record.readable_id,
+            )
+            logger.info(f"Abstract screening decision: {screening.decision}")
+
+    async for _ in concurrent_map(
+        items=records,
+        func=screen_one,
+        max_concurrency=settings.concurrency,
+        progress_description="Screening abstracts",
+    ):
+        pass
+
+
+async def run_full_text_screening(
+    records: list[DocumentRecord],
+    *,
+    llm: LLMClient,
+    http_client: httpx.AsyncClient,
+    settings: RiskRepositorySettings,
+) -> None:
+    async def screen_one(record: DocumentRecord) -> None:
+        with log_context(readable_id=record.readable_id):
+            output_path = result_path(
+                settings.output_dir,
+                PipelineStage.SCREEN_FULL_TEXT,
+                record.readable_id,
+            )
+            if not settings.force and output_path.exists():
+                return
+            full_text = await get_full_text(
+                record,
+                cache_dir=settings.download_cache_dir,
+                client=http_client,
+                max_truncation_ratio=settings.document_max_truncation_ratio,
+                max_document_length=settings.document_length_limit,
+            )
+            if full_text is None:
+                logger.warning("Skipping screening: no full text available")
+                return
+            screening = await screen_full_text(llm, full_text)
+            save(output_path, screening)
+            invalidate_downstream(
+                settings.output_dir,
+                PipelineStage.SCREEN_FULL_TEXT,
+                record.readable_id,
+            )
+            logger.info(f"Full-text screening decision: {screening.decision}")
+
+    async for _ in concurrent_map(
+        items=records,
+        func=screen_one,
+        max_concurrency=settings.concurrency,
+        progress_description="Screening full texts",
+    ):
+        pass
+
+
+def filter_by_screening(
+    records: list[DocumentRecord],
+    *,
+    settings: RiskRepositorySettings,
+    stage: PipelineStage,
+) -> list[DocumentRecord]:
+    included: list[DocumentRecord] = []
+    unscreened = 0
+    for record in records:
+        output_path = result_path(settings.output_dir, stage, record.readable_id)
+        if not output_path.exists():
+            unscreened += 1
+            included.append(record)
+            continue
+        screening = load(output_path, ScreeningResult)
+        if screening.decision == Decision.EXCLUDE:
+            continue
+        included.append(record)
+    if unscreened:
+        logger.info(
+            f"{unscreened}/{len(records)} records have no {stage.value} result;"
+            + " passing through unfiltered"
+        )
+    logger.info(f"{len(included)} records passed {stage.value}")
+    return included
