@@ -7,6 +7,7 @@ import {
   Stack,
   Text,
 } from "@mantine/core";
+import { useHotkeys } from "@mantine/hooks";
 import { useMemo, useState } from "react";
 import {
   countOutcomes,
@@ -36,6 +37,34 @@ export function DocumentList({ bundle, selectedId, onSelect }: Props) {
       allowed.has(d.screening.outcome_class),
     );
   }, [bundle.documents, filter]);
+
+  const selectByOffset = (offset: number) => {
+    if (visible.length === 0) {
+      return;
+    }
+    const currentIdx = visible.findIndex((d) => d.readable_id === selectedId);
+    const nextIdx =
+      currentIdx === -1
+        ? 0
+        : Math.max(0, Math.min(visible.length - 1, currentIdx + offset));
+    const nextId = visible[nextIdx].readable_id;
+    if (nextId === selectedId) {
+      return;
+    }
+    onSelect(nextId);
+    requestAnimationFrame(() => {
+      document
+        .querySelector(`[data-doc-id="${nextId}"]`)
+        ?.scrollIntoView({ block: "nearest" });
+    });
+  };
+
+  useHotkeys([
+    ["j", () => selectByOffset(1)],
+    ["ArrowRight", () => selectByOffset(1)],
+    ["k", () => selectByOffset(-1)],
+    ["ArrowLeft", () => selectByOffset(-1)],
+  ]);
 
   return (
     <Stack gap="sm" h="100%">
@@ -93,6 +122,7 @@ function DocumentItem({ document, active, onClick }: ItemProps) {
   const outcome = document.screening.outcome_class;
   return (
     <NavLink
+      data-doc-id={document.readable_id}
       active={active}
       onClick={onClick}
       label={document.title ?? document.readable_id}
