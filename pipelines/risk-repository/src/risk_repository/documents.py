@@ -22,19 +22,12 @@ async def format_abstract_and_title(
     cache_dir: Path,
     client: httpx.AsyncClient,
 ) -> str | None:
-    match record:
-        case CsvDocumentRecord():
-            sections = [f"# {record.title}", f"## Abstract\n\n{record.abstract}"]
-            if record.author_keywords:
-                sections.append(f"## Keywords\n\n{record.author_keywords}")
-            return "\n\n".join(sections)
-        case AirtableDocumentRecord():
-            pdf_path = await get_pdf(record, cache_dir=cache_dir, client=client)
-            if pdf_path is None:
-                return None
-            return convert_to_markdown(pdf_path, pages=[0])
-        case _:
-            raise TypeError(f"Unknown record type: {type(record).__name__}")
+    if isinstance(record, AirtableDocumentRecord) and record.abstract is None:
+        pdf_path = await get_pdf(record, cache_dir=cache_dir, client=client)
+        if pdf_path is None:
+            return None
+        return convert_to_markdown(pdf_path, pages=[0])
+    return f"# {record.title}\n\n## Abstract\n\n{record.abstract}"
 
 
 async def get_pdf(
