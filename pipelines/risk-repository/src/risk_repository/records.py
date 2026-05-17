@@ -41,7 +41,7 @@ async def fetch_records_from_csv(csv_path: Path) -> AsyncIterator[CsvDocumentRec
         reader = csv.DictReader(f)
         for row in reader:
             yield CsvDocumentRecord.model_validate(
-                {"readable_id": f"csv-{int(row['id']):04d}", **row}
+                {"readable_id": f"csv-{int(row['id']):06d}", **row}
             )
 
 
