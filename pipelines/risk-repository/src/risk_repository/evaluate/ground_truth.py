@@ -87,7 +87,7 @@ async def fetch_ground_truth(
     base_id: str,
     documents_table_name: str,
 ) -> GroundTruth:
-    documents = await _fetch_documents(
+    documents = await fetch_ground_truth_documents(
         client=client,
         base_id=base_id,
         documents_table_name=documents_table_name,
@@ -128,7 +128,7 @@ async def _fetch_id_map(
     return result
 
 
-async def _fetch_documents(
+async def fetch_ground_truth_documents(
     client: AirtableClient,
     *,
     base_id: str,
