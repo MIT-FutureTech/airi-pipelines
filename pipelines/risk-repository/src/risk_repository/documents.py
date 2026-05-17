@@ -16,7 +16,7 @@ from toolbox.text_processing.pdf import convert_to_markdown
 logger = logging.getLogger(__name__)
 
 
-async def get_abstract(
+async def format_abstract_and_title(
     record: DocumentRecord,
     *,
     cache_dir: Path,
@@ -97,7 +97,9 @@ async def _prefetch_abstract_one(
     cache_dir: Path,
     client: httpx.AsyncClient,
 ) -> DocumentRecord | None:
-    abstract = await get_abstract(record, cache_dir=cache_dir, client=client)
+    abstract = await format_abstract_and_title(
+        record, cache_dir=cache_dir, client=client
+    )
     return record if abstract is not None else None
 
 
