@@ -10,6 +10,7 @@ import {
 import { Suspense, use } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { BundlePicker } from "@/components/BundlePicker";
+import { DocumentDetail } from "@/components/DocumentDetail";
 import { DocumentList } from "@/components/DocumentList";
 import { getBundle } from "@/lib/api";
 import { useUrlParam } from "@/lib/useUrlParam";
@@ -121,15 +122,7 @@ function MainContent({ filename, selectedId }: MainContentProps) {
       <Text c="dimmed">Document "{selectedId}" is not in this bundle.</Text>
     );
   }
-  return (
-    <Stack gap="xs">
-      <Title order={3}>{document.title ?? document.readable_id}</Title>
-      <Text c="dimmed" size="sm">
-        {document.readable_id}
-      </Text>
-      <Text c="dimmed">Detail view coming next.</Text>
-    </Stack>
-  );
+  return <DocumentDetail document={document} />;
 }
 
 function renderInlineError({ error }: FallbackProps) {
