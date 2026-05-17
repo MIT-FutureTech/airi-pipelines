@@ -10,11 +10,13 @@ import {
 import { Suspense, use } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { BundlePicker } from "@/components/BundlePicker";
+import { DocumentList } from "@/components/DocumentList";
 import { getBundle } from "@/lib/api";
 import { useUrlParam } from "@/lib/useUrlParam";
 
 export function App() {
   const [bundleFilename, setBundleFilename] = useUrlParam("bundle");
+  const [selectedId, setSelectedId] = useUrlParam("id");
 
   return (
     <AppShell
@@ -35,16 +37,34 @@ export function App() {
             >
               <BundlePicker
                 value={bundleFilename}
-                onChange={setBundleFilename}
+                onChange={(value) => {
+                  setBundleFilename(value);
+                  setSelectedId(null);
+                }}
               />
             </Suspense>
           </ErrorBoundary>
         </Group>
       </AppShell.Header>
       <AppShell.Navbar p="md">
-        <Text c="dimmed" size="sm">
-          Document list will go here
-        </Text>
+        {bundleFilename === null ? (
+          <Text c="dimmed" size="sm">
+            Select a bundle.
+          </Text>
+        ) : (
+          <ErrorBoundary
+            fallbackRender={renderBlockError}
+            resetKeys={[bundleFilename]}
+          >
+            <Suspense fallback={<Loader />}>
+              <NavbarContent
+                filename={bundleFilename}
+                selectedId={selectedId}
+                onSelect={setSelectedId}
+              />
+            </Suspense>
+          </ErrorBoundary>
+        )}
       </AppShell.Navbar>
       <AppShell.Main>
         {bundleFilename === null ? (
@@ -52,10 +72,10 @@ export function App() {
         ) : (
           <ErrorBoundary
             fallbackRender={renderBlockError}
-            resetKeys={[bundleFilename]}
+            resetKeys={[bundleFilename, selectedId]}
           >
             <Suspense fallback={<Loader />}>
-              <BundleContent filename={bundleFilename} />
+              <MainContent filename={bundleFilename} selectedId={selectedId} />
             </Suspense>
           </ErrorBoundary>
         )}
@@ -64,17 +84,50 @@ export function App() {
   );
 }
 
-function BundleContent({ filename }: { filename: string }) {
+interface NavbarContentProps {
+  filename: string;
+  selectedId: string | null;
+  onSelect: (id: string) => void;
+}
+
+function NavbarContent({ filename, selectedId, onSelect }: NavbarContentProps) {
   const bundle = use(getBundle(filename));
   return (
+    <DocumentList bundle={bundle} selectedId={selectedId} onSelect={onSelect} />
+  );
+}
+
+interface MainContentProps {
+  filename: string;
+  selectedId: string | null;
+}
+
+function MainContent({ filename, selectedId }: MainContentProps) {
+  const bundle = use(getBundle(filename));
+  if (selectedId === null) {
+    return (
+      <Stack gap="xs">
+        <Text>
+          {bundle.run_name ?? bundle.results_dir}: {bundle.documents.length}{" "}
+          documents
+        </Text>
+        <Text c="dimmed">Select a document from the sidebar.</Text>
+      </Stack>
+    );
+  }
+  const document = bundle.documents.find((d) => d.readable_id === selectedId);
+  if (document === undefined) {
+    return (
+      <Text c="dimmed">Document "{selectedId}" is not in this bundle.</Text>
+    );
+  }
+  return (
     <Stack gap="xs">
-      <Text>
-        {bundle.run_name ?? bundle.results_dir}: {bundle.documents.length}{" "}
-        documents
-      </Text>
+      <Title order={3}>{document.title ?? document.readable_id}</Title>
       <Text c="dimmed" size="sm">
-        Bundle generated at {bundle.generated_at}
+        {document.readable_id}
       </Text>
+      <Text c="dimmed">Detail view coming next.</Text>
     </Stack>
   );
 }
