@@ -29,9 +29,21 @@ export function DocumentDetail({ document }: Props) {
   return (
     <Stack gap="md">
       <Stack gap={4}>
-        <Group justify="space-between" align="flex-start" wrap="nowrap">
-          <Title order={2}>{document.title ?? document.readable_id}</Title>
-          <Badge color={OUTCOME_COLORS[outcome]} variant="light" size="lg">
+        <Group
+          justify="space-between"
+          align="flex-start"
+          wrap="nowrap"
+          gap="md"
+        >
+          <Title order={2} style={{ flex: 1, minWidth: 0 }}>
+            {document.title ?? document.readable_id}
+          </Title>
+          <Badge
+            color={OUTCOME_COLORS[outcome]}
+            variant="light"
+            size="lg"
+            style={{ flexShrink: 0 }}
+          >
             {OUTCOME_LABELS[outcome]}
           </Badge>
         </Group>
