@@ -6,6 +6,7 @@ from pydantic_settings import BaseSettings
 
 from risk_repository.settings import (
     DEFAULT_AIRTABLE_BASE_ID,
+    DEFAULT_AIRTABLE_DOCUMENTS_TABLE,
     DEFAULT_AIRTABLE_TIMEOUT,
     DEFAULT_DOWNLOAD_CACHE_DIR,
 )
@@ -66,7 +67,7 @@ class AuditSettings(
         """,
     )
     ground_truth_table: str | None = Field(
-        default=None,
+        default=DEFAULT_AIRTABLE_DOCUMENTS_TABLE,
         description="""
             Optional Airtable table name with ground-truth screening decisions.
         """,
