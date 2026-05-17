@@ -15,6 +15,8 @@ class TestTrainSplit(StrEnum):
 
 class DocumentRecord(BaseModel):
     readable_id: str
+    title: str | None
+    abstract: str | None
     url: str | None
     split: TestTrainSplit | None = None
 
@@ -23,13 +25,12 @@ class AirtableDocumentRecord(DocumentRecord):
     record_id: str
     readable_id: str = Field(validation_alias="QuickRef")
     title: str | None = Field(validation_alias="DocTitle")
+    abstract: str | None = Field(default=None, validation_alias="Abstract")
     url: str | None = Field(default=None, validation_alias="URL")
     split: TestTrainSplit | None = Field(default=None, validation_alias="Split")
 
 
 class CsvDocumentRecord(DocumentRecord):
-    title: str
-    abstract: str
     doi: str | None = None
     url: str | None = Field(default=None, alias="link")
     author_keywords: str | None = None
