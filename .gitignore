@@ -26,3 +26,7 @@ next-env.d.ts
 # Pipeline output
 /pipelines/*/output
 /pipelines/*/download_cache
+
+# Auditor build + bundle data
+/pipelines/*/auditor/dist
+/pipelines/*/auditor/public/bundles
