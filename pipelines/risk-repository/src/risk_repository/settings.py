@@ -24,7 +24,8 @@ class RiskRepositorySettings(
     cli_hide_none_type=True,
     cli_prog_name="risk_repository",
 ):
-    """Screen, extract, and classify AI risks from academic literature.
+    """
+    Screen, extract, and classify AI risks from academic literature.
 
     Part of the AI Risk Repository project (https://airisk.mit.edu/).
     Documents are fetched from Airtable and processed through a multi-stage
@@ -38,15 +39,13 @@ class RiskRepositorySettings(
     download_cache_dir: Path = Field(
         default=DEFAULT_DOWNLOAD_CACHE_DIR,
         description="""
-        Directory for cached PDF downloads and per-document fetch failure records.
-        This directory lives outside the output directory so it can be shared
-        across runs.
+            Directory for cached PDF downloads and per-document fetch failure records.
         """,
     )
     log_path: Path | None = Field(
         default=None,
         description="""
-        Append log output to given path. Default: log.txt in the output directory.
+            Append log output to given path. Default: log.txt in the output directory.
         """,
     )
     model: str = Field(
@@ -76,16 +75,15 @@ class RiskRepositorySettings(
     document_max_truncation_ratio: float = Field(
         default=0.55,
         description="""
-        If truncating references and appendices from the end of the document
-        would remove more than this fraction of the document's length, raise an
-        error.
+            If truncating references and appendices from the end of the document would
+            remove more than this fraction of the document's length, raise an error.
         """,
     )
     document_length_limit: int = Field(
         default=1_000_000,
         description="""
-        After removing references nd appendices, truncate the document to not
-        exceed this length in terms of number of characters.
+            After removing references nd appendices, truncate the document to not exceed
+            this length in terms of number of characters.
         """,
     )
     concurrency: int = Field(
@@ -110,17 +108,17 @@ class RiskRepositorySettings(
     )
     airtable_documents_table: str | None = Field(
         default=None,
-        description=(
-            "Airtable table name to fetch documents from. Mutually exclusive"
-            " with --csv-path."
-        ),
+        description="""
+            Airtable table name to fetch documents from. Mutually exclusive with
+            --csv-path.
+        """,
     )
     csv_path: Path | None = Field(
         default=None,
-        description=(
-            "Path to a CSV file of documents to process. Mutually exclusive"
-            " with --airtable-documents-table."
-        ),
+        description="""
+            Path to a CSV file of documents to process. Mutually exclusive with
+            --airtable-documents-table.
+        """,
     )
 
     @model_validator(mode="after")
@@ -132,55 +130,3 @@ class RiskRepositorySettings(
                 "Provide exactly one of --airtable-documents-table or --csv-path"
             )
         return self
-
-
-class EvaluationSettings(
-    BaseSettings,
-    cli_parse_args=True,
-    cli_enforce_required=True,
-    cli_kebab_case=True,
-    cli_hide_none_type=True,
-    cli_prog_name="risk_repository.evaluate",
-):
-    """Evaluate pipeline results against ground truth from Airtable.
-
-    Compares screening, extraction, and classification outputs to manually
-    curated data, reporting multiple metrics include precision and recall.
-    """
-
-    results_dir: Path = Field(
-        default=...,
-        description="Directory containing pipeline results to evaluate",
-    )
-    model: str = Field(
-        default=DEFAULT_MODEL,
-        description="LLM model to use for risk matching",
-    )
-    concurrency: int = Field(
-        default=DEFAULT_CONCURRENCY,
-        description="Maximum number of concurrent matching tasks",
-    )
-    max_attempts: int = Field(
-        default=3,
-        description="Maximum LLM attempts for risk matching before accepting partial results",
-    )
-    llm_rate_limit_rps: float = Field(
-        default=DEFAULT_LLM_RATE_LIMIT_RPS,
-        description="LLM API rate limit in requests per second",
-    )
-    llm_timeout: float = Field(
-        default=120.0,
-        description="LLM API timeout in seconds",
-    )
-    airtable_timeout: float = Field(
-        default=DEFAULT_AIRTABLE_TIMEOUT,
-        description="Airtable API timeout in seconds",
-    )
-    airtable_base_id: str = Field(
-        default=DEFAULT_AIRTABLE_BASE_ID,
-        description="Airtable ID for the AI Risk Repository base",
-    )
-    airtable_documents_table: str = Field(
-        default="Documents: Training Set",
-        description="Airtable table name to fetch documents from",
-    )
