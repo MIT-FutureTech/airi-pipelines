@@ -1,0 +1,38 @@
+name: Risk Repository Auditor CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "pipelines/risk-repository/auditor/**"
+  pull_request:
+    paths:
+      - "pipelines/risk-repository/auditor/**"
+
+defaults:
+  run:
+    working-directory: pipelines/risk-repository/auditor
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: pipelines/risk-repository/auditor/package-lock.json
+
+      - run: npm ci
+
+      - name: Format
+        run: npx biome format
+
+      - name: Lint
+        run: npx biome lint
+
+      - name: Typecheck
+        run: npx tsc --noEmit
