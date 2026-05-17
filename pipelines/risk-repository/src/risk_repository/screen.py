@@ -4,7 +4,7 @@ from enum import StrEnum
 import httpx
 from pydantic import BaseModel, Field
 
-from risk_repository.documents import get_abstract, get_full_text
+from risk_repository.documents import format_abstract_and_title, get_full_text
 from risk_repository.records import DocumentRecord
 from risk_repository.results import (
     PipelineStage,
@@ -157,7 +157,7 @@ async def _screen_abstract_one(
         )
         if not settings.force and output_path.exists():
             return
-        abstract = await get_abstract(
+        abstract = await format_abstract_and_title(
             record,
             cache_dir=settings.download_cache_dir,
             client=http_client,
