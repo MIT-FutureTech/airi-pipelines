@@ -1,0 +1,37 @@
+{
+  "name": "auditor",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "lint": "biome lint --write",
+    "format": "biome format --write",
+    "typecheck": "tsc --noEmit",
+    "check": "biome check --write && tsc --noEmit"
+  },
+  "dependencies": {
+    "@mantine/core": "^8.0.0",
+    "@mantine/hooks": "^8.0.0",
+    "@tabler/icons-react": "^3.30.0",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "react-error-boundary": "^6.0.0",
+    "react-markdown": "^10.0.0",
+    "remark-gfm": "^4.0.1"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.4.8",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^4.3.4",
+    "postcss": "^8.4.49",
+    "postcss-preset-mantine": "^1.17.0",
+    "postcss-simple-vars": "^7.0.1",
+    "typescript": "^5",
+    "vite": "^6.0.0"
+  }
+}
