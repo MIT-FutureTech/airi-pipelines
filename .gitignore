@@ -28,5 +28,9 @@ next-env.d.ts
 /pipelines/*/download_cache
 
 # Auditor build + bundle data
-/pipelines/*/auditor/dist
-/pipelines/*/auditor/public/bundles
+/pipelines/risk-repository/auditor/dist
+/pipelines/risk-repository/auditor/public/bundles
+
+# Validator build + Vercel local state
+/pipelines/risk-repository/validator/dist
+/pipelines/risk-repository/validator/.vercel
