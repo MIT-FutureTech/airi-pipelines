@@ -103,7 +103,7 @@ export function Validator({ reviewer }: Props) {
       <AppShell.Header>
         <Group h="100%" px="md" justify="space-between">
           <Title order={4}>Risk Repository Validator</Title>
-          <Group gap="xs">
+          <Group gap="lg">
             <Tooltip
               label={
                 <Stack gap={4}>
@@ -151,17 +151,19 @@ export function Validator({ reviewer }: Props) {
               multiline
             >
               <IconKeyboard
-                size={18}
+                size={20}
                 color="var(--mantine-color-blue-3)"
                 style={{ cursor: "default", display: "block" }}
               />
             </Tooltip>
-            <Text size="sm" c="dimmed">
-              Reviewer:
-            </Text>
-            <Text size="sm" fw={500}>
-              {reviewer}
-            </Text>
+            <Group gap="xs">
+              <Text size="sm" c="dimmed">
+                Reviewer:
+              </Text>
+              <Text size="sm" fw={500}>
+                {reviewer}
+              </Text>
+            </Group>
             <Button size="xs" variant="subtle" onClick={switchReviewer}>
               Switch
             </Button>
