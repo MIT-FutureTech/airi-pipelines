@@ -67,11 +67,11 @@ export function Validator({ reviewer }: Props) {
     documentId: string,
     decision: Decision,
     comments: string | null,
-    validationId: string,
+    decisionId: string,
   ) => {
     const updated = manifest.map((entry) =>
       entry.id === documentId
-        ? { ...entry, decision, comments, validationId }
+        ? { ...entry, decision, comments, decisionId }
         : entry,
     );
     setManifest(updated);

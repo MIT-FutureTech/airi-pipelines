@@ -6,7 +6,7 @@ import {
 } from "@api/_airtable";
 import { readAirtableEnv } from "@api/_env";
 import type { ManifestEntry } from "@api/_shared";
-import { type DocumentFields, STAGE, type ValidationFields } from "@api/_types";
+import { type DecisionFields, type DocumentFields, STAGE } from "@api/_types";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
 export default async function handler(
@@ -27,37 +27,32 @@ export default async function handler(
   const env = readAirtableEnv();
 
   try {
-    const [documents, validations] = await Promise.all([
+    const [documents, decisions] = await Promise.all([
       listAllRecords<DocumentFields>(env.pat, env.baseId, env.documentsTable, {
         view: env.documentsView,
         fields: ["QuickRef", "DocTitle"],
       }),
-      listAllRecords<ValidationFields>(
-        env.pat,
-        env.baseId,
-        env.validationsTable,
-        {
-          filterByFormula: `AND({Reviewer}="${escapeFormulaString(reviewer)}", {Stage}="${STAGE}")`,
-          fields: ["Document", "Decision", "Comments"],
-        },
-      ),
+      listAllRecords<DecisionFields>(env.pat, env.baseId, env.decisionsTable, {
+        filterByFormula: `AND({Reviewer}="${escapeFormulaString(reviewer)}", {Stage}="${STAGE}")`,
+        fields: ["Document", "Decision", "Comments"],
+      }),
     ]);
 
-    const byDocId = indexValidationsByDocument(validations);
+    const byDocId = indexDecisionsByDocument(decisions);
 
     const entries: ManifestEntry[] = documents.map((doc) => {
       const readableId = doc.fields.QuickRef;
       if (readableId === undefined) {
         throw new Error(`Document ${doc.id} is missing QuickRef`);
       }
-      const validation = byDocId.get(doc.id);
+      const decision = byDocId.get(doc.id);
       return {
         id: doc.id,
         readableId,
         title: doc.fields.DocTitle ?? null,
-        decision: validation?.fields.Decision ?? null,
-        comments: validation?.fields.Comments ?? null,
-        validationId: validation?.id ?? null,
+        decision: decision?.fields.Decision ?? null,
+        comments: decision?.fields.Comments ?? null,
+        decisionId: decision?.id ?? null,
       };
     });
 
@@ -67,17 +62,17 @@ export default async function handler(
   }
 }
 
-function indexValidationsByDocument(
-  validations: AirtableRecord<ValidationFields>[],
-): Map<string, AirtableRecord<ValidationFields>> {
-  const result = new Map<string, AirtableRecord<ValidationFields>>();
-  for (const v of validations) {
-    const docs = v.fields.Document;
+function indexDecisionsByDocument(
+  decisions: AirtableRecord<DecisionFields>[],
+): Map<string, AirtableRecord<DecisionFields>> {
+  const result = new Map<string, AirtableRecord<DecisionFields>>();
+  for (const dec of decisions) {
+    const docs = dec.fields.Document;
     if (docs === undefined) {
       continue;
     }
     for (const docId of docs) {
-      result.set(docId, v);
+      result.set(docId, dec);
     }
   }
   return result;

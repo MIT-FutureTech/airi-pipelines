@@ -3,7 +3,7 @@ interface AirtableEnv {
   baseId: string;
   documentsTable: string;
   documentsView: string;
-  validationsTable: string;
+  decisionsTable: string;
 }
 
 export function readAirtableEnv(): AirtableEnv {
@@ -11,8 +11,8 @@ export function readAirtableEnv(): AirtableEnv {
   const baseId = required("AIRTABLE_BASE_ID");
   const documentsTable = required("AIRTABLE_DOCUMENTS_TABLE");
   const documentsView = required("AIRTABLE_DOCUMENTS_VIEW");
-  const validationsTable = required("AIRTABLE_VALIDATIONS_TABLE");
-  return { pat, baseId, documentsTable, documentsView, validationsTable };
+  const decisionsTable = required("AIRTABLE_DECISIONS_TABLE");
+  return { pat, baseId, documentsTable, documentsView, decisionsTable };
 }
 
 function required(name: string): string {
