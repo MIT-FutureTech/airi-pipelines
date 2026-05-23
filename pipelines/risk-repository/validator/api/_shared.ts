@@ -1,3 +1,4 @@
+export type Stage = "abstract" | "full text";
 export type Decision = "include" | "exclude" | "uncertain";
 
 export const DECISIONS: readonly Decision[] = [
