@@ -143,6 +143,12 @@ export function DocumentCard({
             onChange={(event) => {
               setComments(event.currentTarget.value);
             }}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault();
+                submit();
+              }
+            }}
             autosize
             minRows={2}
             maxRows={5}
