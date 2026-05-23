@@ -24,9 +24,8 @@ export default async function handler(
     return;
   }
 
-  const env = readAirtableEnv();
-
   try {
+    const env = readAirtableEnv();
     const [documents, decisions] = await Promise.all([
       listAllRecords<DocumentFields>(env.pat, env.baseId, env.documentsTable, {
         view: env.documentsView,

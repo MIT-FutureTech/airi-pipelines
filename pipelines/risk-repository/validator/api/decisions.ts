@@ -24,16 +24,15 @@ export default async function handler(
     return;
   }
 
-  const env = readAirtableEnv();
-  const fields: DecisionFields = {
-    Document: [parsed.documentId],
-    Reviewer: parsed.reviewer,
-    Stage: STAGE,
-    Decision: parsed.decision,
-    Comments: parsed.comments ?? "",
-  };
-
   try {
+    const env = readAirtableEnv();
+    const fields: DecisionFields = {
+      Document: [parsed.documentId],
+      Reviewer: parsed.reviewer,
+      Stage: STAGE,
+      Decision: parsed.decision,
+      Comments: parsed.comments ?? "",
+    };
     let record: AirtableRecord<DecisionFields>;
     if (parsed.decisionId === null) {
       record = await createRecord(
