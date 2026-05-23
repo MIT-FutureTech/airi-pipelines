@@ -1,6 +1,16 @@
 import type { Decision, ManifestEntry } from "@api/_shared";
-import { AppShell, Button, Group, Text, Title } from "@mantine/core";
+import {
+  AppShell,
+  Button,
+  Group,
+  Kbd,
+  Stack,
+  Text,
+  Title,
+  Tooltip,
+} from "@mantine/core";
 import { useHotkeys } from "@mantine/hooks";
+import { IconKeyboard } from "@tabler/icons-react";
 import { use, useMemo, useState } from "react";
 import { DocumentCard } from "@/components/DocumentCard";
 import { DoneScreen } from "@/components/DoneScreen";
@@ -94,6 +104,58 @@ export function Validator({ reviewer }: Props) {
         <Group h="100%" px="md" justify="space-between">
           <Title order={4}>Risk Repository Validator</Title>
           <Group gap="xs">
+            <Tooltip
+              label={
+                <Stack gap={4}>
+                  <Text size="xs" fw={600}>
+                    Keyboard Shortcuts
+                  </Text>
+                  <Group gap={4} justify="space-between">
+                    <Group gap={4}>
+                      <Kbd size="xs">1</Kbd>
+                      <Text size="xs">or</Text>
+                      <Kbd size="xs">i</Kbd>
+                    </Group>
+                    <Text size="xs">Include</Text>
+                  </Group>
+                  <Group gap={4} justify="space-between">
+                    <Group gap={4}>
+                      <Kbd size="xs">2</Kbd>
+                      <Text size="xs">or</Text>
+                      <Kbd size="xs">e</Kbd>
+                    </Group>
+                    <Text size="xs">Exclude</Text>
+                  </Group>
+                  <Group gap={4} justify="space-between">
+                    <Group gap={4}>
+                      <Kbd size="xs">3</Kbd>
+                      <Text size="xs">or</Text>
+                      <Kbd size="xs">u</Kbd>
+                    </Group>
+                    <Text size="xs">Uncertain</Text>
+                  </Group>
+                  <Group gap={4} justify="space-between">
+                    <Kbd size="xs">Enter</Kbd>
+                    <Text size="xs">Submit</Text>
+                  </Group>
+                  <Group gap={4} justify="space-between">
+                    <Group gap={4}>
+                      <Kbd size="xs">{"<-"}</Kbd>
+                      <Text size="xs">/</Text>
+                      <Kbd size="xs">{"->"}</Kbd>
+                    </Group>
+                    <Text size="xs">Navigate</Text>
+                  </Group>
+                </Stack>
+              }
+              multiline
+            >
+              <IconKeyboard
+                size={18}
+                color="var(--mantine-color-blue-3)"
+                style={{ cursor: "default", display: "block" }}
+              />
+            </Tooltip>
             <Text size="sm" c="dimmed">
               Reviewer:
             </Text>
