@@ -1,4 +1,4 @@
-import type { Decision, Stage } from "@api/_shared";
+import type { Decision, Stage } from "./_shared.js";
 
 export const STAGE: Stage = "abstract";
 
