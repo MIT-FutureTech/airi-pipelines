@@ -4,7 +4,6 @@ import {
   Badge,
   Button,
   Group,
-  Loader,
   ScrollArea,
   Stack,
   Text,
@@ -12,9 +11,8 @@ import {
   Title,
 } from "@mantine/core";
 import { useHotkeys } from "@mantine/hooks";
-import { Suspense, use, useState } from "react";
-import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
-import { getDocument, submitDecision } from "@/lib/api";
+import { useState } from "react";
+import { submitDecision } from "@/lib/api";
 import { DECISION_COLORS } from "@/lib/theme";
 
 const DECISION_OPTIONS: { decision: Decision; key: string; label: string }[] = [
@@ -43,39 +41,6 @@ export function DocumentCard({
   total,
   onSubmitted,
 }: Props) {
-  return (
-    <Stack gap="md" h="100%">
-      <Group justify="space-between" align="center">
-        <Text size="sm" c="dimmed">
-          {position} / {total} · {entry.readableId}
-        </Text>
-        {entry.decision !== null && (
-          <Badge color={DECISION_COLORS[entry.decision]} variant="light">
-            previously {entry.decision}
-          </Badge>
-        )}
-      </Group>
-      <ErrorBoundary fallbackRender={renderError} resetKeys={[entry.id]}>
-        <Suspense fallback={<Loader />}>
-          <CardBody
-            reviewer={reviewer}
-            entry={entry}
-            onSubmitted={onSubmitted}
-          />
-        </Suspense>
-      </ErrorBoundary>
-    </Stack>
-  );
-}
-
-interface BodyProps {
-  reviewer: string;
-  entry: ManifestEntry;
-  onSubmitted: Props["onSubmitted"];
-}
-
-function CardBody({ reviewer, entry, onSubmitted }: BodyProps) {
-  const document = use(getDocument(entry.id));
   const [decision, setDecision] = useState<Decision | null>(entry.decision);
   const [comments, setComments] = useState<string>(entry.comments ?? "");
   const [submitting, setSubmitting] = useState(false);
@@ -119,73 +84,77 @@ function CardBody({ reviewer, entry, onSubmitted }: BodyProps) {
   ]);
 
   return (
-    <Stack gap="md" style={{ flex: 1, minHeight: 0 }}>
-      <Title order={2}>{document.title ?? document.readableId}</Title>
-      <ScrollArea style={{ flex: 1, minHeight: 0 }}>
-        {document.abstract === null ? (
-          <Text c="dimmed" fs="italic">
-            No abstract on file.
-          </Text>
-        ) : (
-          <Text style={{ whiteSpace: "pre-wrap" }}>{document.abstract}</Text>
+    <Stack gap="md" h="100%">
+      <Group justify="space-between" align="center">
+        <Text size="sm" c="dimmed">
+          {position} / {total} · {entry.readableId}
+        </Text>
+        {entry.decision !== null && (
+          <Badge color={DECISION_COLORS[entry.decision]} variant="light">
+            previously {entry.decision}
+          </Badge>
         )}
-      </ScrollArea>
-      <Stack gap="xs">
-        <Group gap="xs">
-          {DECISION_OPTIONS.map((opt) => {
-            const style: Record<string, string> = {};
-            if (decision === opt.decision && decision === "exclude") {
-              style.color = "#000000";
-            }
-            return (
-              <Button
-                key={opt.decision}
-                variant={decision === opt.decision ? "filled" : "light"}
-                color={DECISION_COLORS[opt.decision]}
-                style={style}
-                onClick={() => {
-                  setDecision(opt.decision);
-                }}
-                disabled={submitting}
-              >
-                {opt.label} ({opt.key})
-              </Button>
-            );
-          })}
-          <Button
-            ml="auto"
-            onClick={submit}
-            loading={submitting}
-            disabled={decision === null}
-          >
-            Submit (Enter)
-          </Button>
-        </Group>
-        <Textarea
-          placeholder="Comments (optional)"
-          value={comments}
-          onChange={(event) => {
-            setComments(event.currentTarget.value);
-          }}
-          autosize
-          minRows={2}
-          maxRows={5}
-          disabled={submitting}
-        />
-        {error !== null && (
-          <Alert color="red" title="Submission failed">
-            {error}
-          </Alert>
-        )}
+      </Group>
+      <Stack gap="md" style={{ flex: 1, minHeight: 0 }}>
+        <Title order={2}>{entry.title ?? entry.readableId}</Title>
+        <ScrollArea style={{ flex: 1, minHeight: 0 }}>
+          {entry.abstract === null ? (
+            <Text c="dimmed" fs="italic">
+              No abstract on file.
+            </Text>
+          ) : (
+            <Text style={{ whiteSpace: "pre-wrap" }}>{entry.abstract}</Text>
+          )}
+        </ScrollArea>
+        <Stack gap="xs">
+          <Group gap="xs">
+            {DECISION_OPTIONS.map((opt) => {
+              const style: Record<string, string> = {};
+              if (decision === opt.decision && decision === "exclude") {
+                style.color = "#000000";
+              }
+              return (
+                <Button
+                  key={opt.decision}
+                  variant={decision === opt.decision ? "filled" : "light"}
+                  color={DECISION_COLORS[opt.decision]}
+                  style={style}
+                  onClick={() => {
+                    setDecision(opt.decision);
+                  }}
+                  disabled={submitting}
+                >
+                  {opt.label} ({opt.key})
+                </Button>
+              );
+            })}
+            <Button
+              ml="auto"
+              onClick={submit}
+              loading={submitting}
+              disabled={decision === null}
+            >
+              Submit (Enter)
+            </Button>
+          </Group>
+          <Textarea
+            placeholder="Comments (optional)"
+            value={comments}
+            onChange={(event) => {
+              setComments(event.currentTarget.value);
+            }}
+            autosize
+            minRows={2}
+            maxRows={5}
+            disabled={submitting}
+          />
+          {error !== null && (
+            <Alert color="red" title="Submission failed">
+              {error}
+            </Alert>
+          )}
+        </Stack>
       </Stack>
     </Stack>
-  );
-}
-
-function renderError({ error }: FallbackProps) {
-  return (
-    <Alert color="red" title="Failed to load document">
-      {error instanceof Error ? error.message : String(error)}
-    </Alert>
   );
 }
