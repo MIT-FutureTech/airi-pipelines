@@ -19,10 +19,6 @@
     "enabled": true,
     "rules": {
       "recommended": true,
-      "correctness": {
-        // Biome can't resolve tsconfig path aliases (@/)
-        "noUnresolvedImports": "off"
-      },
       "suspicious": {
         // This app uses React, so React-specific properties are expected
         "noReactSpecificProps": "off"
