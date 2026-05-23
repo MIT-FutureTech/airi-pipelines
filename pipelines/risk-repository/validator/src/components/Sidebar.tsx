@@ -111,19 +111,14 @@ function SidebarRow({ entry, active, onClick }: RowProps) {
       label={entry.title ?? entry.readableId}
       description={entry.title !== null ? entry.readableId : undefined}
       leftSection={
-        entry.decision === null ? (
-          <Badge size="sm" variant="light" color="gray">
-            —
-          </Badge>
-        ) : (
-          <Badge
-            size="sm"
-            variant="light"
-            color={DECISION_COLORS[entry.decision]}
-          >
-            {DECISION_LABELS[entry.decision]}
-          </Badge>
-        )
+        <Badge
+          size="sm"
+          variant="light"
+          color={entry.decision ? DECISION_COLORS[entry.decision] : "gray"}
+          w="3rem"
+        >
+          {entry.decision ? DECISION_LABELS[entry.decision] : "—"}
+        </Badge>
       }
     />
   );
