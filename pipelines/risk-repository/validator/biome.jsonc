@@ -19,10 +19,6 @@
     "enabled": true,
     "rules": {
       "recommended": true,
-      "correctness": {
-        // Biome can't resolve tsconfig path aliases (@/)
-        "noUnresolvedImports": "off"
-      },
       "suspicious": {
         // This app uses React, so React-specific properties are expected
         "noReactSpecificProps": "off"
@@ -70,5 +66,34 @@
         "organizeImports": "on"
       }
     }
-  }
+  },
+  "overrides": [
+    {
+      // Vercel serverless functions are deployed as plain .js and run as
+      // Node ESM. Path aliases aren't resolved at runtime, and relative
+      // imports need the .js extension matching the emitted file.
+      "includes": ["api/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@api/*", "@/*"],
+                    "message": "Use relative imports inside api/"
+                  },
+                  {
+                    "group": ["./**", "../**", "!./**/*.js", "!../**/*.js"],
+                    "message": "Relative imports inside api/ must end with .js"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
 }
