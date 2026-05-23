@@ -132,20 +132,26 @@ function CardBody({ reviewer, entry, onSubmitted }: BodyProps) {
       </ScrollArea>
       <Stack gap="xs">
         <Group gap="xs">
-          {DECISION_OPTIONS.map((opt) => (
-            <Button
-              key={opt.decision}
-              variant={decision === opt.decision ? "filled" : "light"}
-              color={DECISION_COLORS[opt.decision]}
-              autoContrast={opt.decision === "exclude"}
-              onClick={() => {
-                setDecision(opt.decision);
-              }}
-              disabled={submitting}
-            >
-              {opt.label} ({opt.key})
-            </Button>
-          ))}
+          {DECISION_OPTIONS.map((opt) => {
+            const style: Record<string, string> = {};
+            if (decision === opt.decision && decision === "exclude") {
+              style.color = "#000000";
+            }
+            return (
+              <Button
+                key={opt.decision}
+                variant={decision === opt.decision ? "filled" : "light"}
+                color={DECISION_COLORS[opt.decision]}
+                style={style}
+                onClick={() => {
+                  setDecision(opt.decision);
+                }}
+                disabled={submitting}
+              >
+                {opt.label} ({opt.key})
+              </Button>
+            );
+          })}
           <Button
             ml="auto"
             onClick={submit}
