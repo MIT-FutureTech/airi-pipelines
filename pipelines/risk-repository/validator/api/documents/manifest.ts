@@ -1,13 +1,13 @@
+import type { VercelRequest, VercelResponse } from "@vercel/node";
 import {
   AirtableError,
   type AirtableRecord,
   escapeFormulaString,
   listAllRecords,
-} from "@api/_airtable";
-import { readAirtableEnv } from "@api/_env";
-import type { ManifestEntry } from "@api/_shared";
-import { type DecisionFields, type DocumentFields, STAGE } from "@api/_types";
-import type { VercelRequest, VercelResponse } from "@vercel/node";
+} from "../_airtable.js";
+import { readAirtableEnv } from "../_env.js";
+import type { ManifestEntry } from "../_shared.js";
+import { type DecisionFields, type DocumentFields, STAGE } from "../_types.js";
 
 export default async function handler(
   req: VercelRequest,
@@ -24,9 +24,8 @@ export default async function handler(
     return;
   }
 
-  const env = readAirtableEnv();
-
   try {
+    const env = readAirtableEnv();
     const [documents, decisions] = await Promise.all([
       listAllRecords<DocumentFields>(env.pat, env.baseId, env.documentsTable, {
         view: env.documentsView,
