@@ -1,6 +1,6 @@
-import type { Decision } from "@api/_shared";
+import type { Decision, Stage } from "@api/_shared";
 
-export const STAGE = "abstract_screening";
+export const STAGE: Stage = "abstract";
 
 export interface DocumentFields {
   QuickRef?: string;
@@ -11,7 +11,7 @@ export interface DocumentFields {
 export interface DecisionFields {
   Document?: string[];
   Reviewer?: string;
-  Stage?: string;
+  Stage?: Stage;
   Decision?: Decision;
   Comments?: string;
 }
