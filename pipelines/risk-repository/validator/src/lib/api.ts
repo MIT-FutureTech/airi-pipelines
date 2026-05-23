@@ -1,20 +1,10 @@
 import type {
   DecisionRequest,
   DecisionResponse,
-  DocumentDetail,
   ManifestResponse,
 } from "@api/_shared";
 
-const cache = new Map<string, Promise<unknown>>();
-
-function memoized<T>(key: string, factory: () => Promise<T>): Promise<T> {
-  let promise = cache.get(key);
-  if (promise === undefined) {
-    promise = factory();
-    cache.set(key, promise);
-  }
-  return promise as Promise<T>;
-}
+const manifestCache = new Map<string, Promise<ManifestResponse>>();
 
 async function fetchJson<T>(url: string, label: string): Promise<T> {
   const response = await fetch(url);
@@ -26,19 +16,15 @@ async function fetchJson<T>(url: string, label: string): Promise<T> {
 }
 
 export function getManifest(reviewer: string): Promise<ManifestResponse> {
-  const key = `manifest:${reviewer}`;
-  return memoized(key, () =>
-    fetchJson<ManifestResponse>(
+  let promise = manifestCache.get(reviewer);
+  if (promise === undefined) {
+    promise = fetchJson<ManifestResponse>(
       `/api/documents/manifest?reviewer=${encodeURIComponent(reviewer)}`,
       "manifest",
-    ),
-  );
-}
-
-export function getDocument(id: string): Promise<DocumentDetail> {
-  return memoized(`document:${id}`, () =>
-    fetchJson<DocumentDetail>(`/api/documents/${id}`, `document ${id}`),
-  );
+    );
+    manifestCache.set(reviewer, promise);
+  }
+  return promise;
 }
 
 export async function submitDecision(

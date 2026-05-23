@@ -30,7 +30,7 @@ export default async function handler(
     const [documents, decisions] = await Promise.all([
       listAllRecords<DocumentFields>(env.pat, env.baseId, env.documentsTable, {
         view: env.documentsView,
-        fields: ["QuickRef", "DocTitle"],
+        fields: ["QuickRef", "DocTitle", "Abstract"],
       }),
       listAllRecords<DecisionFields>(env.pat, env.baseId, env.decisionsTable, {
         filterByFormula: `AND({Reviewer}="${escapeFormulaString(reviewer)}", {Stage}="${STAGE}")`,
@@ -50,6 +50,7 @@ export default async function handler(
         id: doc.id,
         readableId,
         title: doc.fields.DocTitle ?? null,
+        abstract: doc.fields.Abstract ?? null,
         decision: decision?.fields.Decision ?? null,
         comments: decision?.fields.Comments ?? null,
         decisionId: decision?.id ?? null,
