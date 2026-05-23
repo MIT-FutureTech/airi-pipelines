@@ -31,8 +31,7 @@ export function NamePrompt({ onSubmit }: Props) {
           <Title order={2}>Risk Repository Validator</Title>
           <Text c="dimmed">
             Enter your name to begin abstract screening. Your name identifies
-            your decisions in Airtable and is saved locally so you don't have to
-            re-enter it.
+            your decisions in Airtable. Please always use the exact same name.
           </Text>
           <TextInput
             label="Your name"
