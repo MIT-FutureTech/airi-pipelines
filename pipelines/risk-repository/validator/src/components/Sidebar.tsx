@@ -9,12 +9,7 @@ import {
 } from "@mantine/core";
 import { IconSearch } from "@tabler/icons-react";
 import { useMemo } from "react";
-
-const DECISION_COLORS: Record<Decision, string> = {
-  include: "green",
-  exclude: "gray",
-  uncertain: "yellow",
-};
+import { DECISION_COLORS } from "@/lib/theme";
 
 const DECISION_LABELS: Record<Decision, string> = {
   include: "Inc",

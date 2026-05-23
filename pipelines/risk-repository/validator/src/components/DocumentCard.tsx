@@ -15,12 +15,7 @@ import { useHotkeys } from "@mantine/hooks";
 import { Suspense, use, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { getDocument, submitDecision } from "@/lib/api";
-
-const DECISION_COLORS: Record<Decision, string> = {
-  include: "green",
-  exclude: "gray",
-  uncertain: "yellow",
-};
+import { DECISION_COLORS } from "@/lib/theme";
 
 const DECISION_OPTIONS: { decision: Decision; key: string; label: string }[] = [
   { decision: "include", key: "1", label: "Include" },
