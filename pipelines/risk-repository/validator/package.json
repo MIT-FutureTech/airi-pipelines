@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vercel dev",
-    "dev:vite": "vite",
+    "dev": "vite",
+    "dev:vercel": "vercel dev",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "lint": "biome lint --write",
