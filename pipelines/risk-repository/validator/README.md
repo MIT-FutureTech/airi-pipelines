@@ -47,8 +47,16 @@ vercel link
 
 #### Deploy
 
+Deploy to preview:
+
 ```bash
-vercel --prod
+vercel deploy --target preview
+```
+
+Deploy to production:
+
+```bash
+vercel deploy --target production
 ```
 
 ### Checks
