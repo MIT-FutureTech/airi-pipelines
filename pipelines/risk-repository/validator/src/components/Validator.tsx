@@ -17,6 +17,7 @@ import { DoneScreen } from "@/components/DoneScreen";
 import { Sidebar } from "@/components/Sidebar";
 import { getManifest } from "@/lib/api";
 import { clearReviewer } from "@/lib/storage";
+import { getDocFromUrl, setDocInUrl } from "@/lib/url";
 
 interface Props {
   reviewer: string;
@@ -25,9 +26,17 @@ interface Props {
 export function Validator({ reviewer }: Props) {
   const initial = use(getManifest(reviewer));
   const [manifest, setManifest] = useState<ManifestEntry[]>(initial.documents);
-  const [activeId, setActiveId] = useState<string | null>(() =>
-    firstUndecidedId(initial.documents),
-  );
+  const [activeId, setActiveId] = useState<string | null>(() => {
+    const fromUrl = getDocFromUrl();
+    if (fromUrl !== null) {
+      const match = initial.documents.find((e) => e.readableId === fromUrl);
+      if (match !== undefined) {
+        return match.id;
+      }
+      setDocInUrl(null);
+    }
+    return firstUndecidedId(initial.documents);
+  });
   const [search, setSearch] = useState("");
 
   const activeIndex = useMemo(() => {
@@ -41,6 +50,11 @@ export function Validator({ reviewer }: Props) {
 
   const selectAndScroll = (id: string | null) => {
     setActiveId(id);
+    const readableId =
+      id === null
+        ? null
+        : (manifest.find((m) => m.id === id)?.readableId ?? null);
+    setDocInUrl(readableId);
     if (id !== null) {
       requestAnimationFrame(() => {
         document
