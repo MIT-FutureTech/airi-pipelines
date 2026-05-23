@@ -14,7 +14,7 @@ import { DECISION_COLORS } from "@/lib/theme";
 const DECISION_LABELS: Record<Decision, string> = {
   include: "Inc",
   exclude: "Exc",
-  uncertain: "?",
+  uncertain: "Unc",
 };
 
 interface Props {
