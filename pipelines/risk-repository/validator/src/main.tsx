@@ -1,10 +1,9 @@
 import "@mantine/core/styles.css";
-import { createTheme, MantineProvider } from "@mantine/core";
+import { MantineProvider } from "@mantine/core";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "@/components/App";
-
-const theme = createTheme({});
+import { theme } from "@/lib/theme";
 
 const root = document.getElementById("root");
 if (root === null) {
