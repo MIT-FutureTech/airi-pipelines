@@ -137,6 +137,7 @@ function CardBody({ reviewer, entry, onSubmitted }: BodyProps) {
               key={opt.decision}
               variant={decision === opt.decision ? "filled" : "light"}
               color={DECISION_COLORS[opt.decision]}
+              autoContrast={opt.decision === "exclude"}
               onClick={() => {
                 setDecision(opt.decision);
               }}
