@@ -37,7 +37,7 @@ interface Props {
     documentId: string,
     decision: Decision,
     comments: string | null,
-    validationId: string,
+    decisionId: string,
   ) => void;
 }
 
@@ -96,7 +96,7 @@ function CardBody({ reviewer, entry, onSubmitted }: BodyProps) {
       const response = await submitDecision({
         reviewer,
         documentId: entry.id,
-        validationId: entry.validationId,
+        decisionId: entry.decisionId,
         decision,
         comments: comments.trim() === "" ? null : comments,
       });
@@ -104,7 +104,7 @@ function CardBody({ reviewer, entry, onSubmitted }: BodyProps) {
         entry.id,
         response.decision,
         response.comments,
-        response.validationId,
+        response.decisionId,
       );
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));

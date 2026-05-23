@@ -8,7 +8,7 @@ export interface DocumentFields {
   Abstract?: string;
 }
 
-export interface ValidationFields {
+export interface DecisionFields {
   Document?: string[];
   Reviewer?: string;
   Stage?: string;

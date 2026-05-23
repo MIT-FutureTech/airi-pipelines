@@ -6,7 +6,7 @@ import {
 } from "@api/_airtable";
 import { readAirtableEnv } from "@api/_env";
 import { DECISIONS, type Decision, type DecisionRequest } from "@api/_shared";
-import { STAGE, type ValidationFields } from "@api/_types";
+import { type DecisionFields, STAGE } from "@api/_types";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
 export default async function handler(
@@ -25,7 +25,7 @@ export default async function handler(
   }
 
   const env = readAirtableEnv();
-  const fields: ValidationFields = {
+  const fields: DecisionFields = {
     Document: [parsed.documentId],
     Reviewer: parsed.reviewer,
     Stage: STAGE,
@@ -34,26 +34,26 @@ export default async function handler(
   };
 
   try {
-    let record: AirtableRecord<ValidationFields>;
-    if (parsed.validationId === null) {
+    let record: AirtableRecord<DecisionFields>;
+    if (parsed.decisionId === null) {
       record = await createRecord(
         env.pat,
         env.baseId,
-        env.validationsTable,
+        env.decisionsTable,
         fields,
       );
     } else {
       record = await updateRecord(
         env.pat,
         env.baseId,
-        env.validationsTable,
-        parsed.validationId,
+        env.decisionsTable,
+        parsed.decisionId,
         fields,
       );
     }
     res.status(200).json({
       documentId: parsed.documentId,
-      validationId: record.id,
+      decisionId: record.id,
       decision: parsed.decision,
       comments: parsed.comments,
     });
@@ -77,7 +77,7 @@ function parseBody(body: unknown): DecisionRequest | null {
   const reviewer = b.reviewer;
   const documentId = b.documentId;
   const decision = b.decision;
-  const validationId = b.validationId;
+  const decisionId = b.decisionId;
   const comments = b.comments;
   if (
     typeof reviewer !== "string" ||
@@ -90,9 +90,9 @@ function parseBody(body: unknown): DecisionRequest | null {
     return null;
   }
   if (
-    validationId !== null &&
-    validationId !== undefined &&
-    typeof validationId !== "string"
+    decisionId !== null &&
+    decisionId !== undefined &&
+    typeof decisionId !== "string"
   ) {
     return null;
   }
@@ -106,10 +106,8 @@ function parseBody(body: unknown): DecisionRequest | null {
   return {
     reviewer: reviewer.trim(),
     documentId,
-    validationId:
-      typeof validationId === "string" && validationId !== ""
-        ? validationId
-        : null,
+    decisionId:
+      typeof decisionId === "string" && decisionId !== "" ? decisionId : null,
     decision,
     comments: typeof comments === "string" ? comments : null,
   };

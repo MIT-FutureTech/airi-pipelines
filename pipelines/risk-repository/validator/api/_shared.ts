@@ -12,7 +12,7 @@ export interface ManifestEntry {
   title: string | null;
   decision: Decision | null;
   comments: string | null;
-  validationId: string | null;
+  decisionId: string | null;
 }
 
 export interface ManifestResponse {
@@ -29,14 +29,14 @@ export interface DocumentDetail {
 export interface DecisionRequest {
   reviewer: string;
   documentId: string;
-  validationId: string | null;
+  decisionId: string | null;
   decision: Decision;
   comments: string | null;
 }
 
 export interface DecisionResponse {
   documentId: string;
-  validationId: string;
+  decisionId: string;
   decision: Decision;
   comments: string | null;
 }
