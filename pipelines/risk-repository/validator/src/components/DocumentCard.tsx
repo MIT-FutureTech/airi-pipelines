@@ -11,8 +11,9 @@ import {
   Title,
 } from "@mantine/core";
 import { useHotkeys } from "@mantine/hooks";
-import { useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { submitDecision } from "@/lib/api";
+import { type HighlightGroup, highlightText } from "@/lib/highlight";
 import { DECISION_COLORS } from "@/lib/theme";
 
 const DECISION_OPTIONS: { decision: Decision; key: string; label: string }[] = [
@@ -26,6 +27,7 @@ interface Props {
   entry: ManifestEntry;
   position: number;
   total: number;
+  highlightGroups: HighlightGroup[];
   onSubmitted: (
     documentId: string,
     decision: Decision,
@@ -39,6 +41,7 @@ export function DocumentCard({
   entry,
   position,
   total,
+  highlightGroups,
   onSubmitted,
 }: Props) {
   const [decision, setDecision] = useState<Decision | null>(entry.decision);
@@ -96,14 +99,21 @@ export function DocumentCard({
         )}
       </Group>
       <Stack gap="md" style={{ flex: 1, minHeight: 0 }}>
-        <Title order={2}>{entry.title ?? entry.readableId}</Title>
+        <Title order={2}>
+          <HighlightedText
+            text={entry.title ?? entry.readableId}
+            groups={highlightGroups}
+          />
+        </Title>
         <ScrollArea style={{ flex: 1, minHeight: 0 }}>
           {entry.abstract === null ? (
             <Text c="dimmed" fs="italic">
               No abstract on file.
             </Text>
           ) : (
-            <Text style={{ whiteSpace: "pre-wrap" }}>{entry.abstract}</Text>
+            <Text style={{ whiteSpace: "pre-wrap" }}>
+              <HighlightedText text={entry.abstract} groups={highlightGroups} />
+            </Text>
           )}
         </ScrollArea>
         <Stack gap="xs">
@@ -162,5 +172,37 @@ export function DocumentCard({
         </Stack>
       </Stack>
     </Stack>
+  );
+}
+
+interface HighlightedTextProps {
+  text: string;
+  groups: HighlightGroup[];
+}
+
+function HighlightedText({ text, groups }: HighlightedTextProps) {
+  const chunks = useMemo(() => highlightText(text, groups), [text, groups]);
+  return (
+    <>
+      {chunks.map((chunk, idx) => {
+        const key = `${idx}-${chunk.text}`;
+        if (chunk.color === null) {
+          return <Fragment key={key}>{chunk.text}</Fragment>;
+        }
+        return (
+          <mark
+            key={key}
+            style={{
+              backgroundColor: `var(--mantine-color-${chunk.color}-3)`,
+              color: "inherit",
+              padding: 0,
+              borderRadius: 2,
+            }}
+          >
+            {chunk.text}
+          </mark>
+        );
+      })}
+    </>
   );
 }

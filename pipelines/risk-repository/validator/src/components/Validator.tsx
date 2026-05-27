@@ -230,6 +230,7 @@ export function Validator({ reviewer }: Props) {
             entry={activeEntry}
             position={activeIndex + 1}
             total={manifest.length}
+            highlightGroups={highlightGroups}
             onSubmitted={handleSubmitted}
           />
         )}
