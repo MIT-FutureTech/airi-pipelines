@@ -1,5 +1,6 @@
 import type { Decision, ManifestEntry } from "@api/_shared";
 import {
+  ActionIcon,
   AppShell,
   Button,
   Group,
@@ -10,13 +11,19 @@ import {
   Tooltip,
 } from "@mantine/core";
 import { useHotkeys } from "@mantine/hooks";
-import { IconKeyboard } from "@tabler/icons-react";
+import { IconHighlight, IconKeyboard } from "@tabler/icons-react";
 import { use, useMemo, useState } from "react";
 import { DocumentCard } from "@/components/DocumentCard";
 import { DoneScreen } from "@/components/DoneScreen";
+import { HighlightSettingsDrawer } from "@/components/HighlightSettingsDrawer";
 import { Sidebar } from "@/components/Sidebar";
 import { getManifest } from "@/lib/api";
-import { clearReviewer } from "@/lib/storage";
+import type { HighlightGroup } from "@/lib/highlight";
+import {
+  clearReviewer,
+  loadHighlightGroups,
+  saveHighlightGroups,
+} from "@/lib/storage";
 import { getDocFromUrl, setDocInUrl } from "@/lib/url";
 
 interface Props {
@@ -38,6 +45,15 @@ export function Validator({ reviewer }: Props) {
     return firstUndecidedId(initial.documents);
   });
   const [search, setSearch] = useState("");
+  const [highlightGroups, setHighlightGroups] = useState<HighlightGroup[]>(() =>
+    loadHighlightGroups(),
+  );
+  const [highlightOpen, setHighlightOpen] = useState(false);
+
+  const updateHighlightGroups = (next: HighlightGroup[]) => {
+    setHighlightGroups(next);
+    saveHighlightGroups(next);
+  };
 
   const activeIndex = useMemo(() => {
     if (activeId === null) {
@@ -118,6 +134,17 @@ export function Validator({ reviewer }: Props) {
         <Group h="100%" px="md" justify="space-between">
           <Title order={4}>Risk Repository Validator</Title>
           <Group gap="lg">
+            <Tooltip label="Highlight keywords">
+              <ActionIcon
+                variant="subtle"
+                aria-label="Highlight keywords"
+                onClick={() => {
+                  setHighlightOpen((v) => !v);
+                }}
+              >
+                <IconHighlight size={20} />
+              </ActionIcon>
+            </Tooltip>
             <Tooltip
               label={
                 <Stack gap={4}>
@@ -203,10 +230,19 @@ export function Validator({ reviewer }: Props) {
             entry={activeEntry}
             position={activeIndex + 1}
             total={manifest.length}
+            highlightGroups={highlightGroups}
             onSubmitted={handleSubmitted}
           />
         )}
       </AppShell.Main>
+      <HighlightSettingsDrawer
+        opened={highlightOpen}
+        onClose={() => {
+          setHighlightOpen(false);
+        }}
+        groups={highlightGroups}
+        onChange={updateHighlightGroups}
+      />
     </AppShell>
   );
 }
