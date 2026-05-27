@@ -72,8 +72,8 @@ export function HighlightSettingsDrawer({
     >
       <Stack gap="md">
         <Text size="sm" c="dimmed">
-          Highlight matching keywords in titles and abstracts. Up to{" "}
-          {MAX_HIGHLIGHT_GROUPS} groups. Changes apply live.
+          Highlight matching keywords in titles and abstracts. Enter one keyword
+          per line.
         </Text>
         {groups.map((g) => (
           <GroupRow
