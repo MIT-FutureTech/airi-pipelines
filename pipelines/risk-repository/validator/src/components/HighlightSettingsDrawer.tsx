@@ -62,7 +62,7 @@ export function HighlightSettingsDrawer({
       opened={opened}
       onClose={onClose}
       position="left"
-      size={380}
+      size={320}
       title="Highlight Keywords"
       withOverlay={false}
       trapFocus={false}
