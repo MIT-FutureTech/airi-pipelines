@@ -194,7 +194,7 @@ function HighlightedText({ text, groups }: HighlightedTextProps) {
             key={key}
             style={{
               backgroundColor: `var(--mantine-color-${chunk.color}-3)`,
-              color: "inherit",
+              color: "#000",
               padding: 0,
               borderRadius: 2,
             }}
