@@ -31,7 +31,6 @@ class _DecisionRow(BaseModel):
     reviewer: str = Field(serialization_alias="Reviewer")
     stage: str = Field(serialization_alias="Stage")
     decision: str = Field(serialization_alias="Decision")
-    run: str = Field(serialization_alias="Run")
     comments: str = Field(serialization_alias="Comments")
 
 
@@ -73,7 +72,6 @@ def _build_rows(
     already_uploaded: set[str],
     reviewer: str,
     stage_label: str,
-    run_name: str,
 ) -> list[_DecisionRow]:
     rows: list[_DecisionRow] = []
     unmatched = 0
@@ -95,7 +93,6 @@ def _build_rows(
                 reviewer=reviewer,
                 stage=stage_label,
                 decision=screening.decision.value,
-                run=run_name,
                 comments=screening.criteria_breakdown,
             )
         )
@@ -118,9 +115,7 @@ async def run(
     decisions_dir = stage_dir(run_dir, pipeline_stage)
     if not decisions_dir.is_dir():
         raise FileNotFoundError(f"No {pipeline_stage.value} directory in {run_dir}")
-
     reviewer = f"pipeline-{variant}"
-    run_name = run_dir.name
 
     async with AirtableClient(timeout=DEFAULT_AIRTABLE_TIMEOUT) as client:
         index = await _document_index(
@@ -143,7 +138,6 @@ async def run(
             already_uploaded=already_uploaded,
             reviewer=reviewer,
             stage_label=stage_label,
-            run_name=run_name,
         )
 
         if dry_run:
