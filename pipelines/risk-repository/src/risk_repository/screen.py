@@ -97,7 +97,7 @@ It is usually not sufficient for a paper to discuss only principles (for respons
 ethical / safe AI). For instance, "principles for ethical AI" are likely to include
 things like "fair" and "transparent", but these are not risks.
 
-### 3: Novel Taxonomy
+### 3: Novel Taxonomy of AI Risks
 
 Acceptable: a document which proposes, develops, or explains a novel framework,
 taxonomy, typology, classification, ontology, or similarly structured scheme of risks
@@ -114,8 +114,9 @@ Not acceptable: a document framing risk sources as colonialism, capitalism, surv
 societies, the political economy of AI, sociotechnical configurations, etc.
 where the unit of analysis is the upstream cause rather than specific outcomes.
 
-Not acceptable: content focused on how organisations or actors should assess, audit or
-govern risks from AI rather than classifying AI risks specifically.
+Not acceptable: a document which discusses AI risks and proposes a novel framework for
+how to ways to address, mitigate or govern those risks, rather than classifying the
+risks themselves.
 
 Acceptable: a document that present a substantive risk taxonomy as part of an assessment
 methodology.
@@ -129,6 +130,7 @@ Yellow flags:
 - "a framework for AI risk management"
 - "audit methodology for AI systems"
 - "how to conduct an AI impact assessment"
+- "a new benchmark for measuring the safety of frontier AI models"
 
 ### 4: Cross-cutting
 
