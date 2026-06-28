@@ -1,3 +1,4 @@
+import base64
 import logging
 from collections.abc import AsyncIterator, Sequence
 
@@ -20,6 +21,7 @@ from toolbox.airtable.data_types import (
 
 API_URL = "https://api.airtable.com/v0"
 META_URL = f"{API_URL}/meta/bases"
+CONTENT_API_URL = "https://content.airtable.com/v0"
 BATCH_SIZE = 10  # Constraint imposed by Airtable API
 logger = logging.getLogger(__name__)
 
@@ -203,6 +205,33 @@ class Table:
             page = RecordList.model_validate(resp.json())
             results.extend(page.records)
         return results
+
+    async def upload_attachment(
+        self,
+        record_id: str,
+        field: str,
+        *,
+        content: bytes,
+        filename: str,
+        content_type: str,
+    ) -> Record:
+        """Append a file to an attachment field.
+
+        Uploads via Airtable's content endpoint, which embeds the file inline as
+        base64. The file is appended to any attachments already present in the field.
+        `field` accepts a field name or field ID.
+        """
+        body: dict[str, JsonValue] = {
+            "contentType": content_type,
+            "filename": filename,
+            "file": base64.b64encode(content).decode("ascii"),
+        }
+        resp = await self._request(
+            "POST",
+            f"{CONTENT_API_URL}/{self._base_id}/{record_id}/{field}/uploadAttachment",
+            body=body,
+        )
+        return Record.model_validate(resp.json())
 
     async def delete(self, record_id: str) -> DeletedRecord:
         """Delete a single record."""

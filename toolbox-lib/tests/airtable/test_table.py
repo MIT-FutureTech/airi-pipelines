@@ -1,3 +1,4 @@
+import base64
 from datetime import datetime
 from unittest.mock import AsyncMock
 
@@ -224,6 +225,37 @@ class TestBatchUpdate:
             assert results == []
             assert isinstance(client._http_client.request, AsyncMock)
             assert client._http_client.request.call_count == 0
+
+
+class TestUploadAttachment:
+    async def test_posts_base64_to_content_endpoint(self) -> None:
+        upload_response: dict[str, JsonValue] = {
+            "id": "rec001",
+            "createdTime": "2026-01-15T10:30:00.000Z",
+            "fields": {"fld001": [{"id": "att001", "filename": "doc.pdf"}]},
+        }
+        async with make_mock_client([make_response(200, upload_response)]) as client:
+            table = create_table(client)
+            record = await table.upload_attachment(
+                "rec001",
+                "full_text_pdf",
+                content=b"%PDF-1.4 body",
+                filename="doc.pdf",
+                content_type="application/pdf",
+            )
+
+            assert record.id == "rec001"
+            assert isinstance(client._http_client.request, AsyncMock)
+            call = client._http_client.request.call_args
+            assert call.args[0] == "POST"
+            assert call.args[1] == (
+                "https://content.airtable.com/v0"
+                f"/{BASE_ID}/rec001/full_text_pdf/uploadAttachment"
+            )
+            body = call.kwargs["json"]
+            assert body["contentType"] == "application/pdf"
+            assert body["filename"] == "doc.pdf"
+            assert base64.b64decode(body["file"]) == b"%PDF-1.4 body"
 
 
 class TestDelete:
