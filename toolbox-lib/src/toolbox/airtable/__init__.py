@@ -2,6 +2,7 @@
 
 from toolbox.airtable.client import AirtableClient
 from toolbox.airtable.data_types import (
+    Attachment,
     CreateRecord,
     DeletedRecord,
     FieldSchema,
@@ -17,6 +18,7 @@ from toolbox.airtable.table import Table
 
 __all__ = [
     "AirtableClient",
+    "Attachment",
     "CreateRecord",
     "DeletedRecord",
     "FieldSchema",

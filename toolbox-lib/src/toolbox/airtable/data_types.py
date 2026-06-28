@@ -9,12 +9,29 @@ type JsonValue = (
 type JsonObject = Mapping[str, JsonValue]
 
 
+class Attachment(BaseModel, frozen=True):
+    """A file stored in an Airtable attachment field."""
+
+    id: str
+    # Short-lived download URL
+    url: str
+    filename: str
+    size: int | None = None
+    type: str | None = None
+
+
 class Record(BaseModel, frozen=True):
     """An Airtable record."""
 
     id: str
     created_time: datetime = Field(alias="createdTime")
     fields: JsonObject
+
+    def attachments(self, field: str) -> list[Attachment]:
+        value = self.fields[field]
+        if not isinstance(value, list):
+            raise TypeError(f"Field {field!r} is not an attachment field")
+        return [Attachment.model_validate(item) for item in value]
 
 
 class RecordList(BaseModel, frozen=True):
