@@ -11,6 +11,8 @@ from risk_repository.download import make_http_client
 from risk_repository.extract import run_extraction
 from risk_repository.records import (
     DocumentRecord,
+    FullTextScreeningRecord,
+    fetch_full_text_screening_records,
     fetch_records_from_airtable,
     fetch_records_from_csv,
     include_record,
@@ -35,11 +37,17 @@ async def _collect_records(
 ) -> list[DocumentRecord]:
     docs_to_process = settings.document_ids
     records: list[DocumentRecord] = []
+    skipped_no_pdf = 0
     async for record in _iterate_source(airtable, settings):
+        if isinstance(record, FullTextScreeningRecord) and not record.has_pdf:
+            skipped_no_pdf += 1
+            continue
         if include_record(record, docs_to_process, settings.split):
             records.append(record)
         if settings.limit is not None and len(records) >= settings.limit:
             break
+    if skipped_no_pdf:
+        logger.info(f"Skipped {skipped_no_pdf} records with no attached PDF")
     logger.info(f"Fetched {len(records)} records")
     return records
 
@@ -50,6 +58,13 @@ async def _iterate_source(
 ) -> AsyncIterator[DocumentRecord]:
     if settings.csv_path is not None:
         async for record in fetch_records_from_csv(settings.csv_path):
+            yield record
+    elif settings.airtable_full_text_table is not None:
+        async for record in fetch_full_text_screening_records(
+            client=airtable,
+            base_id=settings.airtable_base_id,
+            table_name=settings.airtable_full_text_table,
+        ):
             yield record
     else:
         assert settings.airtable_documents_table is not None
