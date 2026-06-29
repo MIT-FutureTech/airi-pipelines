@@ -111,23 +111,46 @@ class RiskRepositorySettings(
         default=None,
         description="""
             Airtable table name to fetch documents from. Mutually exclusive with
-            --csv-path.
+            --csv-path and --airtable-full-text-table.
+        """,
+    )
+    airtable_full_text_table: str | None = Field(
+        default=None,
+        description="""
+            Airtable table to full-text screen. The PDF is read from each record's
+            full_text_pdf attachment and the decision is written back to the record.
+            Mutually exclusive with --airtable-documents-table and --csv-path.
         """,
     )
     csv_path: Path | None = Field(
         default=None,
         description="""
             Path to a CSV file of documents to process. Mutually exclusive with
-            --airtable-documents-table.
+            --airtable-documents-table and --airtable-full-text-table.
         """,
+    )
+    airtable_dry_run: bool = Field(
+        default=False,
+        description="""
+            When screening from --airtable-full-text-table, do not write decisions
+            back to Airtable (results are still saved locally).
+        """,
+    )
+    screening_prompt_version: str | None = Field(
+        default=None,
+        description="Screening prompt version to record in Airtable",
     )
 
     @model_validator(mode="after")
     def _validate_input_source(self) -> Self:
-        has_airtable = self.airtable_documents_table is not None
-        has_csv = self.csv_path is not None
-        if has_airtable == has_csv:
+        sources = (
+            self.airtable_documents_table,
+            self.airtable_full_text_table,
+            self.csv_path,
+        )
+        if sum(source is not None for source in sources) != 1:
             raise ValueError(
-                "Provide exactly one of --airtable-documents-table or --csv-path"
+                "Provide exactly one of --airtable-documents-table,"
+                + " --airtable-full-text-table, or --csv-path"
             )
         return self
