@@ -11,10 +11,12 @@ First, make sure you've done [the one-time setup instructions](/README.md#setup)
 Then from the root folder of the repository, run
 
 ```bash
-uv run --env-file=.env -m risk_repository --output-dir results/
+uv run --env-file=.env -m risk_repository --output-dir output/
 ```
 
 Use `--help` to list the available options.
+
+All files within the `output/` folder are ignored by git by default.
 
 ## Evaluation
 
@@ -24,7 +26,7 @@ truth. It reports several metrics, including precision and recall.
 To evaluate pipeline results against ground truth:
 
 ```bash
-uv run --env-file=.env -m risk_repository.evaluate --results-dir results/
+uv run --env-file=.env -m risk_repository.evaluate --results-dir output/
 ```
 
 Use `--help` to list the available options.
