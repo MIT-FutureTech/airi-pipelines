@@ -5,7 +5,7 @@ from pathlib import Path
 
 from pydantic import BaseModel, Field
 
-from toolbox.airtable import AirtableClient, Table
+from toolbox.airtable import AirtableClient, Attachment, Table
 
 
 class TestTrainSplit(StrEnum):
@@ -36,6 +36,26 @@ class CsvDocumentRecord(DocumentRecord):
     author_keywords: str | None = None
 
 
+class FullTextScreeningRecord(DocumentRecord):
+    """A record from the `Full-Text Screening` Airtable table.
+
+    The screened PDF is an attachment on the record rather than a URL, and the
+    Airtable record ID doubles as the readable ID.
+    """
+
+    record_id: str
+    title: str | None
+    abstract: str | None = None
+    url: str | None = None
+    attachments: list[Attachment] = Field(
+        default_factory=list, validation_alias="full_text_pdf"
+    )
+
+    @property
+    def has_pdf(self) -> bool:
+        return bool(self.attachments)
+
+
 async def fetch_records_from_csv(csv_path: Path) -> AsyncIterator[CsvDocumentRecord]:
     with csv_path.open(newline="") as f:
         reader = csv.DictReader(f)
@@ -55,6 +75,19 @@ async def fetch_records_from_airtable(
     async for record in table.iterate():
         yield AirtableDocumentRecord.model_validate(
             {"record_id": record.id, **record.fields}
+        )
+
+
+async def fetch_full_text_screening_records(
+    client: AirtableClient,
+    *,
+    base_id: str,
+    table_name: str,
+) -> AsyncIterator[FullTextScreeningRecord]:
+    table = Table(client, base_id=base_id, table_name=table_name)
+    async for record in table.iterate(fields=["title", "full_text_pdf"]):
+        yield FullTextScreeningRecord.model_validate(
+            {"readable_id": record.id, "record_id": record.id, **record.fields}
         )
 
 
