@@ -3,12 +3,14 @@ from pathlib import Path
 
 import httpx
 
-from risk_repository.download import download_pdf, record_failure
+from risk_repository.download import clear_failure, download_pdf, record_failure
 from risk_repository.records import (
     AirtableDocumentRecord,
     CsvDocumentRecord,
     DocumentRecord,
+    FullTextScreeningRecord,
 )
+from toolbox.airtable import download_attachment
 from toolbox.concurrency import ConcurrentMap
 from toolbox.text_processing.markdown import truncate_at_heading
 from toolbox.text_processing.pdf import convert_to_markdown
@@ -36,6 +38,8 @@ async def get_pdf(
     cache_dir: Path,
     client: httpx.AsyncClient,
 ) -> Path | None:
+    if isinstance(record, FullTextScreeningRecord):
+        return await _get_attachment_pdf(record, cache_dir=cache_dir, client=client)
     url = _full_text_url(record)
     if url is None:
         logger.warning(f"{record.readable_id} has no URL to fetch full text")
@@ -53,6 +57,34 @@ async def get_pdf(
         readable_id=record.readable_id,
         client=client,
     )
+
+
+async def _get_attachment_pdf(
+    record: FullTextScreeningRecord,
+    *,
+    cache_dir: Path,
+    client: httpx.AsyncClient,
+) -> Path | None:
+    cached = cache_dir / f"{record.readable_id}.pdf"
+    if cached.exists():
+        logger.debug(f"Cache hit: {cached}")
+        return cached
+    if not record.has_pdf:
+        logger.warning(f"{record.readable_id} has no PDF attachment")
+        record_failure(
+            cache_dir=cache_dir,
+            readable_id=record.readable_id,
+            url=None,
+            reason="record has no PDF attachment",
+            details=None,
+        )
+        return None
+    attachment = record.attachments[0]
+    content = await download_attachment(client, attachment)
+    cached.write_bytes(content)
+    clear_failure(cache_dir=cache_dir, readable_id=record.readable_id)
+    logger.info(f"Downloaded attachment {attachment.filename} -> {cached}")
+    return cached
 
 
 async def get_full_text(
@@ -160,6 +192,8 @@ async def prefetch_full_text(
 
 def _full_text_url(record: DocumentRecord) -> str | None:
     match record:
+        case FullTextScreeningRecord():
+            return record.url
         case AirtableDocumentRecord():
             return record.url
         case CsvDocumentRecord():
