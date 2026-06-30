@@ -1,7 +1,7 @@
 from unittest.mock import AsyncMock
 
 import pytest
-from httpx import HTTPStatusError
+from httpx import ConnectTimeout, HTTPStatusError
 
 from .helpers import make_mock_client, make_ok_response, make_response
 
@@ -10,6 +10,20 @@ class TestRetry:
     async def test_retries_on_429(self) -> None:
         """Should retry on 429 and succeed on the next attempt."""
         async with make_mock_client([make_response(429), make_ok_response()]) as client:
+            resp = await client.request(
+                "appXXX",
+                "GET",
+                "https://fake",
+            )
+            assert resp.status_code == 200
+            assert isinstance(client._http_client.request, AsyncMock)
+            assert client._http_client.request.call_count == 2
+
+    async def test_retries_on_connect_timeout(self) -> None:
+        """Transient transport errors should be retried."""
+        async with make_mock_client(
+            [ConnectTimeout("timed out"), make_ok_response()]
+        ) as client:
             resp = await client.request(
                 "appXXX",
                 "GET",

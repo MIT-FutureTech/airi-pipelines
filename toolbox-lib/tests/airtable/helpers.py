@@ -35,7 +35,7 @@ def make_ok_response() -> Response:
 
 @asynccontextmanager
 async def make_mock_client(
-    request_side_effect: Iterable[Response],
+    request_side_effect: Iterable[Response | Exception],
 ) -> AsyncGenerator[AirtableClient]:
     async with AirtableClient(timeout=5.0, token=FAKE_TOKEN) as client:
         with patch.object(
