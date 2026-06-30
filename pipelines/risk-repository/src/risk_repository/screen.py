@@ -248,11 +248,14 @@ things like "fair" and "transparent", but these are not risks.
 
 Acceptable: a document which proposes, develops, or explains a novel framework,
 taxonomy, typology, classification, ontology, or similarly structured scheme of risks
-from AI. We want the framework as presented by the original authors to minimize
-misinterpretation.
+from AI, presented as a large table. We care about originality because want the
+framework as presented by the original authors to minimize misinterpretation.
 
 Not acceptable: a document that merely cites or discusses existing theories, frameworks,
 models, taxonomies, or classifications rather than proposing and explaining them.
+
+Not acceptable: which uses terms like "framework" in its abstract or conclusion but does
+not contain a list or table laying out the risks in a systematic way.
 
 Not acceptable: a document discussing sources of sociotechnical risk in AI at a high
 level of abstraction without proposing a structured classification of specific risks.
@@ -269,9 +272,9 @@ Acceptable: a document that present a substantive risk taxonomy as part of an as
 methodology.
 
 Green flags:
-- Multi-domain breadth: List of risks spanning visibly different domains (e.g. environmental harm, discrimination, autonomous weapons, dangerous capabilities). **This is the strongest single positive signal in the abstract.**
-- Explicit taxonomic framing: "taxonomy", "typology", "classification", "framework", "categorisation", "ontology" occurring near discussion of specific risks.
-- Explicit structural terms: "categories", "domains", "dimensions", "types" (of risk)
+- Multi-domain breadth: List of risks spanning visibly different domains (e.g. environmental harm, discrimination, autonomous weapons, dangerous capabilities).
+- A table where each row is a concrete AI risk with one or more categorical columns grouping them into a taxonomy.
+- A tree diagram illustrating breaking down into categories and then individual risks.
 
 Yellow flags:
 - "a framework for AI risk management"
