@@ -397,7 +397,6 @@ async def _screen_abstract_one(
     record: DocumentRecord,
     *,
     llm: LLMClient,
-    http_client: httpx.AsyncClient,
     settings: RiskRepositorySettings,
 ) -> None:
     with log_context(readable_id=record.readable_id):
@@ -408,11 +407,7 @@ async def _screen_abstract_one(
         )
         if not settings.force and output_path.exists():
             return
-        abstract = await format_abstract_and_title(
-            record,
-            cache_dir=settings.download_cache_dir,
-            client=http_client,
-        )
+        abstract = format_abstract_and_title(record)
         if abstract is None:
             logger.warning("Skipping screening: no abstract available")
             return
@@ -430,7 +425,6 @@ async def run_abstract_screening(
     records: list[DocumentRecord],
     *,
     llm: LLMClient,
-    http_client: httpx.AsyncClient,
     settings: RiskRepositorySettings,
 ) -> None:
     runner = ConcurrentMap(
@@ -441,7 +435,6 @@ async def run_abstract_screening(
         records,
         _screen_abstract_one,
         llm=llm,
-        http_client=http_client,
         settings=settings,
     ):
         pass
