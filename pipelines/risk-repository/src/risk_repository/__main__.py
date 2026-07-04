@@ -2,7 +2,6 @@ import asyncio
 import logging
 from collections.abc import AsyncIterator
 
-from risk_repository.airtable_sink import AirtableScreeningSink
 from risk_repository.classify import run_classification
 from risk_repository.documents import (
     prefetch_abstracts,
@@ -20,13 +19,12 @@ from risk_repository.records import (
 )
 from risk_repository.results import PipelineStage
 from risk_repository.screen import (
-    ScreeningCallback,
     filter_by_screening,
     run_abstract_screening,
     run_full_text_screening,
 )
 from risk_repository.settings import RiskRepositorySettings
-from toolbox.airtable import AirtableClient, Table
+from toolbox.airtable import AirtableClient
 from toolbox.llm import OpenRouterClient
 from toolbox.log import configure_logging, install_log_context_filter
 
@@ -52,24 +50,6 @@ async def _collect_records(
         logger.info(f"Skipped {skipped_no_pdf} records with no attached PDF")
     logger.info(f"Fetched {len(records)} records")
     return records
-
-
-def _airtable_sink(
-    airtable: AirtableClient,
-    settings: RiskRepositorySettings,
-) -> ScreeningCallback | None:
-    if settings.airtable_full_text_table is None or settings.airtable_dry_run:
-        return None
-    sink = AirtableScreeningSink(
-        table=Table(
-            airtable,
-            base_id=settings.airtable_base_id,
-            table_name=settings.airtable_full_text_table,
-        ),
-        model=settings.model,
-        prompt_version=settings.screening_prompt_version,
-    )
-    return sink.write
 
 
 async def _iterate_source(
@@ -148,7 +128,6 @@ async def main() -> None:
                     llm=llm,
                     http_client=http_client,
                     settings=settings,
-                    on_result=_airtable_sink(airtable, settings),
                 )
             records = filter_by_screening(
                 records, settings=settings, stage=PipelineStage.SCREEN_FULL_TEXT

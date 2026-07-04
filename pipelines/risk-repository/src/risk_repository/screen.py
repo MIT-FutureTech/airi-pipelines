@@ -1,5 +1,4 @@
 import logging
-from collections.abc import Awaitable, Callable
 from enum import StrEnum
 
 import httpx
@@ -20,8 +19,6 @@ from toolbox.llm import LLMClient, Message
 from toolbox.log import log_context
 
 logger = logging.getLogger(__name__)
-
-type ScreeningCallback = Callable[[DocumentRecord, ScreeningResult], Awaitable[None]]
 
 
 class Decision(StrEnum):
@@ -456,7 +453,6 @@ async def _screen_full_text_one(
     llm: LLMClient,
     http_client: httpx.AsyncClient,
     settings: RiskRepositorySettings,
-    on_result: ScreeningCallback | None,
 ) -> None:
     with log_context(readable_id=record.readable_id):
         output_path = result_path(
@@ -483,8 +479,6 @@ async def _screen_full_text_one(
             PipelineStage.SCREEN_FULL_TEXT,
             record.readable_id,
         )
-        if on_result is not None:
-            await on_result(record, screening)
         logger.info(f"Full-text screening decision: {screening.decision}")
 
 
@@ -494,7 +488,6 @@ async def run_full_text_screening(
     llm: LLMClient,
     http_client: httpx.AsyncClient,
     settings: RiskRepositorySettings,
-    on_result: ScreeningCallback | None = None,
 ) -> None:
     runner = ConcurrentMap(
         max_concurrency=settings.concurrency,
@@ -506,7 +499,6 @@ async def run_full_text_screening(
         llm=llm,
         http_client=http_client,
         settings=settings,
-        on_result=on_result,
     ):
         pass
 
