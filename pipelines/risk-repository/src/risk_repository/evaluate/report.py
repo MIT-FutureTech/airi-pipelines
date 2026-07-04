@@ -8,7 +8,7 @@ def print_report(
     extraction: ExtractionMetrics,
     classification: ClassificationMetrics,
 ) -> None:
-    _print_screening(screening)
+    print_screening(screening)
     print()
     _print_extraction(extraction)
     print()
@@ -19,8 +19,8 @@ def _pct(count: int, total: int) -> str:
     return f"{count / total:.0%}" if total > 0 else "-"
 
 
-def _print_screening(m: ScreeningMetrics) -> None:
-    print("=== Screening ===")
+def print_screening(m: ScreeningMetrics, *, heading: str = "Screening") -> None:
+    print(f"=== {heading} ===")
     gt, pl = m.gt_counts, m.pipeline_counts
     print(f"              {'GT':^10}    {'Pipeline':^10}")
     print(
