@@ -24,12 +24,14 @@ async def format_abstract_and_title(
     cache_dir: Path,
     client: httpx.AsyncClient,
 ) -> str | None:
-    if isinstance(record, AirtableDocumentRecord) and record.abstract is None:
+    if record.abstract is not None:
+        return f"# {record.title}\n\n## Abstract\n\n{record.abstract}"
+    if isinstance(record, AirtableDocumentRecord):
         pdf_path = await get_pdf(record, cache_dir=cache_dir, client=client)
         if pdf_path is None:
             return None
         return convert_to_markdown(pdf_path, pages=[0])
-    return f"# {record.title}\n\n## Abstract\n\n{record.abstract}"
+    return None
 
 
 async def get_pdf(
