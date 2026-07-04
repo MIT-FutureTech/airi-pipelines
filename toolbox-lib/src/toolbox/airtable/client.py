@@ -3,7 +3,14 @@ import os
 from types import TracebackType
 from typing import Self
 
-from httpx import AsyncClient, HTTPStatusError, QueryParams, Response
+from httpx import (
+    AsyncClient,
+    ConnectError,
+    HTTPStatusError,
+    QueryParams,
+    Response,
+    TimeoutException,
+)
 from tenacity import (
     after_log,
     retry,
@@ -19,11 +26,14 @@ logger = logging.getLogger(__name__)
 
 API_URL = "https://api.airtable.com/v0"
 META_URL = f"{API_URL}/meta/bases"
+RETRYABLE_NETWORK_ERRORS = (ConnectError, TimeoutException)
 RETRYABLE_STATUSES = frozenset({429, 502, 503, 504})
 RATE_LIMIT_REQUESTS_PER_SECOND = 5.0  # Constraint imposed by Airtable API
 
 
 def _is_retryable(exc: BaseException) -> bool:
+    if isinstance(exc, RETRYABLE_NETWORK_ERRORS):
+        return True
     return (
         isinstance(exc, HTTPStatusError)
         and exc.response.status_code in RETRYABLE_STATUSES

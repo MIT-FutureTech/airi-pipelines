@@ -144,6 +144,60 @@ async def fetch_ground_truth_documents(
     return documents
 
 
+class _ScreeningReview(BaseModel):
+    record_id: str
+    human_include_1: str | None = None
+    human_include_2: str | None = None
+
+
+def _review_decision(value: str | None) -> Decision | None:
+    match value:
+        case "Include":
+            return Decision.INCLUDE
+        case "Exclude":
+            return Decision.EXCLUDE
+        case _:
+            return None
+
+
+def _ground_truth_from_reviews(review: _ScreeningReview) -> Decision | None:
+    """Combine two human reviewers into a ground-truth decision using OR.
+
+    Includes when at least one reviewer included; excludes when at least one
+    reviewer decided and none included; None when neither reviewer decided.
+    """
+    decisions = [
+        d
+        for d in (
+            _review_decision(review.human_include_1),
+            _review_decision(review.human_include_2),
+        )
+        if d is not None
+    ]
+    if not decisions:
+        return None
+    if Decision.INCLUDE in decisions:
+        return Decision.INCLUDE
+    return Decision.EXCLUDE
+
+
+async def fetch_screening_ground_truth(
+    client: AirtableClient,
+    *,
+    base_id: str,
+    table_name: str,
+) -> dict[str, Decision | None]:
+    """Map each screening-table record ID to its human ground-truth decision."""
+    table = Table(client, base_id=base_id, table_name=table_name)
+    ground_truth: dict[str, Decision | None] = {}
+    async for record in table.iterate(fields=["human_include_1", "human_include_2"]):
+        review = _ScreeningReview.model_validate(
+            {"record_id": record.id, **record.fields}
+        )
+        ground_truth[record.id] = _ground_truth_from_reviews(review)
+    return ground_truth
+
+
 async def _fetch_causal_map(client: AirtableClient, base_id: str) -> dict[str, str]:
     """Map Causal Taxonomy record IDs to their label (e.g. "Entity: Human")."""
     table = Table(client, base_id=base_id, table_name="Causal Taxonomy")
