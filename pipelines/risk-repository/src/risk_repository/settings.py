@@ -1,7 +1,6 @@
 from pathlib import Path
-from typing import Self
 
-from pydantic import Field, model_validator
+from pydantic import Field
 from pydantic_settings import BaseSettings
 
 from risk_repository.records import TestTrainSplit
@@ -107,39 +106,11 @@ class RiskRepositorySettings(
         default=DEFAULT_AIRTABLE_BASE_ID,
         description="Airtable ID for the AI Risk Repository base",
     )
-    airtable_documents_table: str | None = Field(
-        default=None,
+    airtable_screening_table: str = Field(
+        default=...,
         description="""
-            Airtable table name to fetch documents from. Mutually exclusive with
-            --csv-path and --airtable-full-text-table.
+            Airtable screening table to read documents from. Each record's PDF is read
+            from its full_text_pdf attachment. Decisions are written back separately by
+            `risk_repository.upload`.
         """,
     )
-    airtable_full_text_table: str | None = Field(
-        default=None,
-        description="""
-            Airtable table to full-text screen. The PDF is read from each record's
-            full_text_pdf attachment and the decision is written back to the record.
-            Mutually exclusive with --airtable-documents-table and --csv-path.
-        """,
-    )
-    csv_path: Path | None = Field(
-        default=None,
-        description="""
-            Path to a CSV file of documents to process. Mutually exclusive with
-            --airtable-documents-table and --airtable-full-text-table.
-        """,
-    )
-
-    @model_validator(mode="after")
-    def _validate_input_source(self) -> Self:
-        sources = (
-            self.airtable_documents_table,
-            self.airtable_full_text_table,
-            self.csv_path,
-        )
-        if sum(source is not None for source in sources) != 1:
-            raise ValueError(
-                "Provide exactly one of --airtable-documents-table,"
-                + " --airtable-full-text-table, or --csv-path"
-            )
-        return self

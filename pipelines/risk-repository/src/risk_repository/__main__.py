@@ -13,8 +13,6 @@ from risk_repository.records import (
     DocumentRecord,
     FullTextScreeningRecord,
     fetch_full_text_screening_records,
-    fetch_records_from_airtable,
-    fetch_records_from_csv,
     include_record,
 )
 from risk_repository.results import PipelineStage
@@ -56,24 +54,12 @@ async def _iterate_source(
     airtable: AirtableClient,
     settings: RiskRepositorySettings,
 ) -> AsyncIterator[DocumentRecord]:
-    if settings.csv_path is not None:
-        async for record in fetch_records_from_csv(settings.csv_path):
-            yield record
-    elif settings.airtable_full_text_table is not None:
-        async for record in fetch_full_text_screening_records(
-            client=airtable,
-            base_id=settings.airtable_base_id,
-            table_name=settings.airtable_full_text_table,
-        ):
-            yield record
-    else:
-        assert settings.airtable_documents_table is not None
-        async for record in fetch_records_from_airtable(
-            client=airtable,
-            base_id=settings.airtable_base_id,
-            table_name=settings.airtable_documents_table,
-        ):
-            yield record
+    async for record in fetch_full_text_screening_records(
+        client=airtable,
+        base_id=settings.airtable_base_id,
+        table_name=settings.airtable_screening_table,
+    ):
+        yield record
 
 
 async def main() -> None:
