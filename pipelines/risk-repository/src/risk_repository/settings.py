@@ -129,17 +129,6 @@ class RiskRepositorySettings(
             --airtable-documents-table and --airtable-full-text-table.
         """,
     )
-    airtable_dry_run: bool = Field(
-        default=False,
-        description="""
-            When screening from --airtable-full-text-table, do not write decisions
-            back to Airtable (results are still saved locally).
-        """,
-    )
-    screening_prompt_version: str | None = Field(
-        default=None,
-        description="Screening prompt version to record in Airtable",
-    )
 
     @model_validator(mode="after")
     def _validate_input_source(self) -> Self:
