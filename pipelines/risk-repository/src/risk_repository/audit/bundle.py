@@ -1,24 +1,17 @@
 import logging
-from collections.abc import AsyncIterator
 from datetime import UTC, datetime
 from enum import StrEnum
 from pathlib import Path
 
-import httpx
 from pydantic import BaseModel
 
 from risk_repository.audit.settings import AuditSettings
-from risk_repository.documents import format_abstract_and_title
-from risk_repository.evaluate.ground_truth import fetch_ground_truth_documents
+from risk_repository.evaluate.ground_truth import fetch_screening_ground_truth
 from risk_repository.evaluate.screen import (
     is_positive_ground_truth,
     is_positive_pipeline,
 )
-from risk_repository.records import (
-    DocumentRecord,
-    fetch_records_from_airtable,
-    fetch_records_from_csv,
-)
+from risk_repository.records import DocumentRecord, fetch_screening_records
 from risk_repository.results import PipelineStage, load, result_path
 from risk_repository.screen import Decision, ScreeningResult
 from toolbox.airtable import AirtableClient
@@ -60,18 +53,20 @@ class AuditBundle(BaseModel):
 async def assemble_bundle(
     settings: AuditSettings,
     *,
-    airtable: AirtableClient | None,
-    http_client: httpx.AsyncClient,
+    airtable: AirtableClient,
 ) -> AuditBundle:
     ground_truth = await _load_ground_truth(settings, airtable)
     documents: list[AuditDocument] = []
     skipped = 0
-    async for record in _iter_records(settings, airtable):
-        document = await _build_document(
+    async for record in fetch_screening_records(
+        airtable,
+        base_id=settings.airtable_base_id,
+        table_name=settings.airtable_screening_table,
+    ):
+        document = _build_document(
             record,
             results_dir=settings.results_dir,
             download_cache_dir=settings.download_cache_dir,
-            http_client=http_client,
             ground_truth=ground_truth,
         )
         if document is None:
@@ -92,46 +87,20 @@ async def assemble_bundle(
 
 async def _load_ground_truth(
     settings: AuditSettings,
-    airtable: AirtableClient | None,
+    airtable: AirtableClient,
 ) -> dict[str, Decision | None]:
-    if settings.ground_truth_table is None:
-        return {}
-    if airtable is None:
-        raise ValueError("Ground-truth table requested but no Airtable client provided")
-    docs = await fetch_ground_truth_documents(
+    return await fetch_screening_ground_truth(
         client=airtable,
         base_id=settings.airtable_base_id,
-        documents_table_name=settings.ground_truth_table,
+        table_name=settings.airtable_screening_table,
     )
-    return {doc.readable_id: doc.screening_result for doc in docs}
 
 
-async def _iter_records(
-    settings: AuditSettings,
-    airtable: AirtableClient | None,
-) -> AsyncIterator[DocumentRecord]:
-    if settings.csv_path is not None:
-        async for record in fetch_records_from_csv(settings.csv_path):
-            yield record
-        return
-    if airtable is None:
-        raise ValueError("Airtable source requested but no Airtable client provided")
-    if settings.airtable_documents_table is None:
-        raise ValueError("Airtable source requested but no table name provided")
-    async for record in fetch_records_from_airtable(
-        airtable,
-        base_id=settings.airtable_base_id,
-        table_name=settings.airtable_documents_table,
-    ):
-        yield record
-
-
-async def _build_document(
+def _build_document(
     record: DocumentRecord,
     *,
     results_dir: Path,
     download_cache_dir: Path,
-    http_client: httpx.AsyncClient,
     ground_truth: dict[str, Decision | None],
 ) -> AuditDocument | None:
     abstract_result: ScreeningResult | None = None
@@ -153,13 +122,6 @@ async def _build_document(
     if abstract_result is None and full_text_result is None:
         return None
 
-    abstract = record.abstract
-    if abstract is None:
-        abstract = await format_abstract_and_title(
-            record=record,
-            cache_dir=download_cache_dir,
-            client=http_client,
-        )
     pdf_cache = download_cache_dir / f"{record.readable_id}.pdf"
     pdf_path = pdf_cache.resolve() if pdf_cache.exists() else None
     gt_decision = ground_truth.get(record.readable_id)
@@ -179,7 +141,7 @@ async def _build_document(
         title=record.title,
         url=record.url,
         pdf_path=pdf_path,
-        abstract=abstract,
+        abstract=record.abstract,
         screening=screening,
     )
 
