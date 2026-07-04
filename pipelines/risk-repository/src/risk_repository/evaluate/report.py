@@ -4,15 +4,18 @@ from risk_repository.evaluate.screen import ScreeningMetrics
 
 
 def print_report(
-    screening: ScreeningMetrics,
-    extraction: ExtractionMetrics,
-    classification: ClassificationMetrics,
+    screening: ScreeningMetrics | None,
+    extraction: ExtractionMetrics | None,
+    classification: ClassificationMetrics | None,
 ) -> None:
-    print_screening(screening)
-    print()
-    _print_extraction(extraction)
-    print()
-    _print_classification(classification)
+    if screening is not None:
+        print_screening(screening)
+        print()
+    if extraction is not None:
+        _print_extraction(extraction)
+        print()
+    if classification is not None:
+        _print_classification(classification)
 
 
 def _pct(count: int, total: int) -> str:

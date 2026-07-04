@@ -3,7 +3,6 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
-from risk_repository.evaluate.ground_truth import GroundTruthDocument
 from risk_repository.results import PipelineStage, load, result_path
 from risk_repository.screen import Decision, ScreeningResult
 
@@ -67,20 +66,20 @@ class ScreeningMetrics(BaseModel):
 
 
 def evaluate_screening(
-    ground_truth_docs: Sequence[GroundTruthDocument],
+    ground_truth: dict[str, Decision | None],
     results_dir: Path,
 ) -> ScreeningMetrics:
     comparisons: list[ScreeningComparison] = []
-    for gt_doc in ground_truth_docs:
-        if gt_doc.screening_result is None:
+    for readable_id, gt_decision in ground_truth.items():
+        if gt_decision is None:
             continue
-        path = _latest_screening_result(results_dir, gt_doc.readable_id)
+        path = _latest_screening_result(results_dir, readable_id)
         if path is None:
             continue
         comparisons.append(
             ScreeningComparison(
-                readable_id=gt_doc.readable_id,
-                ground_truth=gt_doc.screening_result,
+                readable_id=readable_id,
+                ground_truth=gt_decision,
                 pipeline=load(path, ScreeningResult).decision,
             )
         )

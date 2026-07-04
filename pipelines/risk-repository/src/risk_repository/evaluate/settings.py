@@ -67,3 +67,10 @@ class EvaluationSettings(
         default=DEFAULT_AIRTABLE_DOCUMENTS_TABLE,
         description="Airtable table name to fetch documents from",
     )
+    airtable_screening_table: str = Field(
+        default=...,
+        description="""
+            Airtable screening table whose human review columns provide the screening
+            ground truth.
+        """,
+    )
