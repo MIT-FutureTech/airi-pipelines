@@ -85,7 +85,7 @@ async def fetch_screening_records(
     table_name: str,
 ) -> AsyncIterator[ScreeningRecord]:
     table = Table(client, base_id=base_id, table_name=table_name)
-    async for record in table.iterate(fields=["title", "full_text_pdf"]):
+    async for record in table.iterate(fields=["title", "abstract", "full_text_pdf"]):
         yield ScreeningRecord.model_validate(
             {"readable_id": record.id, "record_id": record.id, **record.fields}
         )
