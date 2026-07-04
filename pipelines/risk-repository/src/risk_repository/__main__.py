@@ -4,8 +4,8 @@ from collections.abc import AsyncIterator
 
 from risk_repository.classify import run_classification
 from risk_repository.documents import (
-    prefetch_abstracts,
     prefetch_full_text,
+    select_records_with_abstract,
 )
 from risk_repository.download import make_http_client
 from risk_repository.extract import run_extraction
@@ -80,15 +80,8 @@ async def main() -> None:
             records = await _collect_records(airtable, settings)
 
             if PipelineStage.SCREEN_ABSTRACT in stages:
-                records = await prefetch_abstracts(
-                    records,
-                    cache_dir=settings.download_cache_dir,
-                    client=http_client,
-                    concurrency=settings.concurrency,
-                )
-                await run_abstract_screening(
-                    records, llm=llm, http_client=http_client, settings=settings
-                )
+                records = select_records_with_abstract(records)
+                await run_abstract_screening(records, llm=llm, settings=settings)
             records = filter_by_screening(
                 records, settings=settings, stage=PipelineStage.SCREEN_ABSTRACT
             )
