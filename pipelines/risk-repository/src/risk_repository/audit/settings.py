@@ -1,12 +1,10 @@
 from pathlib import Path
-from typing import Self
 
-from pydantic import Field, model_validator
+from pydantic import Field
 from pydantic_settings import BaseSettings
 
 from risk_repository.settings import (
     DEFAULT_AIRTABLE_BASE_ID,
-    DEFAULT_AIRTABLE_DOCUMENTS_TABLE,
     DEFAULT_AIRTABLE_TIMEOUT,
     DEFAULT_DOWNLOAD_CACHE_DIR,
 )
@@ -52,33 +50,10 @@ class AuditSettings(
         default=DEFAULT_AIRTABLE_BASE_ID,
         description="Airtable ID for the AI Risk Repository base",
     )
-    airtable_documents_table: str | None = Field(
-        default=None,
+    airtable_screening_table: str = Field(
+        default=...,
         description="""
-            Airtable table name to fetch documents from. Mutually exclusive with
-            --csv-path.
+            Airtable screening table with the records to audit and their human
+            review decisions.
         """,
     )
-    csv_path: Path | None = Field(
-        default=None,
-        description="""
-            Path to a CSV file of documents to process. Mutually exclusive with
-            --airtable-documents-table.
-        """,
-    )
-    ground_truth_table: str | None = Field(
-        default=DEFAULT_AIRTABLE_DOCUMENTS_TABLE,
-        description="""
-            Optional Airtable table name with ground-truth screening decisions.
-        """,
-    )
-
-    @model_validator(mode="after")
-    def _validate_input_source(self) -> Self:
-        has_airtable = self.airtable_documents_table is not None
-        has_csv = self.csv_path is not None
-        if has_airtable == has_csv:
-            raise ValueError(
-                "Provide exactly one of --airtable-documents-table or --csv-path"
-            )
-        return self

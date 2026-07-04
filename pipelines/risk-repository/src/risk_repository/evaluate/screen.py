@@ -3,7 +3,6 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
-from risk_repository.evaluate.ground_truth import GroundTruthDocument
 from risk_repository.results import PipelineStage, load, result_path
 from risk_repository.screen import Decision, ScreeningResult
 
@@ -14,6 +13,14 @@ def is_positive_pipeline(decision: Decision) -> bool:
 
 def is_positive_ground_truth(decision: Decision) -> bool:
     return decision == Decision.INCLUDE
+
+
+class ScreeningComparison(BaseModel):
+    """A single document's ground-truth decision paired with the pipeline's."""
+
+    readable_id: str
+    ground_truth: Decision
+    pipeline: Decision
 
 
 def _latest_screening_result(results_dir: Path, readable_id: str) -> Path | None:
@@ -33,6 +40,15 @@ class DecisionCounts(BaseModel):
     def total(self) -> int:
         return self.include + self.exclude + self.uncertain
 
+    def record(self, decision: Decision) -> None:
+        match decision:
+            case Decision.INCLUDE:
+                self.include += 1
+            case Decision.EXCLUDE:
+                self.exclude += 1
+            case Decision.UNCERTAIN:
+                self.uncertain += 1
+
 
 class ScreeningMetrics(BaseModel):
     gt_counts: DecisionCounts
@@ -50,8 +66,28 @@ class ScreeningMetrics(BaseModel):
 
 
 def evaluate_screening(
-    ground_truth_docs: Sequence[GroundTruthDocument],
+    ground_truth: dict[str, Decision | None],
     results_dir: Path,
+) -> ScreeningMetrics:
+    comparisons: list[ScreeningComparison] = []
+    for readable_id, gt_decision in ground_truth.items():
+        if gt_decision is None:
+            continue
+        path = _latest_screening_result(results_dir, readable_id)
+        if path is None:
+            continue
+        comparisons.append(
+            ScreeningComparison(
+                readable_id=readable_id,
+                ground_truth=gt_decision,
+                pipeline=load(path, ScreeningResult).decision,
+            )
+        )
+    return compute_screening_metrics(comparisons)
+
+
+def compute_screening_metrics(
+    comparisons: Sequence[ScreeningComparison],
 ) -> ScreeningMetrics:
     gt_counts = DecisionCounts()
     pipeline_counts = DecisionCounts()
@@ -62,43 +98,21 @@ def evaluate_screening(
     false_positive_refs: list[str] = []
     false_negative_refs: list[str] = []
 
-    for gt_doc in ground_truth_docs:
-        if gt_doc.screening_result is None:
-            continue
-        path = _latest_screening_result(results_dir, gt_doc.readable_id)
-        if path is None:
-            continue
+    for comparison in comparisons:
+        gt_counts.record(comparison.ground_truth)
+        pipeline_counts.record(comparison.pipeline)
 
-        gt_decision = gt_doc.screening_result
-        pipeline_decision = load(path, ScreeningResult).decision
-
-        match gt_decision:
-            case Decision.INCLUDE:
-                gt_counts.include += 1
-            case Decision.EXCLUDE:
-                gt_counts.exclude += 1
-            case Decision.UNCERTAIN:
-                gt_counts.uncertain += 1
-
-        match pipeline_decision:
-            case Decision.INCLUDE:
-                pipeline_counts.include += 1
-            case Decision.EXCLUDE:
-                pipeline_counts.exclude += 1
-            case Decision.UNCERTAIN:
-                pipeline_counts.uncertain += 1
-
-        gt_positive = is_positive_ground_truth(gt_decision)
-        pred_positive = is_positive_pipeline(pipeline_decision)
+        gt_positive = is_positive_ground_truth(comparison.ground_truth)
+        pred_positive = is_positive_pipeline(comparison.pipeline)
 
         if pred_positive and gt_positive:
             tp += 1
         elif pred_positive and not gt_positive:
             fp += 1
-            false_positive_refs.append(gt_doc.readable_id)
+            false_positive_refs.append(comparison.readable_id)
         elif not pred_positive and gt_positive:
             fn += 1
-            false_negative_refs.append(gt_doc.readable_id)
+            false_negative_refs.append(comparison.readable_id)
         else:
             tn += 1
 

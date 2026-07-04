@@ -76,7 +76,7 @@ async def _screen(
     return result.value
 
 
-_SCREENING_CRITERIA = """
+_ABSTRACT_SCREENING_CRITERIA = """
 ## Screening criteria
 
 ### 1: Document Type
@@ -207,6 +207,140 @@ Criteria: citing rather than proposing; risk discussion is incidental to the lit
 Decision: exclude
 """
 
+_FULL_TEXT_SCREENING_CRITERIA = """
+## Screening criteria
+
+### 1: Document Type
+
+Acceptable: a review, article, or report (peer-reviewed or gray literature)
+Not acceptable: a book chapter, thesis, commentary, editorial, protocol
+Not acceptable: a review, article, or report not written in English
+
+### 2: Risk Requirement
+
+Acceptable: the document frames its content in terms of the possibility of an
+unfortunate occurrence associated with the development or deployment of AI (Society for
+Risk Analysis definition).
+
+Not acceptable: the document discusses impacts, outcomes, transformations, or other
+consequences of AI without specifying negative or unfortunate occurrences.
+
+Green flags
+- Terms such as harms, adverse impacts, dangers, threats, negative consequences, undesirable outcomes, challenges.
+
+Yellow flags:
+- Terms such as benefits, opportunities, transformations, capabilities
+- Aspirational or principles framing: Abstract uses "should", "ought", "ethical AI", "responsible AI", "principles for", without identifying specific negative outcomes.
+- The abstract mixes conceptual levels: some are clearly risks but others are governance considerations, principles, technical features, or stakeholder concerns. If the one has to do work to read the list as a risk taxonomy, it probably isn't one.
+
+Red flags:
+- "This paper examines the societal impacts of generative AI" without signalling negative outcomes
+- A document framed in terms of capabilities or applications
+
+It is usually not sufficient for a paper to discuss only principles (for responsible /
+ethical / safe AI). For instance, "principles for ethical AI" are likely to include
+things like "fair" and "transparent", but these are not risks.
+
+### 3: Novel Taxonomy of AI Risks
+
+Acceptable: a document which proposes, develops, or explains a novel framework,
+taxonomy, typology, classification, ontology, or similarly structured scheme of risks
+from AI, presented as a large table. We care about originality because want the
+framework as presented by the original authors to minimize misinterpretation.
+
+Not acceptable: a document that merely cites or discusses existing theories, frameworks,
+models, taxonomies, or classifications rather than proposing and explaining them.
+
+Not acceptable: which uses terms like "framework" in its abstract or conclusion but does
+not contain a list or table laying out the risks in a systematic way.
+
+Not acceptable: a document discussing sources of sociotechnical risk in AI at a high
+level of abstraction without proposing a structured classification of specific risks.
+
+Not acceptable: a document framing risk sources as colonialism, capitalism, surveillance
+societies, the political economy of AI, sociotechnical configurations, etc.
+where the unit of analysis is the upstream cause rather than specific outcomes.
+
+Not acceptable: a document which discusses AI risks and proposes a novel framework for
+how to ways to address, mitigate or govern those risks, rather than classifying the
+risks themselves.
+
+Acceptable: a document that present a substantive risk taxonomy as part of an assessment
+methodology.
+
+Green flags:
+- Multi-domain breadth: List of risks spanning visibly different domains (e.g. environmental harm, discrimination, autonomous weapons, dangerous capabilities).
+- A table where each row is a concrete AI risk with one or more categorical columns grouping them into a taxonomy.
+- A tree diagram illustrating breaking down into categories and then individual risks.
+
+Yellow flags:
+- "a framework for AI risk management"
+- "audit methodology for AI systems"
+- "how to conduct an AI impact assessment"
+- "a new benchmark for measuring the safety of frontier AI models"
+
+### 4: Cross-cutting
+
+The risks identified are present across multiple locations and industry sectors, or the
+framework is explicitly intended to apply cross-sectorally. A paper may use examples
+from one sector if its framework is presented as general.
+
+Acceptable: a framework with examples from healthcare and finance and employment.
+
+Acceptable: a framework presented as cross-cutting that uses healthcare as the running
+example.
+
+Acceptable: a framework focused on a single broad risk domain (e.g. environmental harms
+from AI, types of AI-driven discrimination) at the cross-cutting level.
+
+Not acceptable: a framework explicitly scoped to a location or single sector (e.g.
+"risks from AI in radiology", "employment discrimination") with no claim to broader
+applicability.
+
+Not acceptable: a document focused on risks from very specific AI tools or models.
+
+Yellow flags:
+- ChatGPT, Claude, DALL-E, MidJourney, Sora, Grok, other AI product names. However, generic categories of AI are OK, like "AI assistant" or "agentic coding assistant."
+
+## Worked examples
+
+The reasoning for each example is highly abbreviated, containing only the crucial
+considerations. Please be more thorough in your reasoning.
+
+> We present a taxonomy of risks from large language models, organised across four
+> categories: discrimination and toxicity, information hazards, misinformation harms,
+> and human-computer interaction harms.
+Criteria: multi-category list, explicit taxonomic framing, cross-cutting
+Decision: include
+
+> We propose a taxonomy of environmental harms from AI, with five categories and
+> twenty-five subcategories spanning training emissions, hardware lifecycle, deployment
+> energy, induced consumption, and ecosystem impacts.
+Criteria: single domain but adds granularity within a domain that is very broad
+Decision: include
+
+> AI is transforming the global economy. This paper examines the implications of AI
+> adoption for labour markets, productivity, and innovation.
+Criteria: impact-only framing, no specification of negative outcomes.
+Decision: exclude
+
+> We propose a framework for responsible AI in radiology, addressing fairness,
+> transparency, accountability, and clinical validity.
+Criteria: single sector, principles-based framing rather than risk classification
+Decision: exclude
+
+> This paper examines colonialism as a source of risk in artificial intelligence
+> systems, arguing that the political economy of AI development reproduces colonial
+> logics.
+Criteria: sources of risk at high abstraction
+Decision: exclude
+
+> We present a literature review of AGI safety research, covering some of the technical
+> risks that must be addressed for safe development of advanced AI.
+Criteria: citing rather than proposing; risk discussion is incidental to the literature review framing
+Decision: exclude
+"""
+
 _DECISION_GUIDELINES_PREAMBLE = """
 ## Decision
 
@@ -225,7 +359,7 @@ ABSTRACT_SCREENING_SYSTEM_PROMPT = f"""\
 You are a research screener for the AI Risk Repository, a living database of AI risks
 classified according to multiple taxonomies. Your task is to decide whether a document
 should be included for full-text review based on its title and abstract.
-{_SCREENING_CRITERIA}
+{_ABSTRACT_SCREENING_CRITERIA}
 {_DECISION_GUIDELINES_PREAMBLE}
 Since you're only seeing a portion of the document, it may not be possible to
 definitively evaluate it against all criteria.
@@ -236,7 +370,7 @@ FULL_TEXT_SCREENING_SYSTEM_PROMPT = f"""\
 You are a research screener for the AI Risk Repository, a living database of AI risks
 classified according to multiple taxonomies. Your task is to decide whether a document
 should be included in the repository.
-{_SCREENING_CRITERIA}
+{_FULL_TEXT_SCREENING_CRITERIA}
 {_DECISION_GUIDELINES_PREAMBLE}
 {_DESCISION_DESCRIPTIONS}
 """
@@ -263,7 +397,6 @@ async def _screen_abstract_one(
     record: DocumentRecord,
     *,
     llm: LLMClient,
-    http_client: httpx.AsyncClient,
     settings: RiskRepositorySettings,
 ) -> None:
     with log_context(readable_id=record.readable_id):
@@ -274,11 +407,7 @@ async def _screen_abstract_one(
         )
         if not settings.force and output_path.exists():
             return
-        abstract = await format_abstract_and_title(
-            record,
-            cache_dir=settings.download_cache_dir,
-            client=http_client,
-        )
+        abstract = format_abstract_and_title(record)
         if abstract is None:
             logger.warning("Skipping screening: no abstract available")
             return
@@ -296,7 +425,6 @@ async def run_abstract_screening(
     records: list[DocumentRecord],
     *,
     llm: LLMClient,
-    http_client: httpx.AsyncClient,
     settings: RiskRepositorySettings,
 ) -> None:
     runner = ConcurrentMap(
@@ -307,7 +435,6 @@ async def run_abstract_screening(
         records,
         _screen_abstract_one,
         llm=llm,
-        http_client=http_client,
         settings=settings,
     ):
         pass
