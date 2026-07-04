@@ -5,7 +5,6 @@ from pydantic_settings import BaseSettings
 
 from risk_repository.settings import (
     DEFAULT_AIRTABLE_BASE_ID,
-    DEFAULT_AIRTABLE_DOCUMENTS_TABLE,
     DEFAULT_AIRTABLE_TIMEOUT,
     DEFAULT_CONCURRENCY,
     DEFAULT_LLM_RATE_LIMIT_RPS,
@@ -62,10 +61,6 @@ class EvaluationSettings(
     airtable_base_id: str = Field(
         default=DEFAULT_AIRTABLE_BASE_ID,
         description="Airtable ID for the AI Risk Repository base",
-    )
-    airtable_documents_table: str = Field(
-        default=DEFAULT_AIRTABLE_DOCUMENTS_TABLE,
-        description="Airtable table name to fetch documents from",
     )
     airtable_screening_table: str = Field(
         default=...,
