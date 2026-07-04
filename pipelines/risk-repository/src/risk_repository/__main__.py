@@ -65,6 +65,7 @@ async def main() -> None:
         loggers_to_silence=["httpx", "openai"],
     )
     try:
+        logger.info(f"Configuration: {settings.model_dump_json()}")
         install_log_context_filter()
         stages: set[PipelineStage] = set(settings.stages)
 
