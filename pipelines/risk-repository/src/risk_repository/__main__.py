@@ -11,7 +11,6 @@ from risk_repository.download import make_http_client
 from risk_repository.extract import run_extraction
 from risk_repository.records import (
     DocumentRecord,
-    ScreeningRecord,
     fetch_screening_records,
     include_record,
 )
@@ -35,17 +34,11 @@ async def _collect_records(
 ) -> list[DocumentRecord]:
     docs_to_process = settings.document_ids
     records: list[DocumentRecord] = []
-    skipped_no_pdf = 0
     async for record in _iterate_source(airtable, settings):
-        if isinstance(record, ScreeningRecord) and not record.has_pdf:
-            skipped_no_pdf += 1
-            continue
         if include_record(record, docs_to_process, settings.split):
             records.append(record)
         if settings.limit is not None and len(records) >= settings.limit:
             break
-    if skipped_no_pdf:
-        logger.info(f"Skipped {skipped_no_pdf} records with no attached PDF")
     logger.info(f"Fetched {len(records)} records")
     return records
 
