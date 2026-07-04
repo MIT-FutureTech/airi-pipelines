@@ -8,7 +8,7 @@ from risk_repository.records import (
     AirtableDocumentRecord,
     CsvDocumentRecord,
     DocumentRecord,
-    FullTextScreeningRecord,
+    ScreeningRecord,
 )
 from toolbox.airtable import download_attachment
 from toolbox.concurrency import ConcurrentMap
@@ -38,7 +38,7 @@ async def get_pdf(
     cache_dir: Path,
     client: httpx.AsyncClient,
 ) -> Path | None:
-    if isinstance(record, FullTextScreeningRecord):
+    if isinstance(record, ScreeningRecord):
         return await _get_attachment_pdf(record, cache_dir=cache_dir, client=client)
     url = _full_text_url(record)
     if url is None:
@@ -60,7 +60,7 @@ async def get_pdf(
 
 
 async def _get_attachment_pdf(
-    record: FullTextScreeningRecord,
+    record: ScreeningRecord,
     *,
     cache_dir: Path,
     client: httpx.AsyncClient,
@@ -192,7 +192,7 @@ async def prefetch_full_text(
 
 def _full_text_url(record: DocumentRecord) -> str | None:
     match record:
-        case FullTextScreeningRecord():
+        case ScreeningRecord():
             return record.url
         case AirtableDocumentRecord():
             return record.url

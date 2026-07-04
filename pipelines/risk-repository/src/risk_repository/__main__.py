@@ -11,8 +11,8 @@ from risk_repository.download import make_http_client
 from risk_repository.extract import run_extraction
 from risk_repository.records import (
     DocumentRecord,
-    FullTextScreeningRecord,
-    fetch_full_text_screening_records,
+    ScreeningRecord,
+    fetch_screening_records,
     include_record,
 )
 from risk_repository.results import PipelineStage
@@ -37,7 +37,7 @@ async def _collect_records(
     records: list[DocumentRecord] = []
     skipped_no_pdf = 0
     async for record in _iterate_source(airtable, settings):
-        if isinstance(record, FullTextScreeningRecord) and not record.has_pdf:
+        if isinstance(record, ScreeningRecord) and not record.has_pdf:
             skipped_no_pdf += 1
             continue
         if include_record(record, docs_to_process, settings.split):
@@ -54,7 +54,7 @@ async def _iterate_source(
     airtable: AirtableClient,
     settings: RiskRepositorySettings,
 ) -> AsyncIterator[DocumentRecord]:
-    async for record in fetch_full_text_screening_records(
+    async for record in fetch_screening_records(
         client=airtable,
         base_id=settings.airtable_base_id,
         table_name=settings.airtable_screening_table,

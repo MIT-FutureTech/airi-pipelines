@@ -36,8 +36,8 @@ class CsvDocumentRecord(DocumentRecord):
     author_keywords: str | None = None
 
 
-class FullTextScreeningRecord(DocumentRecord):
-    """A record from the `Full-Text Screening` Airtable table.
+class ScreeningRecord(DocumentRecord):
+    """A record from an Airtable screening table.
 
     The screened PDF is an attachment on the record rather than a URL, and the
     Airtable record ID doubles as the readable ID.
@@ -78,15 +78,15 @@ async def fetch_records_from_airtable(
         )
 
 
-async def fetch_full_text_screening_records(
+async def fetch_screening_records(
     client: AirtableClient,
     *,
     base_id: str,
     table_name: str,
-) -> AsyncIterator[FullTextScreeningRecord]:
+) -> AsyncIterator[ScreeningRecord]:
     table = Table(client, base_id=base_id, table_name=table_name)
     async for record in table.iterate(fields=["title", "full_text_pdf"]):
-        yield FullTextScreeningRecord.model_validate(
+        yield ScreeningRecord.model_validate(
             {"readable_id": record.id, "record_id": record.id, **record.fields}
         )
 
