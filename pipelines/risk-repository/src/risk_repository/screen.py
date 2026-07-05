@@ -42,9 +42,27 @@ class AbstractScreeningResult(BaseModel):
     )
 
 
+class FullTextScreeningResult(BaseModel):
+    criteria_breakdown: str = Field(
+        description=(
+            "Full list of all criteria and the degree to which the document meets each"
+            + " one, accounting for ambiguities. Write this before you make your"
+            + " prediction."
+        ),
+    )
+    predicted_include_count: int = Field(
+        description=(
+            "Integer between 0 and 10 (inclusive) for the predicted number of reviewers"
+            + " who will choose to include this document. Write this after assessing"
+            + " the document against all the criteria."
+        ),
+    )
+
+
 async def screen_abstract(client: LLMClient, abstract: str) -> AbstractScreeningResult:
     return await _screen(
         client,
+        schema=AbstractScreeningResult,
         system_prompt=ABSTRACT_SCREENING_SYSTEM_PROMPT,
         document=abstract,
     )
@@ -53,25 +71,27 @@ async def screen_abstract(client: LLMClient, abstract: str) -> AbstractScreening
 async def screen_full_text(
     client: LLMClient,
     full_text: str,
-) -> AbstractScreeningResult:
+) -> FullTextScreeningResult:
     return await _screen(
         client,
+        schema=FullTextScreeningResult,
         system_prompt=FULL_TEXT_SCREENING_SYSTEM_PROMPT,
         document=full_text,
     )
 
 
-async def _screen(
+async def _screen[T: BaseModel](
     client: LLMClient,
     *,
+    schema: type[T],
     system_prompt: str,
     document: str,
-) -> AbstractScreeningResult:
+) -> T:
     messages = [
         Message(role="system", content=system_prompt),
         Message(role="user", content=_format_screening_user_prompt(document)),
     ]
-    result = await client.generate_structured(messages, AbstractScreeningResult)
+    result = await client.generate_structured(messages, schema)
     if result.usage is None:
         logger.info("No LLM usage returned")
     else:
@@ -490,7 +510,9 @@ async def _screen_full_text_one(
             PipelineStage.SCREEN_FULL_TEXT,
             record.readable_id,
         )
-        logger.info(f"Full-text screening decision: {screening.decision}")
+        logger.info(
+            f"Full-text screening confidence: {screening.predicted_include_count}"
+        )
 
 
 async def run_full_text_screening(
