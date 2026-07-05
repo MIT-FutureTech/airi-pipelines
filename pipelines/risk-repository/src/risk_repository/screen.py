@@ -52,7 +52,7 @@ class FullTextScreeningResult(BaseModel):
     )
     predicted_include_count: int = Field(
         description=(
-            "Integer between 0 and 10 (inclusive) for the predicted number of reviewers"
+            "Integer between 0 and 10 (inclusive) for the predicted number of screeners"
             + " who will choose to include this document. Write this after assessing"
             + " the document against all the criteria."
         ),
@@ -221,11 +221,19 @@ not the document meets each one. Then give your decision.
 """
 
 FULL_TEXT_SCREENING_SYSTEM_PROMPT = """
-===You are a research screener for the AI Risk Repository, a living database of AI risks
-classified according to multiple taxonomies. Your task is to decide whether a document
-should be included for full-text review based on its title and abstract.
+You are helping the AI Risk Repository, a living database of AI risks classified
+according to multiple taxonomies. Your task is to predict whether a document will be
+chosen for inclusion based on the given criteria.
 
-## Screening criteria
+10 undergraduate students will each be given the screening criteria and the document
+below. They will each independently decide whether to include it. You must predict how
+many of the screeners will choose to include it. Keep in mind that different screeners
+will interpret the instructions and the paper slightly differently. Account for this in
+your prediction. This process will be repeated across many documents. You will be
+evaluated on the accuracy of your predictions over all documents using a proper scoring
+rule.
+
+## Screening criteria (also provided to screeners)
 
 ### 1: Document Type
 
@@ -334,7 +342,7 @@ demographic subset.
 Yellow flags:
 - ChatGPT, Claude, DALL-E, MidJourney, Sora, Grok, other AI product names. However, generic categories of AI are OK, like "AI assistant" or "agentic coding assistant."
 
-## Worked examples
+## Worked examples (also provided to screeners)
 
 The reasoning for each example is highly abbreviated, containing only the crucial
 considerations. Please be more thorough in your reasoning.
@@ -372,31 +380,30 @@ Decision: exclude
 Criteria: citing rather than proposing; risk discussion is incidental to the literature review framing
 Decision: exclude
 
-## Decision
+## Response (only provided to you)
 
-In your response, reason through the four criteria one by one. Avoid anchoring on a
-decision until you've reasoned through all of them.
+In your response, reason through the four criteria one by one. Consider how well the
+document meets the criterion. Think about multiple interpretations and levels of
+strictness.
 
-Since you're only seeing a portion of the document, it may not be possible to
-definitively evaluate it against all criteria.
+Then consider the likelihood that a screener chooses to include this document. Keep in
+mind that failing to meet a single criterion is grounds for exclusion. Your prediction
+should be dominated by the criterion the document scores worst on.
 
-For your final decision, choose from
-- "include": the document clearly meets the all of the inclusion criteria and none of the exclusion criteria
-- "exclude": the document clearly fails one or more inclusion criteria or meets one or more exclusion criteria
-- "uncertain": you cannot confidently decide from the available text. The document does not appear to violate any inclusion criteria or meet any exclusion criteria.
+Avoid anchoring on a prediction until you've reasoned through all the criteria.
 """
 
 _FULL_TEXT_SCREENING_USER_PROMPT = """
-===Decide whether the following document should be included.===
+Predict how many screeners will choose to include the following document.
 
-<document>
+<document> (also provided to screeners)
 
 {document}
 
 </document>
 
-===In your response, reason through all the criteria one-by-one and identify whether or
-not the document meets each one. Then give your decision.===
+In your response, reason through all the criteria one-by-one and describe the degree to
+which the document meets each one. Then give your prediction.
 """
 
 
