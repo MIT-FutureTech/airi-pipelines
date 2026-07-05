@@ -27,7 +27,7 @@ class Decision(StrEnum):
     UNCERTAIN = "uncertain"
 
 
-class ScreeningResult(BaseModel):
+class AbstractScreeningResult(BaseModel):
     criteria_breakdown: str = Field(
         description=(
             "Full list of all criteria and whether the document meets each one."
@@ -42,7 +42,7 @@ class ScreeningResult(BaseModel):
     )
 
 
-async def screen_abstract(client: LLMClient, abstract: str) -> ScreeningResult:
+async def screen_abstract(client: LLMClient, abstract: str) -> AbstractScreeningResult:
     return await _screen(
         client,
         system_prompt=ABSTRACT_SCREENING_SYSTEM_PROMPT,
@@ -50,7 +50,10 @@ async def screen_abstract(client: LLMClient, abstract: str) -> ScreeningResult:
     )
 
 
-async def screen_full_text(client: LLMClient, full_text: str) -> ScreeningResult:
+async def screen_full_text(
+    client: LLMClient,
+    full_text: str,
+) -> AbstractScreeningResult:
     return await _screen(
         client,
         system_prompt=FULL_TEXT_SCREENING_SYSTEM_PROMPT,
@@ -63,12 +66,12 @@ async def _screen(
     *,
     system_prompt: str,
     document: str,
-) -> ScreeningResult:
+) -> AbstractScreeningResult:
     messages = [
         Message(role="system", content=system_prompt),
         Message(role="user", content=_format_screening_user_prompt(document)),
     ]
-    result = await client.generate_structured(messages, ScreeningResult)
+    result = await client.generate_structured(messages, AbstractScreeningResult)
     if result.usage is None:
         logger.info("No LLM usage returned")
     else:
@@ -525,7 +528,7 @@ def filter_by_screening(
             unscreened += 1
             included.append(record)
             continue
-        screening = load(output_path, ScreeningResult)
+        screening = load(output_path, AbstractScreeningResult)
         if screening.decision == Decision.EXCLUDE:
             continue
         included.append(record)

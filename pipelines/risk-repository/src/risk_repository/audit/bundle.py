@@ -13,7 +13,7 @@ from risk_repository.evaluate.screen import (
 )
 from risk_repository.records import DocumentRecord, fetch_screening_records
 from risk_repository.results import PipelineStage, load, result_path
-from risk_repository.screen import Decision, ScreeningResult
+from risk_repository.screen import AbstractScreeningResult, Decision
 from toolbox.airtable import AirtableClient
 
 logger = logging.getLogger(__name__)
@@ -29,8 +29,8 @@ class OutcomeClass(StrEnum):
 
 class ScreeningAudit(BaseModel):
     ground_truth_decision: Decision | None
-    abstract_result: ScreeningResult | None
-    full_text_result: ScreeningResult | None
+    abstract_result: AbstractScreeningResult | None
+    full_text_result: AbstractScreeningResult | None
     outcome_class: OutcomeClass
 
 
@@ -103,22 +103,22 @@ def _build_document(
     download_cache_dir: Path,
     ground_truth: dict[str, Decision | None],
 ) -> AuditDocument | None:
-    abstract_result: ScreeningResult | None = None
+    abstract_result: AbstractScreeningResult | None = None
     abstract_path = result_path(
         output_dir=results_dir,
         stage=PipelineStage.SCREEN_ABSTRACT,
         readable_id=record.readable_id,
     )
     if abstract_path.exists():
-        abstract_result = load(abstract_path, ScreeningResult)
+        abstract_result = load(abstract_path, AbstractScreeningResult)
     full_text_path = result_path(
         output_dir=results_dir,
         stage=PipelineStage.SCREEN_FULL_TEXT,
         readable_id=record.readable_id,
     )
-    full_text_result: ScreeningResult | None = None
+    full_text_result: AbstractScreeningResult | None = None
     if full_text_path.exists():
-        full_text_result = load(full_text_path, ScreeningResult)
+        full_text_result = load(full_text_path, AbstractScreeningResult)
     if abstract_result is None and full_text_result is None:
         return None
 
@@ -148,8 +148,8 @@ def _build_document(
 
 def _compute_outcome(
     *,
-    abstract_result: ScreeningResult | None,
-    full_text_result: ScreeningResult | None,
+    abstract_result: AbstractScreeningResult | None,
+    full_text_result: AbstractScreeningResult | None,
     gt_decision: Decision | None,
 ) -> OutcomeClass:
     if gt_decision is None:
