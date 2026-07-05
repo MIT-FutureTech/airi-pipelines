@@ -243,16 +243,20 @@ things like "fair" and "transparent", but these are not risks.
 
 ### 3: Novel Taxonomy of AI Risks
 
-Acceptable: a document which proposes, develops, or explains a novel framework,
-taxonomy, typology, classification, ontology, or similarly structured scheme of risks
-from AI, presented as a large table. We care about originality because want the
-framework as presented by the original authors to minimize misinterpretation.
+Acceptable: a document whose primary contribution is to propose, develop, or explain a
+novel framework, taxonomy, typology, classification, ontology, or similarly structured
+scheme of risks from AI, presented as a large table. We care about originality because
+want the framework as presented by the original authors to minimize misinterpretation.
 
 Not acceptable: a document that merely cites or discusses existing theories, frameworks,
 models, taxonomies, or classifications rather than proposing and explaining them.
 
-Not acceptable: which uses terms like "framework" in its abstract or conclusion but does
-not contain a list or table laying out the risks in a systematic way.
+Not acceptable: a document which uses terms like "framework" in its abstract or
+conclusion but does not contain a list or table laying out the risks in a systematic way.
+
+Not acceptable: a document which mentions risks as motivating examples in its
+introduction or conclusion but does not enumerate them in a structured list, table or
+diagram.
 
 Not acceptable: a document discussing sources of sociotechnical risk in AI at a high
 level of abstraction without proposing a structured classification of specific risks.
@@ -265,19 +269,17 @@ Not acceptable: a document which discusses AI risks and proposes a novel framewo
 how to ways to address, mitigate or govern those risks, rather than classifying the
 risks themselves.
 
-Acceptable: a document that present a substantive risk taxonomy as part of an assessment
-methodology.
-
 Green flags:
-- Multi-domain breadth: List of risks spanning visibly different domains (e.g. environmental harm, discrimination, autonomous weapons, dangerous capabilities).
 - A table where each row is a concrete AI risk with one or more categorical columns grouping them into a taxonomy.
 - A tree diagram illustrating breaking down into categories and then individual risks.
+- A dedicated section in the body of the report that one could circle and say "here's the taxonomy"
 
 Yellow flags:
 - "a framework for AI risk management"
 - "audit methodology for AI systems"
 - "how to conduct an AI impact assessment"
 - "a new benchmark for measuring the safety of frontier AI models"
+- Diffuse mentions of risks in prose
 
 ### 4: Cross-cutting
 
@@ -298,6 +300,9 @@ Not acceptable: a framework explicitly scoped to a location or single sector (e.
 applicability.
 
 Not acceptable: a document focused on risks from very specific AI tools or models.
+
+Green flags:
+- Multi-domain breadth: List of risks spanning visibly different domains (e.g. environmental harm, discrimination, autonomous weapons, dangerous capabilities).
 
 Yellow flags:
 - ChatGPT, Claude, DALL-E, MidJourney, Sora, Grok, other AI product names. However, generic categories of AI are OK, like "AI assistant" or "agentic coding assistant."
