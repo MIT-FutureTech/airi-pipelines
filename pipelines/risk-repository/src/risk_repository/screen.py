@@ -1,5 +1,7 @@
 import logging
 from enum import StrEnum
+from pathlib import Path
+from typing import Literal
 
 import httpx
 from pydantic import BaseModel, Field
@@ -554,11 +556,22 @@ async def run_full_text_screening(
         pass
 
 
+def _filter_abstract_screen(output_path: Path) -> bool:
+    screening = load(output_path, AbstractScreeningResult)
+    return screening.decision in (Decision.INCLUDE, Decision.UNCERTAIN)
+
+
+def _filter_full_text_screen(output_path: Path) -> bool:
+    screening = load(output_path, FullTextScreeningResult)
+    # This is a placeholder threshold which hasn't been tuned
+    return screening.predicted_include_count >= 5
+
+
 def filter_by_screening(
     records: list[DocumentRecord],
     *,
     settings: RiskRepositorySettings,
-    stage: PipelineStage,
+    stage: Literal[PipelineStage.SCREEN_ABSTRACT, PipelineStage.SCREEN_FULL_TEXT],
 ) -> list[DocumentRecord]:
     included: list[DocumentRecord] = []
     unscreened = 0
@@ -568,10 +581,14 @@ def filter_by_screening(
             unscreened += 1
             included.append(record)
             continue
-        screening = load(output_path, AbstractScreeningResult)
-        if screening.decision == Decision.EXCLUDE:
-            continue
-        included.append(record)
+        if stage == PipelineStage.SCREEN_ABSTRACT:
+            if _filter_abstract_screen(output_path):
+                included.append(record)
+        elif stage == PipelineStage.SCREEN_FULL_TEXT and _filter_full_text_screen(
+            output_path
+        ):
+            included.append(record)
+
     if unscreened:
         logger.info(
             f"{unscreened}/{len(records)} records have no {stage.value} result;"
