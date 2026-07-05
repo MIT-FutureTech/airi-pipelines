@@ -265,9 +265,21 @@ Not acceptable: a document framing risk sources as colonialism, capitalism, surv
 societies, the political economy of AI, sociotechnical configurations, etc.
 where the unit of analysis is the upstream cause rather than specific outcomes.
 
+Not acceptable: a taxonomy about a broader technology or system, like information
+processing, in which AI is only one component and not the central focus.
+
 Not acceptable: a document which discusses AI risks and proposes a novel framework for
 how to ways to address, mitigate or govern those risks, rather than classifying the
 risks themselves.
+
+Not acceptable: a document whose core contribution is a tool or procedure (benchmark,
+auditing methodology, mitigation controls, etc.). The document contains a table of
+risks, but the risks are merely motivation or inputs for the primary contribution.
+
+Acceptable: a document that delivers an original, substantive risk classification as a
+distinct contribution, even if it also proposes a way to assess or govern those risks.
+In other words, the taxonomy would stand on its own if extracted.
+
 
 Green flags:
 - A table where each row is a concrete AI risk with one or more categorical columns grouping them into a taxonomy.
@@ -280,21 +292,22 @@ Yellow flags:
 - "how to conduct an AI impact assessment"
 - "a new benchmark for measuring the safety of frontier AI models"
 - Diffuse mentions of risks in prose
+- Mentions of technologies beyond AI
 
 ### 4: Cross-cutting
 
 The taxonomy must enumerate risks spanning multiple distinct risk domains (e.g. several
 of: discrimination, privacy, misinformation, security, environmental, economic, etc.).
-Assess the actual categories the paper lays out, not its title or stated application
-area.
+A framework scoped to a single sector, demographic group, product, or geographic region
+is not cross-cutting. Assess the actual categories the paper lays out, not its title or
+stated application area.
 
-Acceptable: a framework with examples from healthcare and finance and employment.
+Acceptable: a broad framework containing multiple types of risk (discrimination,
+privacy, environmental harm) with examples from diverse sectors (healthcare, finance,
+employment).
 
-Not acceptable: a framework explicitly scoped to a location or single sector (e.g.
-"risks from AI in radiology", "employment discrimination") with no claim to broader
-applicability.
-
-Not acceptable: a framework which subdivides a single risk type, such as deepfakes.
+Not acceptable: a deep framework which subdivides a single risk type, domain or sector.
+For instance, only deepfakes, only misinformation, or only healthcare.
 
 Not acceptable: a document focused on risks from very specific AI tools or models.
 
