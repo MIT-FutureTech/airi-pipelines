@@ -283,26 +283,23 @@ Yellow flags:
 
 ### 4: Cross-cutting
 
-The risks identified are present across multiple locations and industry sectors, or the
-framework is explicitly intended to apply cross-sectorally. A paper may use examples
-from one sector if its framework is presented as general.
+The taxonomy must enumerate risks spanning multiple distinct risk domains (e.g. several
+of: discrimination, privacy, misinformation, security, environmental, economic, etc.).
+Assess the actual categories the paper lays out, not its title or stated application
+area.
 
 Acceptable: a framework with examples from healthcare and finance and employment.
-
-Acceptable: a framework presented as cross-cutting that uses healthcare as the running
-example.
-
-Acceptable: a framework focused on a single broad risk domain (e.g. environmental harms
-from AI, types of AI-driven discrimination) at the cross-cutting level.
 
 Not acceptable: a framework explicitly scoped to a location or single sector (e.g.
 "risks from AI in radiology", "employment discrimination") with no claim to broader
 applicability.
 
+Not acceptable: a framework which subdivides a single risk type, such as deepfakes.
+
 Not acceptable: a document focused on risks from very specific AI tools or models.
 
-Green flags:
-- Multi-domain breadth: List of risks spanning visibly different domains (e.g. environmental harm, discrimination, autonomous weapons, dangerous capabilities).
+Not acceptable: a framework of risks limited to a particular geographic region or
+demographic subset.
 
 Yellow flags:
 - ChatGPT, Claude, DALL-E, MidJourney, Sora, Grok, other AI product names. However, generic categories of AI are OK, like "AI assistant" or "agentic coding assistant."
@@ -321,8 +318,8 @@ Decision: include
 > We propose a taxonomy of environmental harms from AI, with five categories and
 > twenty-five subcategories spanning training emissions, hardware lifecycle, deployment
 > energy, induced consumption, and ecosystem impacts.
-Criteria: single domain but adds granularity within a domain that is very broad
-Decision: include
+Criteria: single domain
+Decision: exclude
 
 > AI is transforming the global economy. This paper examines the implications of AI
 > adoption for labour markets, productivity, and innovation.
