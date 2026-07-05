@@ -59,47 +59,11 @@ class FullTextScreeningResult(BaseModel):
     )
 
 
-async def screen_abstract(client: LLMClient, abstract: str) -> AbstractScreeningResult:
-    return await _screen(
-        client,
-        schema=AbstractScreeningResult,
-        system_prompt=ABSTRACT_SCREENING_SYSTEM_PROMPT,
-        document=abstract,
-    )
+_ABSTRACT_SCREENING_SYSTEM_PROMPT = """\
+You are a research screener for the AI Risk Repository, a living database of AI risks
+classified according to multiple taxonomies. Your task is to decide whether a document
+should be included for full-text review based on its title and abstract.
 
-
-async def screen_full_text(
-    client: LLMClient,
-    full_text: str,
-) -> FullTextScreeningResult:
-    return await _screen(
-        client,
-        schema=FullTextScreeningResult,
-        system_prompt=FULL_TEXT_SCREENING_SYSTEM_PROMPT,
-        document=full_text,
-    )
-
-
-async def _screen[T: BaseModel](
-    client: LLMClient,
-    *,
-    schema: type[T],
-    system_prompt: str,
-    document: str,
-) -> T:
-    messages = [
-        Message(role="system", content=system_prompt),
-        Message(role="user", content=_format_screening_user_prompt(document)),
-    ]
-    result = await client.generate_structured(messages, schema)
-    if result.usage is None:
-        logger.info("No LLM usage returned")
-    else:
-        logger.info(f"Usage: {result.usage.model_dump_json()}")
-    return result.value
-
-
-_ABSTRACT_SCREENING_CRITERIA = """
 ## Screening criteria
 
 ### 1: Document Type
@@ -228,9 +192,39 @@ Decision: exclude
 > risks that must be addressed for safe development of advanced AI.
 Criteria: citing rather than proposing; risk discussion is incidental to the literature review framing
 Decision: exclude
+
+## Decision
+
+In your response, reason through the four criteria one by one. Avoid anchoring on a
+decision until you've reasoned through all of them.
+
+Since you're only seeing a portion of the document, it may not be possible to
+definitively evaluate it against all criteria.
+
+For your final decision, choose from
+- "include": the document clearly meets the all of the inclusion criteria and none of the exclusion criteria
+- "exclude": the document clearly fails one or more inclusion criteria or meets one or more exclusion criteria
+- "uncertain": you cannot confidently decide from the available text. The document does not appear to violate any inclusion criteria or meet any exclusion criteria.
 """
 
-_FULL_TEXT_SCREENING_CRITERIA = """
+_ABSTRACT_SCREENING_USER_PROMPT = """
+Decide whether the following document should be included.
+
+<document>
+
+{document}
+
+</document>
+
+In your response, reason through all the criteria one-by-one and identify whether or
+not the document meets each one. Then give your decision.
+"""
+
+FULL_TEXT_SCREENING_SYSTEM_PROMPT = """
+===You are a research screener for the AI Risk Repository, a living database of AI risks
+classified according to multiple taxonomies. Your task is to decide whether a document
+should be included for full-text review based on its title and abstract.
+
 ## Screening criteria
 
 ### 1: Document Type
@@ -377,44 +371,23 @@ Decision: exclude
 > risks that must be addressed for safe development of advanced AI.
 Criteria: citing rather than proposing; risk discussion is incidental to the literature review framing
 Decision: exclude
-"""
 
-_DECISION_GUIDELINES_PREAMBLE = """
 ## Decision
 
 In your response, reason through the four criteria one by one. Avoid anchoring on a
 decision until you've reasoned through all of them.
-"""
 
-_DESCISION_DESCRIPTIONS = """
+Since you're only seeing a portion of the document, it may not be possible to
+definitively evaluate it against all criteria.
+
 For your final decision, choose from
 - "include": the document clearly meets the all of the inclusion criteria and none of the exclusion criteria
 - "exclude": the document clearly fails one or more inclusion criteria or meets one or more exclusion criteria
 - "uncertain": you cannot confidently decide from the available text. The document does not appear to violate any inclusion criteria or meet any exclusion criteria.
 """
 
-ABSTRACT_SCREENING_SYSTEM_PROMPT = f"""\
-You are a research screener for the AI Risk Repository, a living database of AI risks
-classified according to multiple taxonomies. Your task is to decide whether a document
-should be included for full-text review based on its title and abstract.
-{_ABSTRACT_SCREENING_CRITERIA}
-{_DECISION_GUIDELINES_PREAMBLE}
-Since you're only seeing a portion of the document, it may not be possible to
-definitively evaluate it against all criteria.
-{_DESCISION_DESCRIPTIONS}
-"""
-
-FULL_TEXT_SCREENING_SYSTEM_PROMPT = f"""\
-You are a research screener for the AI Risk Repository, a living database of AI risks
-classified according to multiple taxonomies. Your task is to decide whether a document
-should be included in the repository.
-{_FULL_TEXT_SCREENING_CRITERIA}
-{_DECISION_GUIDELINES_PREAMBLE}
-{_DESCISION_DESCRIPTIONS}
-"""
-
-_SCREENING_USER_PROMPT = """
-Decide whether the following document should be included.
+_FULL_TEXT_SCREENING_USER_PROMPT = """
+===Decide whether the following document should be included.===
 
 <document>
 
@@ -422,13 +395,51 @@ Decide whether the following document should be included.
 
 </document>
 
-In your response, reason through all the criteria one-by-one and identify whether or
-not the document meets each one. Then give your decision.
+===In your response, reason through all the criteria one-by-one and identify whether or
+not the document meets each one. Then give your decision.===
 """
 
 
-def _format_screening_user_prompt(document: str) -> str:
-    return _SCREENING_USER_PROMPT.format(document=document)
+async def screen_abstract(client: LLMClient, abstract: str) -> AbstractScreeningResult:
+    user_prompt = _ABSTRACT_SCREENING_USER_PROMPT.format(document=abstract)
+    return await _screen(
+        client,
+        schema=AbstractScreeningResult,
+        system_prompt=_ABSTRACT_SCREENING_SYSTEM_PROMPT,
+        user_prompt=user_prompt,
+    )
+
+
+async def screen_full_text(
+    client: LLMClient,
+    full_text: str,
+) -> FullTextScreeningResult:
+    user_prompt = _FULL_TEXT_SCREENING_USER_PROMPT.format(document=full_text)
+    return await _screen(
+        client,
+        schema=FullTextScreeningResult,
+        system_prompt=FULL_TEXT_SCREENING_SYSTEM_PROMPT,
+        user_prompt=user_prompt,
+    )
+
+
+async def _screen[T: BaseModel](
+    client: LLMClient,
+    *,
+    schema: type[T],
+    system_prompt: str,
+    user_prompt: str,
+) -> T:
+    messages = [
+        Message(role="system", content=system_prompt),
+        Message(role="user", content=user_prompt),
+    ]
+    result = await client.generate_structured(messages, schema)
+    if result.usage is None:
+        logger.info("No LLM usage returned")
+    else:
+        logger.info(f"Usage: {result.usage.model_dump_json()}")
+    return result.value
 
 
 async def _screen_abstract_one(
