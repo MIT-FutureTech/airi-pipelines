@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings
 
 from risk_repository.results import PipelineStage, load, stage_dir
-from risk_repository.screen import Decision, ScreeningResult
+from risk_repository.screen import AbstractScreeningResult, Decision
 from risk_repository.settings import (
     DEFAULT_AIRTABLE_BASE_ID,
     DEFAULT_AIRTABLE_TIMEOUT,
@@ -97,7 +97,7 @@ class UploadSettings(
 
 
 def _screening_fields(
-    result: ScreeningResult,
+    result: AbstractScreeningResult,
     *,
     config: _StageConfig,
     model: str,
@@ -122,7 +122,7 @@ def _screening_fields(
 def _load_decisions(
     run_dir: Path,
     pipeline_stage: PipelineStage,
-) -> list[tuple[str, ScreeningResult]]:
+) -> list[tuple[str, AbstractScreeningResult]]:
     """Load (record_id, result) pairs from a run's screening results."""
     results_dir = stage_dir(run_dir, pipeline_stage)
     if not results_dir.is_dir():
@@ -130,7 +130,7 @@ def _load_decisions(
             f"No {pipeline_stage.value} results directory in {run_dir}"
         )
     decisions = [
-        (path.stem, load(path, ScreeningResult))
+        (path.stem, load(path, AbstractScreeningResult))
         for path in sorted(results_dir.glob("*.json"))
     ]
     non_record_ids = [record_id for record_id, _ in decisions if record_id[:3] != "rec"]
@@ -149,7 +149,7 @@ async def _existing_record_ids(table: Table) -> set[str]:
 
 async def upload_screening_decisions(
     table: Table,
-    decisions: list[tuple[str, ScreeningResult]],
+    decisions: list[tuple[str, AbstractScreeningResult]],
     *,
     config: _StageConfig,
     model: str,
