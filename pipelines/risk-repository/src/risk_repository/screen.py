@@ -268,12 +268,11 @@ It is usually not sufficient for a paper to discuss only principles (for respons
 ethical / safe AI). For instance, "principles for ethical AI" are likely to include
 things like "fair" and "transparent", but these are not risks.
 
-### 3: Novel Taxonomy of AI Risks
+### 3: Taxonomy of AI Risks
 
 Acceptable: a document whose primary contribution is to propose, develop, or explain a
-novel framework, taxonomy, typology, classification, ontology, or similarly structured
-scheme of risks from AI, presented as a large table. We care about originality because
-want the framework as presented by the original authors to minimize misinterpretation.
+framework, taxonomy, typology, classification, ontology, or similarly structured scheme
+of risks from AI, presented as a large table.
 
 Not acceptable: a document that merely cites or discusses existing theories, frameworks,
 models, taxonomies, or classifications rather than proposing and explaining them.
@@ -295,18 +294,17 @@ where the unit of analysis is the upstream cause rather than specific outcomes.
 Not acceptable: a taxonomy about a broader technology or system, like information
 processing, in which AI is only one component and not the central focus.
 
-Not acceptable: a document which discusses AI risks and proposes a novel framework for
-how to ways to address, mitigate or govern those risks, rather than classifying the
-risks themselves.
+Not acceptable: a document which discusses AI risks and proposes a framework for how to
+ways to address, mitigate or govern those risks, rather than classifying the risks
+themselves.
 
 Not acceptable: a document whose core contribution is a tool or procedure (benchmark,
 auditing methodology, mitigation controls, etc.). The document contains a table of
 risks, but the risks are merely motivation or inputs for the primary contribution.
 
-Acceptable: a document that delivers an original, substantive risk classification as a
-distinct contribution, even if it also proposes a way to assess or govern those risks.
-In other words, the taxonomy would stand on its own if extracted.
-
+Acceptable: a document that delivers a substantive risk classification as a distinct
+contribution, even if it also proposes a way to assess or govern those risks. In other
+words, the taxonomy would stand on its own if extracted.
 
 Green flags:
 - A table where each row is a concrete AI risk with one or more categorical columns grouping them into a taxonomy.
@@ -375,11 +373,6 @@ Decision: exclude
 > systems, arguing that the political economy of AI development reproduces colonial
 > logics.
 Criteria: sources of risk at high abstraction
-Decision: exclude
-
-> We present a literature review of AGI safety research, covering some of the technical
-> risks that must be addressed for safe development of advanced AI.
-Criteria: citing rather than proposing; risk discussion is incidental to the literature review framing
 Decision: exclude
 
 ## Response (only provided to you)
