@@ -103,8 +103,6 @@ async def _extract_one(
             record,
             cache_dir=settings.download_cache_dir,
             client=http_client,
-            max_truncation_ratio=settings.document_max_truncation_ratio,
-            max_document_length=settings.document_length_limit,
         )
         if full_text is None:
             logger.warning("Skipping extraction: no full text available")
