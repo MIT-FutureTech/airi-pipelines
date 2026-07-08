@@ -270,9 +270,8 @@ things like "fair" and "transparent", but these are not risks.
 
 ### 3: Taxonomy of AI Risks
 
-Acceptable: a document whose primary contribution is to propose, develop, or explain a
-framework, taxonomy, typology, classification, ontology, or similarly structured scheme
-of risks from AI, presented as a large table.
+Acceptable: a document that proposes a framework, taxonomy, typology, classification,
+ontology, or similarly structured scheme of risks from AI, presented as a large table.
 
 Not acceptable: a document which uses terms like "framework" in its abstract or
 conclusion but does not contain a list or table laying out the risks in a systematic way.
