@@ -274,9 +274,6 @@ Acceptable: a document whose primary contribution is to propose, develop, or exp
 framework, taxonomy, typology, classification, ontology, or similarly structured scheme
 of risks from AI, presented as a large table.
 
-Not acceptable: a document that merely cites or discusses existing theories, frameworks,
-models, taxonomies, or classifications rather than proposing and explaining them.
-
 Not acceptable: a document which uses terms like "framework" in its abstract or
 conclusion but does not contain a list or table laying out the risks in a systematic way.
 
@@ -297,10 +294,6 @@ processing, in which AI is only one component and not the central focus.
 Not acceptable: a document which discusses AI risks and proposes a framework for how to
 ways to address, mitigate or govern those risks, rather than classifying the risks
 themselves.
-
-Not acceptable: a document whose core contribution is a tool or procedure (benchmark,
-auditing methodology, mitigation controls, etc.). The document contains a table of
-risks, but the risks are merely motivation or inputs for the primary contribution.
 
 Acceptable: a document that delivers a substantive risk classification as a distinct
 contribution, even if it also proposes a way to assess or govern those risks. In other
