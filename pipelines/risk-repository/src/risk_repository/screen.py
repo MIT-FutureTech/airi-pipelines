@@ -17,7 +17,7 @@ from risk_repository.results import (
 )
 from risk_repository.settings import RiskRepositorySettings
 from toolbox.concurrency import ConcurrentMap
-from toolbox.llm import LLMClient, Message
+from toolbox.llm import LLMClient, Message, ToolboxLLMInvalidResponseError
 from toolbox.log import log_context
 
 logger = logging.getLogger(__name__)
@@ -506,16 +506,21 @@ async def _screen_full_text_one(
         if full_text is None:
             logger.warning("Skipping screening: no full text available")
             return
-        screening = await screen_full_text(llm, full_text)
-        save(output_path, screening)
-        invalidate_downstream(
-            settings.output_dir,
-            PipelineStage.SCREEN_FULL_TEXT,
-            record.readable_id,
-        )
-        logger.info(
-            f"Full-text screening confidence: {screening.predicted_include_count}"
-        )
+        try:
+            screening = await screen_full_text(llm, full_text)
+        except ToolboxLLMInvalidResponseError as err:
+            logger.warning(f"Failed to screen document: {err!r}")
+            return
+        else:
+            save(output_path, screening)
+            invalidate_downstream(
+                settings.output_dir,
+                PipelineStage.SCREEN_FULL_TEXT,
+                record.readable_id,
+            )
+            logger.info(
+                f"Full-text screening confidence: {screening.predicted_include_count}"
+            )
 
 
 async def run_full_text_screening(
