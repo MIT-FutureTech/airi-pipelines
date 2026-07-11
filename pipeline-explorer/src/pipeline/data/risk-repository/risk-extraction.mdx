@@ -1,0 +1,29 @@
+# Risk extraction
+
+**Work in progress**
+
+For each document that passes full-text screening, an LLM extracts every distinct AI risk the paper describes.
+
+## Links
+
+- [risk_repository/extract.py](https://github.com/MIT-FutureTech/airi-pipelines/tree/main/pipelines/risk-repository/src/risk_repository/extract.py): draft implementation
+
+## Inputs
+
+- Full text of documents that passed <NodeLink id="rr-full-text-screening">full-text screening</NodeLink>
+
+## Outputs
+
+Per-document JSON in `output/extract/` containing a list of `ExtractedRisk` entries, each with:
+
+- `supporting_quote`: a verbatim quote from the document
+- `description`: a close paraphrase of the authors' framing
+- `category` / `subcategory`: the authors' own category names, or empty if the paper does not categorize
+
+## Extraction logic
+
+The prompt instructs the model to extract risks **exactly as the authors present them** — no reinterpreting, generalizing, or merging. Each distinct risk is its own entry even when risks look similar, every entry carries a verbatim supporting quote, and a document with no extractable risks yields an empty list.
+
+## Notes
+
+- Draft stage: details will solidify as it moves toward production.

@@ -1,0 +1,32 @@
+# Risk classification
+
+**Work in progress**
+
+Each extracted risk is classified according to [AIRI's taxonomies](https://docs.google.com/presentation/d/1wxg-hZAjGvFHcsfnEp1KAJJo5xvf98MB2v50B5URXZM/) to organize the risks under shared frameworks.
+
+## Links
+
+- [risk_repository/classify.py](https://github.com/MIT-FutureTech/airi-pipelines/tree/main/pipelines/risk-repository/src/risk_repository/classify.py): draft implementation
+
+## Inputs
+
+- The `ExtractedRisk` entries produced by the <NodeLink id="rr-risk-extraction">risk extraction</NodeLink> stage, containing the authors' category, subcategory and description, along with a supporting quote from the paper..
+
+## Outputs
+
+- Per-document JSON in `output/classify/` containing one `ClassifiedRisk` per extracted risk
+
+## Causal taxonomy
+
+Three independent categories, one value each:
+
+| Category | Values |
+|----------|--------|
+| Entity: what causes the risk | human, AI, other |
+| Intent: expected vs unexpected outcome | intentional, unintentional, other |
+| Timing: stage in the AI lifecycle | pre-deployment, post-deployment, other |
+
+## Notes
+
+- Draft stage: details will solidify as it moves toward production.
+- The repository also organizes risks by a domain taxonomy (7 domains / 24 subdomains). The current draft classifies the causal dimensions only.
