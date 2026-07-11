@@ -27,7 +27,7 @@ export const pipeline: PipelineDefinition = {
       id: "rr-abstract-screening",
       label: "Abstract screening",
       type: "processor",
-      verified: false,
+      verified: true,
       link: {
         url: `${RISK_REPO_SRC}/screen.py`,
         label: "risk_repository/screen.py",

@@ -1,0 +1,45 @@
+# Abstract screening
+
+First screening stage. An LLM reads each document's title and abstract and decides whether it should advance to full-text review for the AI Risk Repository.
+
+## Links
+
+- [risk_repository/screen.py](https://github.com/MIT-FutureTech/airi-pipelines/tree/main/pipelines/risk-repository/src/risk_repository/screen.py)
+- [risk_repository/upload.py](https://github.com/MIT-FutureTech/airi-pipelines/tree/main/pipelines/risk-repository/src/risk_repository/upload.py): writes decisions back to Airtable
+
+## Tech
+
+OpenRouter to generate structured JSON output, asyncio for concurrency.
+
+## Inputs
+
+- Abstract Screening table in Airtable: one row per document with `title`, `abstract`, `authors`, `year`, `doi`, `url`
+- The screener sees only the formatted title + abstract
+
+## Outputs
+
+- Per-document JSON in `output/screen_abstract/` containing an `AbstractScreeningResult` with:
+  - `criteria_breakdown`: the LLM's reasoning about how the criteria apply to the document.
+  - `decision`: `include`, `exclude`, or `uncertain`
+- `risk_repository.upload` pushes decisions back to the same table: `llm_include` and `llm_reasoning`, plus additional metadata
+
+## Screening criteria
+
+The prompt reasons through four criteria before deciding:
+
+1. Document type: a review, article, or report (peer-reviewed or gray literature) in English; not a book chapter, thesis, commentary, editorial, or protocol
+2. Risk requirement: frames content around the possibility of an unfortunate occurrence from AI, not just impacts or transformations
+3. Novel taxonomy of AI risks: proposes/explains a novel framework, taxonomy, or classification of AI risks (rather than citing existing ones or classifying mitigations)
+4. Cross-cutting: risks span multiple sectors, or the framework is presented as generally applicable
+
+## How it runs
+
+CLI stage `screen_abstract`:
+
+```bash
+uv run --env-file=.env -m risk_repository \
+  --airtable-screening-table "Abstract Screening" \
+  --stages screen_abstract --output-dir output/
+```
+
+Skips documents which already have results, making it easy to resume after an interruption. Documents whose decision is either `include` or `uncertain` advance to <NodeLink id="rr-full-text-screening">full-text screening</NodeLink>.
