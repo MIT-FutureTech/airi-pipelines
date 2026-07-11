@@ -21,6 +21,10 @@ const REPO_ORDER: string[] = [
   "airi-mitrev-classifier",
   "mitigations_review",
   "airi-navigator",
+  "abstract-screening",
+  "full-text-screening",
+  "risk-extraction",
+  "risk-classification",
 ];
 
 export function getReposForBase(base: AirtableBase): string[] {
