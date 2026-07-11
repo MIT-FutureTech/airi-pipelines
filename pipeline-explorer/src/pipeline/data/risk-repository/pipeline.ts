@@ -61,7 +61,7 @@ export const pipeline: PipelineDefinition = {
       id: "rr-risk-extraction",
       label: "Risk extraction",
       type: "proposed",
-      verified: false,
+      verified: true,
       link: {
         url: `${RISK_REPO_SRC}/extract.py`,
         label: "risk_repository/extract.py",
