@@ -71,7 +71,7 @@ export function PipelineNodeComponent({ data }: NodeProps) {
             onClick={(e) => e.stopPropagation()}
             className={styles.link}
           >
-            {nodeData.link.label} ↗
+            {nodeData.link.label}
           </a>
         )}
       </div>
