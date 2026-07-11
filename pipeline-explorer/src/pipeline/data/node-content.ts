@@ -10,6 +10,10 @@ import RelevanceScreening from "./document-processing/relevance-screening.mdx";
 import MitigationClassificationCorporate from "./mitigations/mitigation-classification-corporate.mdx";
 import MitigationTaxonomyClassification from "./mitigations/mitigation-taxonomy-classification.mdx";
 import SystematicLitReview from "./mitigations/systematic-lit-review.mdx";
+import AbstractScreening from "./risk-repository/abstract-screening.mdx";
+import FullTextScreening from "./risk-repository/full-text-screening.mdx";
+import RiskRepoClassification from "./risk-repository/risk-classification.mdx";
+import RiskExtraction from "./risk-repository/risk-extraction.mdx";
 import RiskClassification from "./risks/risk-classification.mdx";
 import PdfKeywordExtraction from "./shared/pdf-keyword-extraction.mdx";
 
@@ -31,6 +35,11 @@ const nodeContent: Record<string, ComponentType> = {
   "mitigation-classification-corporate": MitigationClassificationCorporate,
   "systematic-lit-review": SystematicLitReview,
   "mitigation-taxonomy-classification": MitigationTaxonomyClassification,
+
+  "rr-abstract-screening": AbstractScreening,
+  "rr-full-text-screening": FullTextScreening,
+  "rr-risk-extraction": RiskExtraction,
+  "rr-risk-classification": RiskRepoClassification,
 };
 
 export function getNodeContent(nodeId: string): ComponentType | null {
