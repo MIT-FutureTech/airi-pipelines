@@ -5,6 +5,7 @@ import { pipeline as documentProcessing } from "./document-processing/pipeline";
 import { pipeline as governance } from "./governance/pipeline";
 import { pipeline as incidents } from "./incidents/pipeline";
 import { pipeline as mitigations } from "./mitigations/pipeline";
+import { pipeline as riskRepository } from "./risk-repository/pipeline";
 import { pipeline as risks } from "./risks/pipeline";
 
 export const allPipelines = [
@@ -15,6 +16,7 @@ export const allPipelines = [
   mitigations,
   governance,
   incidents,
+  riskRepository,
 ];
 
 export const allSharedNodes: PipelineNode[] = (() => {
