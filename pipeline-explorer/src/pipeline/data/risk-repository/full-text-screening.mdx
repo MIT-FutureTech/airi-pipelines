@@ -1,0 +1,43 @@
+# Full-text screening
+
+Second screening stage. Documents that passed <NodeLink id="rr-abstract-screening">abstract screening</NodeLink> are screened again against the **full text** of the paper, using stricter criteria.
+
+## Links
+
+- [risk_repository/screen.py](https://github.com/MIT-FutureTech/airi-pipelines/tree/main/pipelines/risk-repository/src/risk_repository/screen.py)
+- [risk_repository/documents.py](https://github.com/MIT-FutureTech/airi-pipelines/tree/main/pipelines/risk-repository/src/risk_repository/documents.py): full-text acquisition
+- [risk_repository/upload.py](https://github.com/MIT-FutureTech/airi-pipelines/tree/main/pipelines/risk-repository/src/risk_repository/upload.py): writes decisions back to Airtable
+
+## Tech
+
+OpenRouter to generate structured JSON output, asyncio for concurrency, PyMuPDF to convert PDF to Markdown.
+
+## Inputs
+
+- Full-Text Screening table in Airtable containing documents which passed abstract screening, each with a `full_text_pdf` attachment
+- The attached PDF is converted to Markdown for the LLM to read
+
+## Outputs
+
+- Per-document JSON in `output/screen_full_text/` containing a `FullTextScreeningResult` with:
+  - `criteria_breakdown`: the LLM's reasoning about how the criteria apply to the document.
+  - `predicted_include_count`: the LLM's estimate of how many human reviewers our of 10 would choose to include the document. Gives a richer signal than a binary include/exclude decision.
+- `risk_repository.upload` pushes outputs back to the same table: `llm_relevance_score` and `llm_reasoning`, plus additional metadata
+
+## Screening criteria
+
+Same four criteria as abstract screening, but tightened now that the full document is available. Most importantly, criterion 3 (novel taxonomy) requires the paper to **actually contain** a risk taxonomy laid out as a table, list, or tree — not merely use the word "framework." Documents that only mention risks in prose without a systematic layout are excluded.
+
+The LLM is instructed to imagine the document will be screened by ten independent human reviewers. It predicts how many of those hypothetical reviewers would choose to include the document. This encourages the LLM to consider multiple interpretations and degrees of strictness for each criterion.
+
+## How it runs
+
+CLI stage `screen_full_text`:
+
+```bash
+uv run --env-file=.env -m risk_repository \
+  --airtable-full-text-table "Full-Text Screening" \
+  --stages screen_full_text --output-dir output/
+```
+
+Pre-fetches and caches full-text PDFs in parallel before screening. Skips documents with no available full text. Also skips documents which already have results, making it easy to resume after an interruption. High-scoring documents advance to <NodeLink id="rr-risk-extraction">risk-extraction</NodeLink>.
