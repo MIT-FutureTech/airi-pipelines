@@ -78,7 +78,7 @@ export const pipeline: PipelineDefinition = {
       id: "rr-risk-classification",
       label: "Risk classification",
       type: "proposed",
-      verified: false,
+      verified: true,
       link: {
         url: `${RISK_REPO_SRC}/classify.py`,
         label: "risk_repository/classify.py",
