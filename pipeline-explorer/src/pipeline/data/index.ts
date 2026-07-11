@@ -9,14 +9,14 @@ import { pipeline as riskRepository } from "./risk-repository/pipeline";
 import { pipeline as risks } from "./risks/pipeline";
 
 export const allPipelines = [
-  documentProcessing,
-  companyData,
-  actors,
-  risks,
-  mitigations,
   governance,
   incidents,
   riskRepository,
+  documentProcessing,
+  companyData,
+  risks,
+  actors,
+  mitigations,
 ];
 
 export const allSharedNodes: PipelineNode[] = (() => {
