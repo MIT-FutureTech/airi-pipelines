@@ -1,5 +1,9 @@
 from risk_repository.evaluate.classify import ClassificationMetrics
-from risk_repository.evaluate.extract import ExtractionMetrics
+from risk_repository.evaluate.extract import (
+    ExtractionMetrics,
+    SideTally,
+    scores,
+)
 from risk_repository.evaluate.screen import ScreeningMetrics
 
 
@@ -66,13 +70,34 @@ def print_screening(m: ScreeningMetrics, *, heading: str = "Screening") -> None:
 
 def _print_extraction(m: ExtractionMetrics) -> None:
     print("=== Extraction ===")
-    print(f"Documents evaluated:     {m.documents_evaluated}")
-    print(f"Ground truth risks:      {m.gt_risk_count}")
-    print(f"Pipeline risks:          {m.pipeline_risk_count}")
-    print(f"Matched:                 {m.matched_count}")
-    print(f"Precision:               {m.precision:.1%}")
-    print(f"Recall:                  {m.recall:.1%}")
-    print(f"F1:                      {m.f1:.1%}")
+    print(f"Documents evaluated: {m.documents_evaluated}")
+    print()
+    _print_side("Ground-truth nodes", m.ground_truth, zero="missed", multi="split")
+    print()
+    _print_side("Pipeline nodes", m.pipeline, zero="false pos", multi="lumped")
+    print()
+    print("Scores (matched = mapped to exactly one counterpart)")
+    print(f"{'Level':<14}{'Precision':>11}{'Recall':>9}{'F1':>8}")
+    for label, gt, pipeline in (
+        ("Category", m.ground_truth.category, m.pipeline.category),
+        ("Subcategory", m.ground_truth.subcategory, m.pipeline.subcategory),
+        ("Overall", m.ground_truth.overall, m.pipeline.overall),
+    ):
+        s = scores(gt, pipeline)
+        print(f"{label:<14}{s.precision:>10.1%}{s.recall:>9.1%}{s.f1:>8.1%}")
+
+
+def _print_side(heading: str, side: SideTally, *, zero: str, multi: str) -> None:
+    print(f"{heading:<26}{'total':>7}{'matched':>9}{zero:>11}{multi:>9}")
+    for label, tally in (
+        ("Category", side.category),
+        ("Subcategory", side.subcategory),
+        ("Overall", side.overall),
+    ):
+        print(
+            f"  {label:<24}{tally.total:>7}{tally.matched:>9}"
+            + f"{tally.unmatched:>11}{tally.multi:>9}"
+        )
 
 
 def _print_classification(m: ClassificationMetrics) -> None:
