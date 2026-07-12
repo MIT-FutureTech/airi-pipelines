@@ -110,6 +110,7 @@ class Table:
         fields: list[str] | None = None,
         max_records: int | None = None,
         sort: list[tuple[str, str]] | None = None,
+        view: str | None = None,
     ) -> list[Record]:
         """Fetch all matching records.
 
@@ -122,6 +123,7 @@ class Table:
                 fields=fields,
                 max_records=max_records,
                 sort=sort,
+                view=view,
             )
         ]
 
@@ -133,8 +135,13 @@ class Table:
         max_records: int | None = None,
         page_size: int | None = None,
         sort: list[tuple[str, str]] | None = None,
+        view: str | None = None,
     ) -> AsyncIterator[Record]:
-        """Iterate over matching records."""
+        """Iterate over matching records.
+
+        When view is set (a view name or ID), only records in that view are returned,
+        in the view's order, filtered by the view's configured filters.
+        """
         offset: str | None = None
         while True:
             params = _build_list_params(
@@ -143,6 +150,7 @@ class Table:
                 max_records=max_records,
                 page_size=page_size,
                 sort=sort,
+                view=view,
                 offset=offset,
             )
             resp = await self._request(
@@ -379,12 +387,15 @@ def _build_list_params(
     max_records: int | None = None,
     page_size: int | None = None,
     sort: list[tuple[str, str]] | None = None,
+    view: str | None = None,
     offset: str | None = None,
 ) -> QueryParams | None:
     """Build query parameters for the list-records endpoint."""
     params = QueryParams()
     if formula is not None:
         params = params.add("filterByFormula", formula)
+    if view is not None:
+        params = params.add("view", view)
     if fields is not None:
         for f in fields:
             params = params.add("fields[]", f)
