@@ -1,11 +1,19 @@
 import logging
+from enum import StrEnum
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, TypeAdapter, ValidationError, field_validator
 
 from risk_repository.screen import Decision
 from toolbox.airtable import AirtableClient, Table
 
 logger = logging.getLogger(__name__)
+
+_EVIDENCE_ADAPTER = TypeAdapter(list[str])
+
+
+class CategoryLevel(StrEnum):
+    CATEGORY = "category"
+    SUBCATEGORY = "subcategory"
 
 
 class _CausalFactor(BaseModel):
@@ -26,6 +34,11 @@ class _UnresolvedRisk(BaseModel):
     category: str = Field(validation_alias="Risk category")
     subcategory: str | None = Field(None, validation_alias="Risk Subcategory")
     description: str | None = Field(None, validation_alias="Description_Clean")
+    quote: str | None = Field(None, validation_alias="Description")
+    category_level: str | None = Field(None, validation_alias="Category level")
+    additional_evidence_raw: str | None = Field(
+        None, validation_alias="Additional evidence"
+    )
     page: int | None = Field(None, validation_alias="Description_page")
     entity_ids: list[str] = Field(
         default_factory=list, validation_alias="CausalTax_Entity"
@@ -60,9 +73,12 @@ class GroundTruthDocument(BaseModel):
 class GroundTruthRisk(BaseModel):
     ev_id: str
     document_readable_id: str
+    category_level: CategoryLevel | None
     category: str
     subcategory: str | None
     description: str
+    quote: str | None
+    additional_evidence: list[str]
     page: int | None
     entity: str | None
     intent: str | None
@@ -245,6 +261,26 @@ def _resolve_subdomain(ids: list[str], subdomain_map: dict[str, str]) -> str | N
     return _parse_subdomain_code(subdomain_map[ids[0]])
 
 
+def _parse_category_level(value: str | None) -> CategoryLevel | None:
+    match value:
+        case "Risk Category":
+            return CategoryLevel.CATEGORY
+        case "Risk Sub-Category":
+            return CategoryLevel.SUBCATEGORY
+        case _:
+            return None
+
+
+def _parse_additional_evidence(value: str | None) -> list[str]:
+    if not value:
+        return []
+    try:
+        return _EVIDENCE_ADAPTER.validate_json(value)
+    except ValidationError:
+        logger.warning(f"Could not parse Additional evidence: {value[:80]!r}")
+        return [value]
+
+
 async def _fetch_risks(
     client: AirtableClient,
     *,
@@ -262,9 +298,14 @@ async def _fetch_risks(
             GroundTruthRisk(
                 ev_id=raw.ev_id,
                 document_readable_id=readable_id,
+                category_level=_parse_category_level(raw.category_level),
                 category=raw.category,
                 subcategory=raw.subcategory,
                 description=raw.description or "",
+                quote=raw.quote,
+                additional_evidence=_parse_additional_evidence(
+                    raw.additional_evidence_raw
+                ),
                 page=raw.page,
                 entity=_resolve_causal(raw.entity_ids, causal_map),
                 intent=_resolve_causal(raw.intent_ids, causal_map),
