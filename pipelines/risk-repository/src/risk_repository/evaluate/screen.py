@@ -4,7 +4,7 @@ from pathlib import Path
 from pydantic import BaseModel
 
 from risk_repository.results import PipelineStage, load, result_path
-from risk_repository.screen import Decision, ScreeningResult
+from risk_repository.screen import AbstractScreeningResult, Decision
 
 
 def is_positive_pipeline(decision: Decision) -> bool:
@@ -80,7 +80,7 @@ def evaluate_screening(
             ScreeningComparison(
                 readable_id=readable_id,
                 ground_truth=gt_decision,
-                pipeline=load(path, ScreeningResult).decision,
+                pipeline=load(path, AbstractScreeningResult).decision,
             )
         )
     return compute_screening_metrics(comparisons)

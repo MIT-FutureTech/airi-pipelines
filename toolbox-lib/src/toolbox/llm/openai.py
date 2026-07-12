@@ -132,6 +132,9 @@ class OpenAIClient:
             logger.debug(
                 f"No response from {self._model}: messages={serialized_messages}",
             )
+            logger.info(
+                f"Could not parse response from {self._model}: {response.model_dump_json(indent=2)}"
+            )
             raise ToolboxLLMInvalidResponseError("LLM did not generate response")
         return StructuredResult[T](
             value=value,

@@ -7,7 +7,7 @@ from risk_repository.records import TestTrainSplit
 from risk_repository.results import STAGE_ORDER, PipelineStage
 
 DEFAULT_DOWNLOAD_CACHE_DIR = Path(__file__).parent.parent.parent / "download_cache"
-DEFAULT_MODEL = "openai/gpt-5-mini"
+DEFAULT_MODEL = "google/gemini-3-flash-preview"
 DEFAULT_CONCURRENCY = 5
 DEFAULT_LLM_RATE_LIMIT_RPS = 10.0
 DEFAULT_AIRTABLE_BASE_ID = "app32FOUBa5WcUfEO"
