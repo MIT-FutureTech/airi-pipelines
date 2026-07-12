@@ -140,8 +140,4 @@ async def prefetch_full_text(
 
 
 def _full_text_url(record: DocumentRecord) -> str | None:
-    match record:
-        case ScreeningRecord():
-            return record.url
-        case _:
-            raise TypeError(f"Unknown record type: {type(record).__name__}")
+    return record.url
