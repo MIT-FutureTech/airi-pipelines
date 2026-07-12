@@ -6,11 +6,6 @@ from pydantic import BaseModel, Field
 from toolbox.airtable import AirtableClient, Attachment, Table
 
 
-class TestTrainSplit(StrEnum):
-    TRAIN = "train"
-    TEST = "test"
-
-
 class DocumentSource(StrEnum):
     SCREENING_TABLE = "screening_table"
     TRAINING_SET = "training_set"
@@ -21,7 +16,6 @@ class DocumentRecord(BaseModel):
     title: str | None
     abstract: str | None
     url: str | None
-    split: TestTrainSplit | None = None
 
 
 class ScreeningRecord(DocumentRecord):
@@ -49,9 +43,12 @@ async def fetch_screening_records(
     *,
     base_id: str,
     table_name: str,
+    view: str | None = None,
 ) -> AsyncIterator[ScreeningRecord]:
     table = Table(client, base_id=base_id, table_name=table_name)
-    async for record in table.iterate(fields=["title", "abstract", "full_text_pdf"]):
+    async for record in table.iterate(
+        fields=["title", "abstract", "full_text_pdf"], view=view
+    ):
         yield ScreeningRecord.model_validate(
             {"readable_id": record.id, "record_id": record.id, **record.fields}
         )
@@ -62,6 +59,7 @@ async def fetch_training_set_records(
     *,
     base_id: str,
     table_name: str,
+    view: str | None = None,
 ) -> AsyncIterator[DocumentRecord]:
     """Yield documents from a curated table keyed by QuickRef.
 
@@ -69,17 +67,15 @@ async def fetch_training_set_records(
     as a fallback) rather than from an attached PDF.
     """
     table = Table(client, base_id=base_id, table_name=table_name)
-    fields = ["QuickRef", "DocTitle", "Abstract", "URL", "PDFURL", "Split"]
-    async for record in table.iterate(fields=fields):
+    fields = ["QuickRef", "DocTitle", "Abstract", "URL", "PDFURL"]
+    async for record in table.iterate(fields=fields, view=view):
         values = record.fields
-        split = values.get("Split")
         yield DocumentRecord.model_validate(
             {
                 "readable_id": values["QuickRef"],
                 "title": values.get("DocTitle"),
                 "abstract": values.get("Abstract"),
                 "url": values.get("PDFURL") or values.get("URL"),
-                "split": split.lower() if isinstance(split, str) else None,
             }
         )
 
@@ -87,10 +83,7 @@ async def fetch_training_set_records(
 def include_record(
     record: DocumentRecord,
     document_ids: Container[str] | None,
-    split: TestTrainSplit,
 ) -> bool:
-    if record.split is not None and record.split != split:
-        return False
     if document_ids is None:
         return True
     return record.readable_id in document_ids

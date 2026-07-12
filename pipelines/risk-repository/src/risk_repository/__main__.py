@@ -37,7 +37,7 @@ async def _collect_records(
     docs_to_process = settings.document_ids
     records: list[DocumentRecord] = []
     async for record in _iterate_source(airtable, settings):
-        if include_record(record, docs_to_process, settings.split):
+        if include_record(record, docs_to_process):
             records.append(record)
         if settings.limit is not None and len(records) >= settings.limit:
             break
@@ -55,6 +55,7 @@ async def _iterate_source(
                 client=airtable,
                 base_id=settings.airtable_base_id,
                 table_name=settings.airtable_source_table,
+                view=settings.airtable_view,
             ):
                 yield record
         case DocumentSource.TRAINING_SET:
@@ -62,6 +63,7 @@ async def _iterate_source(
                 client=airtable,
                 base_id=settings.airtable_base_id,
                 table_name=settings.airtable_source_table,
+                view=settings.airtable_view,
             ):
                 yield record
 
