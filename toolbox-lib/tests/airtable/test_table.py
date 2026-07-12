@@ -179,6 +179,19 @@ class TestAll:
             assert "filterByFormula" in str(params)
             assert "maxRecords" in str(params)
 
+    async def test_passes_view(self) -> None:
+        page_json: dict[str, JsonValue] = {
+            "records": [RECORD_JSON],
+            "offset": None,
+        }
+        async with make_mock_client([make_response(200, page_json)]) as client:
+            table = create_table(client)
+            await table.all(view="Training set")
+
+            assert isinstance(client._http_client.request, AsyncMock)
+            params = client._http_client.request.call_args.kwargs["params"]
+            assert params["view"] == "Training set"
+
 
 class TestUpdate:
     async def test_sends_patch(
