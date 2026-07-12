@@ -3,7 +3,7 @@ from pathlib import Path
 from pydantic import Field
 from pydantic_settings import BaseSettings
 
-from risk_repository.records import DocumentSource, TestTrainSplit
+from risk_repository.records import DocumentSource
 from risk_repository.results import STAGE_ORDER, PipelineStage
 
 DEFAULT_DOWNLOAD_CACHE_DIR = Path(__file__).parent.parent.parent / "download_cache"
@@ -58,10 +58,6 @@ class RiskRepositorySettings(
     document_ids: list[str] | None = Field(
         default=None,
         description="Comma-separated list of document IDs to process",
-    )
-    split: TestTrainSplit = Field(
-        default=TestTrainSplit.TRAIN,
-        description="Split to process",
     )
     stages: list[PipelineStage] = Field(
         default=STAGE_ORDER,
@@ -121,5 +117,12 @@ class RiskRepositorySettings(
             full_text_pdf attachment and decisions are written back by
             `risk_repository.upload`. For training_set, full text is fetched from each
             record's PDFURL or URL.
+        """,
+    )
+    airtable_view: str | None = Field(
+        default=None,
+        description="""
+            Airtable view (name or ID) to read documents from. When set, only records
+            in the view are processed, in the view's order and subject to its filters.
         """,
     )
