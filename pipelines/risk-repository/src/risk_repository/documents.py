@@ -7,7 +7,6 @@ from risk_repository.download import clear_failure, download_pdf, record_failure
 from risk_repository.records import DocumentRecord, ScreeningRecord
 from toolbox.airtable import download_attachment
 from toolbox.concurrency import ConcurrentMap
-from toolbox.text_processing.markdown import truncate_at_heading
 from toolbox.text_processing.pdf import convert_to_markdown
 
 logger = logging.getLogger(__name__)
@@ -79,18 +78,12 @@ async def get_full_text(
     *,
     cache_dir: Path,
     client: httpx.AsyncClient,
-    max_truncation_ratio: float,
-    max_document_length: int,
 ) -> str | None:
     pdf_path = await get_pdf(record, cache_dir=cache_dir, client=client)
     if pdf_path is None:
         return None
     try:
-        return _load_full_text(
-            pdf_path,
-            max_truncation_ratio=max_truncation_ratio,
-            max_document_length=max_document_length,
-        )
+        return convert_to_markdown(pdf_path)
     except RuntimeError as error:
         logger.warning(f"Skipping {record.readable_id}: {error!r}")
         record_failure(
@@ -152,27 +145,3 @@ def _full_text_url(record: DocumentRecord) -> str | None:
             return record.url
         case _:
             raise TypeError(f"Unknown record type: {type(record).__name__}")
-
-
-def _load_full_text(
-    pdf_path: Path,
-    *,
-    max_truncation_ratio: float,
-    max_document_length: int,
-) -> str:
-    truncation = truncate_at_heading(convert_to_markdown(pdf_path))
-    if truncation.truncation_ratio > max_truncation_ratio:
-        raise RuntimeError(
-            f"Truncation at {truncation.matched_heading!r}"
-            + f" would remove {truncation.truncation_ratio:.1%}, "
-            + f" exceeding {max_truncation_ratio:.1%}"
-        )
-    if len(truncation.text) > max_document_length:
-        logger.info(
-            "Document still exceeds maximum length after section truncation."
-            + f" Reducing from {truncation.original_length:,d} to"
-            + f" {max_document_length:,d} characters"
-            + f" ({max_document_length / truncation.original_length:.1%} of original)."
-        )
-        truncation.text = truncation.text[:max_document_length]
-    return truncation.text

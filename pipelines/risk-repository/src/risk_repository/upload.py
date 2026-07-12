@@ -8,7 +8,11 @@ from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings
 
 from risk_repository.results import PipelineStage, load, stage_dir
-from risk_repository.screen import Decision, ScreeningResult
+from risk_repository.screen import (
+    AbstractScreeningResult,
+    Decision,
+    FullTextScreeningResult,
+)
 from risk_repository.settings import (
     DEFAULT_AIRTABLE_BASE_ID,
     DEFAULT_AIRTABLE_TIMEOUT,
@@ -23,26 +27,6 @@ logger = logging.getLogger(__name__)
 class ScreeningStage(StrEnum):
     ABSTRACT = "abstract"
     FULL_TEXT = "full-text"
-
-
-class _StageConfig(BaseModel):
-    pipeline_stage: PipelineStage
-    text_source: str
-    decision_rule: str
-
-
-_STAGE_CONFIG: dict[ScreeningStage, _StageConfig] = {
-    ScreeningStage.ABSTRACT: _StageConfig(
-        pipeline_stage=PipelineStage.SCREEN_ABSTRACT,
-        text_source="abstract",
-        decision_rule="Single abstract screen",
-    ),
-    ScreeningStage.FULL_TEXT: _StageConfig(
-        pipeline_stage=PipelineStage.SCREEN_FULL_TEXT,
-        text_source="full_text",
-        decision_rule="Single full-text screen",
-    ),
-}
 
 
 class UploadSettings(
@@ -96,21 +80,17 @@ class UploadSettings(
     )
 
 
-def _screening_fields(
-    result: ScreeningResult,
+def _common_fields(
+    criteria_breakdown: str,
     *,
-    config: _StageConfig,
+    text_source: str,
     model: str,
     prompt_version: str | None,
 ) -> dict[str, JsonValue]:
     fields: dict[str, JsonValue] = {
-        "llm_include": result.decision.value,
-        "llm_reasoning": result.criteria_breakdown,
-        "n_screens": 1,
-        "n_include": 1 if result.decision == Decision.INCLUDE else 0,
-        "decision_rule": config.decision_rule,
+        "llm_reasoning": criteria_breakdown,
         "screening_model_version": model,
-        "text_source": config.text_source,
+        "text_source": text_source,
         "screening_status": "screened",
         "screened_at": datetime.now(UTC).isoformat(),
     }
@@ -119,10 +99,48 @@ def _screening_fields(
     return fields
 
 
-def _load_decisions(
+def _abstract_screening_fields(
+    result: AbstractScreeningResult,
+    *,
+    model: str,
+    prompt_version: str | None,
+) -> dict[str, JsonValue]:
+    return {
+        **_common_fields(
+            result.criteria_breakdown,
+            text_source="abstract",
+            model=model,
+            prompt_version=prompt_version,
+        ),
+        "llm_include": result.decision.value,
+        "n_screens": 1,
+        "n_include": 1 if result.decision == Decision.INCLUDE else 0,
+        "decision_rule": "Single abstract screen",
+    }
+
+
+def _full_text_screening_fields(
+    result: FullTextScreeningResult,
+    *,
+    model: str,
+    prompt_version: str | None,
+) -> dict[str, JsonValue]:
+    return {
+        **_common_fields(
+            result.criteria_breakdown,
+            text_source="full_text",
+            model=model,
+            prompt_version=prompt_version,
+        ),
+        "llm_relevance_score": result.predicted_include_count,
+    }
+
+
+def _load_decisions[T: BaseModel](
     run_dir: Path,
     pipeline_stage: PipelineStage,
-) -> list[tuple[str, ScreeningResult]]:
+    result_type: type[T],
+) -> list[tuple[str, T]]:
     """Load (record_id, result) pairs from a run's screening results."""
     results_dir = stage_dir(run_dir, pipeline_stage)
     if not results_dir.is_dir():
@@ -130,7 +148,7 @@ def _load_decisions(
             f"No {pipeline_stage.value} results directory in {run_dir}"
         )
     decisions = [
-        (path.stem, load(path, ScreeningResult))
+        (path.stem, load(path, result_type))
         for path in sorted(results_dir.glob("*.json"))
     ]
     non_record_ids = [record_id for record_id, _ in decisions if record_id[:3] != "rec"]
@@ -143,37 +161,59 @@ def _load_decisions(
     return decisions
 
 
+def _build_updates(
+    run_dir: Path,
+    stage: ScreeningStage,
+    *,
+    model: str,
+    prompt_version: str | None,
+) -> list[UpdateRecord]:
+    match stage:
+        case ScreeningStage.ABSTRACT:
+            abstract = _load_decisions(
+                run_dir, PipelineStage.SCREEN_ABSTRACT, AbstractScreeningResult
+            )
+            return [
+                UpdateRecord(
+                    id=record_id,
+                    fields=_abstract_screening_fields(
+                        result, model=model, prompt_version=prompt_version
+                    ),
+                )
+                for record_id, result in abstract
+            ]
+        case ScreeningStage.FULL_TEXT:
+            full_text = _load_decisions(
+                run_dir, PipelineStage.SCREEN_FULL_TEXT, FullTextScreeningResult
+            )
+            return [
+                UpdateRecord(
+                    id=record_id,
+                    fields=_full_text_screening_fields(
+                        result, model=model, prompt_version=prompt_version
+                    ),
+                )
+                for record_id, result in full_text
+            ]
+
+
 async def _existing_record_ids(table: Table) -> set[str]:
     return {record.id async for record in table.iterate()}
 
 
 async def upload_screening_decisions(
     table: Table,
-    decisions: list[tuple[str, ScreeningResult]],
+    updates: list[UpdateRecord],
     *,
-    config: _StageConfig,
-    model: str,
-    prompt_version: str | None,
     dry_run: bool,
 ) -> None:
     existing = await _existing_record_ids(table)
-    missing = sorted(
-        record_id for record_id, _ in decisions if record_id not in existing
-    )
+    missing = sorted(update.id for update in updates if update.id not in existing)
     if missing:
         raise ValueError(
             f"{len(missing)} records do not exist in the table (e.g. {missing[0]!r});"
             + " upload only updates existing records"
         )
-    updates = [
-        UpdateRecord(
-            id=record_id,
-            fields=_screening_fields(
-                result, config=config, model=model, prompt_version=prompt_version
-            ),
-        )
-        for record_id, result in decisions
-    ]
     if dry_run:
         logger.info(f"Dry run: would update {len(updates)} records")
         return
@@ -184,10 +224,14 @@ async def upload_screening_decisions(
 async def main() -> None:
     settings = UploadSettings()
     configure_logging(level=logging.INFO, loggers_to_silence=["httpx"])
-    config = _STAGE_CONFIG[settings.stage]
-    decisions = _load_decisions(settings.run_dir, config.pipeline_stage)
+    updates = _build_updates(
+        settings.run_dir,
+        settings.stage,
+        model=settings.model,
+        prompt_version=settings.prompt_version,
+    )
     logger.info(
-        f"Loaded {len(decisions)} {settings.stage.value} decisions from"
+        f"Loaded {len(updates)} {settings.stage.value} decisions from"
         + f" {settings.run_dir}"
     )
     async with AirtableClient(timeout=settings.airtable_timeout) as client:
@@ -196,14 +240,7 @@ async def main() -> None:
             base_id=settings.airtable_base_id,
             table_name=settings.table,
         )
-        await upload_screening_decisions(
-            table,
-            decisions,
-            config=config,
-            model=settings.model,
-            prompt_version=settings.prompt_version,
-            dry_run=settings.dry_run,
-        )
+        await upload_screening_decisions(table, updates, dry_run=settings.dry_run)
 
 
 if __name__ == "__main__":
