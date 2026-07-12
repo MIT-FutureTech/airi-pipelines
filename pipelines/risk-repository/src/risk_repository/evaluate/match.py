@@ -272,11 +272,22 @@ The two sides may divide the paper's risks differently:
   corresponding category-level entry, and a specific subcategory-level risk to the
   specific pipeline entries that describe it.
 
-## Rules
+## When NOT to match
 
-- Only emit a pair when you are confident the two refer to the same specific risk.
-- Do not match risks that merely fall under the same general topic or domain.
-- Return an empty list if there are no matches.
+It is normal for many entries to have no match. The pipeline misses risks the coders
+recorded, and extracts risks the coders did not. Do not try to give every entry a partner.
+
+- A wrong match corrupts the evaluation more than a missed match does. When you are not
+  confident that two entries describe the same specific risk, leave them unmatched.
+- Never pair two entries just because they are the only ones still unmatched, or because
+  every other entry already has a partner. An unmatched entry is an expected outcome, not a
+  problem to solve.
+- Sharing a general topic, domain, or category heading is not enough. The two must describe
+  the same specific risk.
+- Your reasoning must name the specific shared risk and point to it in both descriptions. If
+  you cannot do that concretely, it is not a match.
+
+Return an empty list if there are no matches.
 """
 
 _MATCHING_USER_PROMPT = """
