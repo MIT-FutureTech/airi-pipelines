@@ -11,6 +11,11 @@ class TestTrainSplit(StrEnum):
     TEST = "test"
 
 
+class DocumentSource(StrEnum):
+    SCREENING_TABLE = "screening_table"
+    TRAINING_SET = "training_set"
+
+
 class DocumentRecord(BaseModel):
     readable_id: str
     title: str | None
@@ -49,6 +54,33 @@ async def fetch_screening_records(
     async for record in table.iterate(fields=["title", "abstract", "full_text_pdf"]):
         yield ScreeningRecord.model_validate(
             {"readable_id": record.id, "record_id": record.id, **record.fields}
+        )
+
+
+async def fetch_training_set_records(
+    client: AirtableClient,
+    *,
+    base_id: str,
+    table_name: str,
+) -> AsyncIterator[DocumentRecord]:
+    """Yield documents from a curated table keyed by QuickRef.
+
+    Unlike screening records, full text is fetched from each record's PDFURL (or URL
+    as a fallback) rather than from an attached PDF.
+    """
+    table = Table(client, base_id=base_id, table_name=table_name)
+    fields = ["QuickRef", "DocTitle", "Abstract", "URL", "PDFURL", "Split"]
+    async for record in table.iterate(fields=fields):
+        values = record.fields
+        split = values.get("Split")
+        yield DocumentRecord.model_validate(
+            {
+                "readable_id": values["QuickRef"],
+                "title": values.get("DocTitle"),
+                "abstract": values.get("Abstract"),
+                "url": values.get("PDFURL") or values.get("URL"),
+                "split": split.lower() if isinstance(split, str) else None,
+            }
         )
 
 

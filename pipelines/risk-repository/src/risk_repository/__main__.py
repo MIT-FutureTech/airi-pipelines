@@ -11,7 +11,9 @@ from risk_repository.download import make_http_client
 from risk_repository.extract import run_extraction
 from risk_repository.records import (
     DocumentRecord,
+    DocumentSource,
     fetch_screening_records,
+    fetch_training_set_records,
     include_record,
 )
 from risk_repository.results import PipelineStage
@@ -47,12 +49,21 @@ async def _iterate_source(
     airtable: AirtableClient,
     settings: RiskRepositorySettings,
 ) -> AsyncIterator[DocumentRecord]:
-    async for record in fetch_screening_records(
-        client=airtable,
-        base_id=settings.airtable_base_id,
-        table_name=settings.airtable_screening_table,
-    ):
-        yield record
+    match settings.document_source:
+        case DocumentSource.SCREENING_TABLE:
+            async for record in fetch_screening_records(
+                client=airtable,
+                base_id=settings.airtable_base_id,
+                table_name=settings.airtable_source_table,
+            ):
+                yield record
+        case DocumentSource.TRAINING_SET:
+            async for record in fetch_training_set_records(
+                client=airtable,
+                base_id=settings.airtable_base_id,
+                table_name=settings.airtable_source_table,
+            ):
+                yield record
 
 
 async def main() -> None:
