@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 class MatchPair(BaseModel):
     gt_index: int
     pipeline_index: int
+    reasoning: str
 
 
 class DocumentMatchResult(BaseModel):
@@ -118,6 +119,7 @@ def _to_match_pair(llm_match: _LLMMatchPair) -> MatchPair:
     return MatchPair(
         gt_index=int(llm_match.gt_id.removeprefix("gt-")),
         pipeline_index=int(llm_match.pipeline_id.removeprefix("pl-")),
+        reasoning=llm_match.reasoning,
     )
 
 
@@ -166,8 +168,7 @@ def _validate_matches(
     pipeline_ids = {_pipeline_id(i) for i in range(pipeline_count)}
     valid: list[_LLMMatchPair] = []
     errors: list[str] = []
-    used_gt: set[str] = set()
-    used_pipeline: set[str] = set()
+    seen: set[tuple[str, str]] = set()
     for match in matches:
         if match.gt_id not in gt_ids:
             errors.append(f"Unknown ground truth ID {match.gt_id!r}")
@@ -175,13 +176,10 @@ def _validate_matches(
         if match.pipeline_id not in pipeline_ids:
             errors.append(f"Unknown pipeline ID {match.pipeline_id!r}")
             continue
-        if match.gt_id in used_gt or match.pipeline_id in used_pipeline:
-            errors.append(
-                f"Duplicate: {match.gt_id!r} or {match.pipeline_id!r} already matched"
-            )
+        pair = (match.gt_id, match.pipeline_id)
+        if pair in seen:
             continue
-        used_gt.add(match.gt_id)
-        used_pipeline.add(match.pipeline_id)
+        seen.add(pair)
         valid.append(match)
     if errors:
         raise _MatchValidationError(errors, valid)
@@ -196,20 +194,37 @@ def _pipeline_id(index: int) -> str:
     return f"pl-{index:03}"
 
 
+def _gt_level_label(risk: GroundTruthRisk) -> str:
+    if risk.category_level is not None:
+        return risk.category_level.value
+    return "subcategory" if risk.subcategory else "category"
+
+
+def _pipeline_level_label(risk: ExtractedRisk) -> str:
+    return "subcategory" if risk.subcategory.strip() else "category"
+
+
 def _format_gt_risk(index: int, risk: GroundTruthRisk) -> str:
+    if risk.additional_evidence:
+        additional_evidence = "\n".join(f"- {q}" for q in risk.additional_evidence)
+    else:
+        additional_evidence = "(none)"
     return _GT_RISK_TEMPLATE.format(
         id=_gt_id(index),
+        level=_gt_level_label(risk),
         category=risk.category,
-        subcategory=risk.subcategory,
+        subcategory=risk.subcategory or "(none)",
         description=risk.description,
+        additional_evidence=additional_evidence,
     )
 
 
 def _format_pipeline_risk(index: int, risk: ExtractedRisk) -> str:
     return _PIPELINE_RISK_TEMPLATE.format(
         id=_pipeline_id(index),
+        level=_pipeline_level_label(risk),
         category=risk.category,
-        subcategory=risk.subcategory,
+        subcategory=risk.subcategory or "(none)",
         quote=risk.supporting_quote,
         description=risk.description,
     )
@@ -229,23 +244,39 @@ def _format_user_message(
 
 
 _MATCHING_SYSTEM_PROMPT = """
-You are comparing risks extracted by an automated pipeline against human-coded
-ground truth risks from the same academic paper. Your task is to find one-to-one
-matches.
+You are comparing risks extracted by an automated pipeline against human-coded ground
+truth risks from the same academic paper. Both describe risks from that paper. Your task
+is to find every pair that refers to the SAME specific risk.
 
-## Matching criteria
+## What counts as a match
 
-A match means the pipeline risk and ground truth risk refer to the SAME specific risk:
-- The category and subcategory should be nearly identical (same wording or trivial rewording).
-- The pipeline's supporting quote should closely correspond to the ground truth description.
-- The pipeline's description may be paraphrased but must refer to the same specific risk.
-- Do NOT match risks that merely fall under the same general topic or domain.
+Two entries match when they refer to the same underlying risk from the paper. Judge this
+on the substance of the risk, using the descriptions and supporting quotes.
+
+Do NOT rely on the category or subcategory names:
+- The human coders often relabel the authors' headings as risk statements (e.g. a section
+  titled "Scientific progress" becomes the category "Risks from accelerating scientific
+  progress"), while the pipeline tends to keep the authors' original wording. The names
+  will frequently differ even for a correct match.
+- The two sides may quote different sentences about the same risk. Match on whether they
+  describe the same risk, not on textual overlap between the quotes.
+
+## Granularity and levels
+
+The two sides may divide the paper's risks differently:
+- One ground-truth risk may correspond to SEVERAL pipeline risks, or one pipeline risk to
+  several ground-truth risks. Emit a pair for every combination that refers to the same
+  risk; a single entry may therefore appear in multiple pairs.
+- Each entry is marked category-level (a broad risk area) or subcategory-level (a specific
+  risk). Prefer to match like with like: a broad category-level risk to the pipeline's
+  corresponding category-level entry, and a specific subcategory-level risk to the
+  specific pipeline entries that describe it.
 
 ## Rules
 
-- Each ground truth risk can match at most one pipeline risk, and vice versa.
-- Not every risk needs a match. Only match risks you are confident refer to the same thing.
-- Return an empty list if no matches exist.
+- Only emit a pair when you are confident the two refer to the same specific risk.
+- Do not match risks that merely fall under the same general topic or domain.
+- Return an empty list if there are no matches.
 """
 
 _MATCHING_USER_PROMPT = """
@@ -257,19 +288,20 @@ _MATCHING_USER_PROMPT = """
 
 {pipeline_risks}
 
-Produce one-to-one matches between these two lists.
+Identify every pair of risks that refer to the same specific risk.
 """
 
 _GT_RISK_TEMPLATE = """
-<ground-truth-risk id="{id}">
+<ground-truth-risk id="{id}" level="{level}">
 Category: {category}
 Subcategory: {subcategory}
 Description: {description}
+Additional evidence: {additional_evidence}
 </ground-truth-risk>
 """
 
 _PIPELINE_RISK_TEMPLATE = """
-<pipeline-risk id="{id}">
+<pipeline-risk id="{id}" level="{level}">
 Category: {category}
 Subcategory: {subcategory}
 Quote: {quote}
