@@ -62,10 +62,17 @@ class EvaluationSettings(
         default=DEFAULT_AIRTABLE_BASE_ID,
         description="Airtable ID for the AI Risk Repository base",
     )
-    airtable_screening_table: str = Field(
+    screening_ground_truth_table: str = Field(
         default=...,
         description="""
             Airtable screening table whose human review columns provide the screening
             ground truth.
+        """,
+    )
+    extraction_ground_truth_table: str = Field(
+        default=...,
+        description="""
+            Airtable table enumerating the documents whose extracted risks provide the
+            extraction ground truth.
         """,
     )
