@@ -77,14 +77,14 @@ def _print_extraction(m: ExtractionMetrics) -> None:
     _print_side("Pipeline nodes", m.pipeline, zero="false pos", multi="lumped")
     print()
     print("Scores (matched = mapped to exactly one counterpart)")
-    print(f"{'Level':<14}{'Precision':>11}{'Recall':>9}{'F1':>8}")
+    print(f"{'Level':<14}{'Precision':^10}{'Recall':^10}{'F1':^10}")
     for label, gt, pipeline in (
         ("Category", m.ground_truth.category, m.pipeline.category),
         ("Subcategory", m.ground_truth.subcategory, m.pipeline.subcategory),
         ("Overall", m.ground_truth.overall, m.pipeline.overall),
     ):
         s = scores(gt, pipeline)
-        print(f"{label:<14}{s.precision:>10.1%}{s.recall:>9.1%}{s.f1:>8.1%}")
+        print(f"{label:<14}{s.precision:>10.1%}{s.recall:>10.1%}{s.f1:>10.1%}")
 
 
 def _print_side(heading: str, side: SideTally, *, zero: str, multi: str) -> None:
