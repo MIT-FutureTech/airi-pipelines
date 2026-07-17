@@ -1,58 +1,7 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.4.8/schema.json",
+  "extends": ["../../../biome.base.jsonc"],
   "vcs": {
-    "enabled": true,
-    "clientKind": "git",
-    "useIgnoreFile": true,
     "root": "../../.."
-  },
-  "files": {
-    "ignoreUnknown": false
-  },
-  "formatter": {
-    "enabled": true,
-    "indentStyle": "space",
-    "indentWidth": 2,
-    "lineWidth": 80
-  },
-  "linter": {
-    "enabled": true,
-    "rules": {
-      "recommended": true,
-      "correctness": {
-        // Biome can't resolve tsconfig path aliases (@/)
-        "noUnresolvedImports": "off"
-      },
-      "suspicious": {
-        // This app uses React, so React-specific properties are expected
-        "noReactSpecificProps": "off"
-      },
-      "style": {
-        "useBlockStatements": "error",
-        // Allow acronyms like URL, ID in camelCase/PascalCase identifiers
-        "useNamingConvention": {
-          "level": "error",
-          "options": { "strictCase": false }
-        },
-        // This app is English-only; no i18n needed
-        "noJsxLiterals": "off"
-      }
-    }
-  },
-  "javascript": {
-    "formatter": {
-      "quoteStyle": "double",
-      "trailingCommas": "all",
-      "semicolons": "always",
-      "arrowParentheses": "always"
-    }
-  },
-  "assist": {
-    "enabled": true,
-    "actions": {
-      "source": {
-        "organizeImports": "on"
-      }
-    }
   }
 }
