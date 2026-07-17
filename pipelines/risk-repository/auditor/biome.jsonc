@@ -3,13 +3,5 @@
   "extends": ["../../../biome.base.jsonc"],
   "vcs": {
     "root": "../../.."
-  },
-  "linter": {
-    "rules": {
-      "correctness": {
-        // Biome can't resolve tsconfig path aliases (@/)
-        "noUnresolvedImports": "off"
-      }
-    }
   }
 }
