@@ -4,16 +4,6 @@
   "vcs": {
     "root": ".."
   },
-  "linter": {
-    "rules": {
-      "correctness": {
-        // Import extensions are non-standard for Next.js apps
-        "useImportExtensions": "off",
-        // Biome can't resolve tsconfig path aliases (@/)
-        "noUnresolvedImports": "off"
-      }
-    }
-  },
   "css": {
     "parser": {
       "tailwindDirectives": true
