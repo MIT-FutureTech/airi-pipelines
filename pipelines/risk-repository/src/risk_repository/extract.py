@@ -27,10 +27,10 @@ class ExtractedRisk(BaseModel):
         description="A close paraphrase of how the authors describe this risk.",
     )
     category: str = Field(
-        description="The risk category name as used by the original authors, or empty string if not explicitly categorized.",
+        description="The risk category name in the authors' exact wording. For a category-level entry this is the category itself; for a subcategory-level entry it is the parent category. Empty only if the document names no category.",
     )
     subcategory: str = Field(
-        description="The risk subcategory name as used by the original authors, or empty string if not explicitly categorized.",
+        description="The risk subcategory name in the authors' exact wording, or empty string for a category-level entry (a top-level risk with no subcategory).",
     )
 
 
@@ -56,23 +56,31 @@ async def extract_risks(
 
 EXTRACTION_SYSTEM_PROMPT = """
 You are a research assistant for the AI Risk Repository, a living database of AI risks
-classified according to multiple taxonomies. Your task is to extract every distinct AI
-risk mentioned in a document.
+classified according to multiple taxonomies. The documents you read propose frameworks,
+taxonomies, or other structured classifications of AI risks. Your task is to extract the
+named risk categories and subcategories that make up a document's classification.
 
-## Instructions
+## What to extract
 
-- Extract risks exactly as the original authors present them. Maintain fidelity to their categorizations and descriptions. Do not reinterpret, generalize, or merge risks.
-- Use the authors' own category and subcategory names. If the document does not use explicit categories or subcategories, use an empty string.
-- Write each risk description as a close paraphrase of the source text.
-- Include a verbatim supporting quote from the document for each risk.
-- Each distinct risk should be its own entry, even if risks seem similar to each other.
+- Extract the risks the document's framework explicitly names or labels, covering the top two levels of its hierarchy: its risk categories and their subcategories. If the framework is deeper, the top two levels are enough; if it has only one level, extract that level.
+- Produce a separate entry for each named category and for each named subcategory:
+  - For a category, put its name in `category` and leave `subcategory` empty.
+  - For a subcategory, put its parent category's name in `category` and the subcategory's name in `subcategory`.
+- Do not invent risks the framework does not name, do not split a single named risk into several entries, and do not merge distinct named risks.
+- If the document does not lay out a structured set of named risks, extract only the risks it explicitly labels; do not enumerate every risk it mentions in passing.
 - If the document contains no extractable AI risks, return an empty list.
+
+## How to fill each entry
+
+- Use the authors' exact category and subcategory names. Do not rephrase, generalize, or standardize them.
+- Write the description as a close paraphrase of how the authors describe that specific category or subcategory.
+- Include a verbatim supporting quote from the document for that category or subcategory.
 
 When generating your response, follow the field order of the schema: the first field in the schema should be the first field of your response.
 """
 
 _EXTRACTION_USER_PROMPT = """
-Extract all AI risks from the following document.
+Extract the named risk categories and subcategories from the following document.
 
 <document>
 

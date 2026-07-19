@@ -11,7 +11,9 @@ from risk_repository.download import make_http_client
 from risk_repository.extract import run_extraction
 from risk_repository.records import (
     DocumentRecord,
+    DocumentSource,
     fetch_screening_records,
+    fetch_training_set_records,
     include_record,
 )
 from risk_repository.results import PipelineStage
@@ -35,7 +37,7 @@ async def _collect_records(
     docs_to_process = settings.document_ids
     records: list[DocumentRecord] = []
     async for record in _iterate_source(airtable, settings):
-        if include_record(record, docs_to_process, settings.split):
+        if include_record(record, docs_to_process):
             records.append(record)
         if settings.limit is not None and len(records) >= settings.limit:
             break
@@ -47,12 +49,23 @@ async def _iterate_source(
     airtable: AirtableClient,
     settings: RiskRepositorySettings,
 ) -> AsyncIterator[DocumentRecord]:
-    async for record in fetch_screening_records(
-        client=airtable,
-        base_id=settings.airtable_base_id,
-        table_name=settings.airtable_screening_table,
-    ):
-        yield record
+    match settings.document_source:
+        case DocumentSource.SCREENING_TABLE:
+            async for record in fetch_screening_records(
+                client=airtable,
+                base_id=settings.airtable_base_id,
+                table_name=settings.airtable_source_table,
+                view=settings.airtable_view,
+            ):
+                yield record
+        case DocumentSource.TRAINING_SET:
+            async for record in fetch_training_set_records(
+                client=airtable,
+                base_id=settings.airtable_base_id,
+                table_name=settings.airtable_source_table,
+                view=settings.airtable_view,
+            ):
+                yield record
 
 
 async def main() -> None:

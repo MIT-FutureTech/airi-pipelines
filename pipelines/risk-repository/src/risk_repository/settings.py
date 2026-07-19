@@ -3,7 +3,7 @@ from pathlib import Path
 from pydantic import Field
 from pydantic_settings import BaseSettings
 
-from risk_repository.records import TestTrainSplit
+from risk_repository.records import DocumentSource
 from risk_repository.results import STAGE_ORDER, PipelineStage
 
 DEFAULT_DOWNLOAD_CACHE_DIR = Path(__file__).parent.parent.parent / "download_cache"
@@ -59,10 +59,6 @@ class RiskRepositorySettings(
         default=None,
         description="Comma-separated list of document IDs to process",
     )
-    split: TestTrainSplit = Field(
-        default=TestTrainSplit.TRAIN,
-        description="Split to process",
-    )
     stages: list[PipelineStage] = Field(
         default=STAGE_ORDER,
         description="Comma-separated list of pipeline stages to run",
@@ -105,11 +101,28 @@ class RiskRepositorySettings(
         default=DEFAULT_AIRTABLE_BASE_ID,
         description="Airtable ID for the AI Risk Repository base",
     )
-    airtable_screening_table: str = Field(
+    document_source: DocumentSource = Field(
+        default=DocumentSource.SCREENING_TABLE,
+        description="""
+            How to interpret the source table: a screening table (PDF attachments, keyed
+            by record ID) or the curated training-set table (full text by URL, keyed by
+            QuickRef).
+        """,
+    )
+    airtable_source_table: str = Field(
         default=...,
         description="""
-            Airtable screening table to read documents from. Each record's PDF is read
-            from its full_text_pdf attachment. Decisions are written back separately by
-            `risk_repository.upload`.
+            Airtable table to read documents from, interpreted according to
+            document_source. For screening_table, each record's PDF is read from its
+            full_text_pdf attachment and decisions are written back by
+            `risk_repository.upload`. For training_set, full text is fetched from each
+            record's PDFURL or URL.
+        """,
+    )
+    airtable_view: str | None = Field(
+        default=None,
+        description="""
+            Airtable view (name or ID) to read documents from. When set, only records
+            in the view are processed, in the view's order and subject to its filters.
         """,
     )
