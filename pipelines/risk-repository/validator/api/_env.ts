@@ -4,6 +4,8 @@ interface AirtableEnv {
   documentsTable: string;
   documentsView: string;
   decisionsTable: string;
+  risksTable: string;
+  reviewsTable: string;
 }
 
 export function readAirtableEnv(): AirtableEnv {
@@ -12,7 +14,17 @@ export function readAirtableEnv(): AirtableEnv {
   const documentsTable = required("AIRTABLE_DOCUMENTS_TABLE");
   const documentsView = required("AIRTABLE_DOCUMENTS_VIEW");
   const decisionsTable = required("AIRTABLE_DECISIONS_TABLE");
-  return { pat, baseId, documentsTable, documentsView, decisionsTable };
+  const risksTable = required("AIRTABLE_RISKS_TABLE");
+  const reviewsTable = required("AIRTABLE_REVIEWS_TABLE");
+  return {
+    pat,
+    baseId,
+    documentsTable,
+    documentsView,
+    decisionsTable,
+    risksTable,
+    reviewsTable,
+  };
 }
 
 function required(name: string): string {
