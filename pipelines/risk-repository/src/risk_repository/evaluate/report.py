@@ -101,7 +101,7 @@ def _print_side(heading: str, side: SideTally, *, zero: str, multi: str) -> None
 
 
 def _print_classification(m: ClassificationMetrics) -> None:
-    print("=== Classification (causal) ===")
+    print("=== Classification ===")
     print(f"Matched risks evaluated: {m.matched_risks}")
     print()
     print(f"{'Axis':<16} {'Total':>6} {'Correct':>8} {'Accuracy':>9} {'Kappa':>7}")

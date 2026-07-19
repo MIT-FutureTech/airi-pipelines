@@ -8,12 +8,27 @@ from risk_repository.classify import (
     ClassificationResult,
     Entity,
     Intent,
+    Subdomain,
     Timing,
 )
 from risk_repository.evaluate.match import DocumentMatchResult
 from risk_repository.results import PipelineStage, load, result_path
 
 logger = logging.getLogger(__name__)
+
+
+def _subdomain_code(subdomain: Subdomain) -> str | None:
+    """Map a predicted subdomain to a code, or None when unclassified (X.1)."""
+    if subdomain is Subdomain.UNCLASSIFIED:
+        return None
+    return subdomain.value
+
+
+def _domain_code(subdomain_code: str | None) -> str | None:
+    """Reduce a subdomain code like "3.1" to its parent domain "3"."""
+    if subdomain_code is None:
+        return None
+    return subdomain_code.split(".", 1)[0]
 
 
 class AxisMetrics(BaseModel):
@@ -33,9 +48,11 @@ def evaluate_classification(
     match_results: list[DocumentMatchResult],
     results_dir: Path,
 ) -> ClassificationMetrics:
-    entity_pairs: list[tuple[Entity | None, Entity]] = []
-    intent_pairs: list[tuple[Intent | None, Intent]] = []
-    timing_pairs: list[tuple[Timing | None, Timing]] = []
+    entity_pairs: list[tuple[Entity | None, Entity | None]] = []
+    intent_pairs: list[tuple[Intent | None, Intent | None]] = []
+    timing_pairs: list[tuple[Timing | None, Timing | None]] = []
+    domain_pairs: list[tuple[str | None, str | None]] = []
+    subdomain_pairs: list[tuple[str | None, str | None]] = []
     matched_risks = 0
 
     for doc in match_results:
@@ -53,7 +70,8 @@ def evaluate_classification(
                     f"{doc.readable_id}: pipeline index {match.pipeline_index} out of range for classification results"
                 )
                 continue
-            pipeline_causal = classification.risks[match.pipeline_index].causal
+            pipeline_risk = classification.risks[match.pipeline_index]
+            pipeline_causal = pipeline_risk.causal
             matched_risks += 1
 
             gt_entity = Entity(gt_risk.entity.lower()) if gt_risk.entity else None
@@ -64,19 +82,28 @@ def evaluate_classification(
             intent_pairs.append((gt_intent, pipeline_causal.intent))
             timing_pairs.append((gt_timing, pipeline_causal.timing))
 
+            gt_subdomain = gt_risk.subdomain_code
+            pl_subdomain = _subdomain_code(pipeline_risk.domain.subdomain)
+            subdomain_pairs.append((gt_subdomain, pl_subdomain))
+            domain_pairs.append(
+                (_domain_code(gt_subdomain), _domain_code(pl_subdomain))
+            )
+
     return ClassificationMetrics(
         matched_risks=matched_risks,
         axes=[
             _compute_axis_metrics("Entity", entity_pairs),
             _compute_axis_metrics("Intent", intent_pairs),
             _compute_axis_metrics("Timing", timing_pairs),
+            _compute_axis_metrics("Domain", domain_pairs),
+            _compute_axis_metrics("Subdomain", subdomain_pairs),
         ],
     )
 
 
 def _compute_axis_metrics[T](
     axis: str,
-    pairs: list[tuple[T | None, T]],
+    pairs: list[tuple[T | None, T | None]],
 ) -> AxisMetrics:
     if not pairs:
         return AxisMetrics(axis=axis, total=0, correct=0, accuracy=0.0, kappa=0.0)
