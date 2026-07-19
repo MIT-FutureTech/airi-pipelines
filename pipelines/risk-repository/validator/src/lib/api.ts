@@ -1,4 +1,10 @@
 import type {
+  ReviewMode,
+  ReviewUpsertRequest,
+  ReviewUpsertResponse,
+  RiskManifestResponse,
+} from "@api/_classification";
+import type {
   DecisionRequest,
   DecisionResponse,
   ManifestResponse,
@@ -42,4 +48,48 @@ export async function submitDecision(
     );
   }
   return (await response.json()) as DecisionResponse;
+}
+
+export interface RiskManifestParams {
+  extractionRun: string;
+  reviewer: string;
+  mode: ReviewMode;
+  pipelineReviewer: string | null;
+}
+
+const riskManifestCache = new Map<string, Promise<RiskManifestResponse>>();
+
+export function getRiskManifest(
+  params: RiskManifestParams,
+): Promise<RiskManifestResponse> {
+  const query = new URLSearchParams({
+    extractionRun: params.extractionRun,
+    reviewer: params.reviewer,
+    mode: params.mode,
+  });
+  if (params.pipelineReviewer !== null) {
+    query.set("pipelineReviewer", params.pipelineReviewer);
+  }
+  const url = `/api/risks/manifest?${query.toString()}`;
+  let promise = riskManifestCache.get(url);
+  if (promise === undefined) {
+    promise = fetchJson<RiskManifestResponse>(url, "risk manifest");
+    riskManifestCache.set(url, promise);
+  }
+  return promise;
+}
+
+export async function submitReview(
+  body: ReviewUpsertRequest,
+): Promise<ReviewUpsertResponse> {
+  const response = await fetch("/api/reviews", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`Failed to submit review: HTTP ${response.status} ${text}`);
+  }
+  return (await response.json()) as ReviewUpsertResponse;
 }
