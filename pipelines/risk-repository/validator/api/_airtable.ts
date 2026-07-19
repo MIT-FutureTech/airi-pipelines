@@ -129,6 +129,29 @@ export async function updateRecord<F>(
   return data.records[0];
 }
 
+export async function deleteRecords(
+  pat: string,
+  baseId: string,
+  table: string,
+  recordIds: string[],
+): Promise<void> {
+  if (recordIds.length === 0) {
+    return;
+  }
+  const params = new URLSearchParams();
+  for (const id of recordIds) {
+    params.append("records[]", id);
+  }
+  const url = `${AIRTABLE_BASE}/${baseId}/${encodeURIComponent(table)}?${params.toString()}`;
+  const response = await fetch(url, {
+    method: "DELETE",
+    headers: authHeaders(pat),
+  });
+  if (!response.ok) {
+    throw new AirtableError(response.status, await response.text());
+  }
+}
+
 export class AirtableError extends Error {
   status: number;
   body: string;
