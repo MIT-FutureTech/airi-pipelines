@@ -1,6 +1,7 @@
 import asyncio
 import logging
 
+from risk_repository.evaluate.classify import evaluate_classification
 from risk_repository.evaluate.extract import evaluate_extraction
 from risk_repository.evaluate.ground_truth import (
     fetch_ground_truth,
@@ -47,8 +48,11 @@ async def main() -> None:
             max_attempts=settings.max_attempts,
         )
     extraction = evaluate_extraction(match_results)
+    classification = evaluate_classification(match_results, settings.results_dir)
 
-    print_report(screening=screening, extraction=extraction, classification=None)
+    print_report(
+        screening=screening, extraction=extraction, classification=classification
+    )
 
 
 if __name__ == "__main__":
