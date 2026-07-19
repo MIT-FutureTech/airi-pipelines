@@ -239,14 +239,17 @@ When generating your response, follow the field order of the schema: the first f
 """
 
 _CLASSIFICATION_USER_PROMPT = """\
-Classify the following AI risk entry.
+The following risk was extracted from a paper. The category and subcategory indicate how
+the risk was classified by the original authors.
 
 <risk>
-Category: {category}
-Subcategory: {subcategory}
-Description: {description}
+Authors' category: {category}
+Authors' subcategory: {subcategory}
+Authors' description: {description}
 Supporting quote: {supporting_quote}
 </risk>
+
+Please reclassify it according to our own taxonomy.
 """
 
 
