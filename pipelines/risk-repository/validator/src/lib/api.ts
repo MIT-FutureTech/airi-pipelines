@@ -3,6 +3,7 @@ import type {
   ReviewUpsertRequest,
   ReviewUpsertResponse,
   RiskManifestResponse,
+  RunsResponse,
 } from "@api/_classification";
 import type {
   DecisionRequest,
@@ -55,6 +56,15 @@ export interface RiskManifestParams {
   reviewer: string;
   mode: ReviewMode;
   pipelineReviewer: string | null;
+}
+
+let runsPromise: Promise<RunsResponse> | undefined;
+
+export function getRuns(): Promise<RunsResponse> {
+  if (runsPromise === undefined) {
+    runsPromise = fetchJson<RunsResponse>("/api/runs", "runs");
+  }
+  return runsPromise;
 }
 
 const riskManifestCache = new Map<string, Promise<RiskManifestResponse>>();

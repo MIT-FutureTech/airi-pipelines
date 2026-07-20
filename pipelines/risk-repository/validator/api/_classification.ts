@@ -70,6 +70,8 @@ export const REVIEW_FIELD_VALUES: Record<ReviewField, readonly string[]> = {
 export const REVIEW_MODES = ["blind", "anchored"] as const;
 export type ReviewMode = (typeof REVIEW_MODES)[number];
 
+export const PIPELINE_REVIEWER_PREFIX = "pipeline:";
+
 export interface ReviewResponse {
   id: string;
   field: ReviewField;
@@ -95,6 +97,16 @@ export interface RiskManifestResponse {
   extractionRun: string;
   mode: ReviewMode;
   risks: RiskEntry[];
+}
+
+export interface ExtractionRunInfo {
+  extractionRun: string;
+  riskCount: number;
+  pipelineReviewers: string[];
+}
+
+export interface RunsResponse {
+  runs: ExtractionRunInfo[];
 }
 
 export interface ReviewUpsertRequest {
