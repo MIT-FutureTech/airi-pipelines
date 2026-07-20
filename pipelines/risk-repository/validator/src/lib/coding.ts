@@ -1,4 +1,5 @@
-import { AXIS_FIELDS, type ReviewResponse } from "@api/_classification";
+import type { ReviewResponse } from "@api/_classification";
+import { AXIS_FIELDS } from "@/lib/fields";
 
 export function isNotARisk(responses: ReviewResponse[]): boolean {
   return responses.some(
