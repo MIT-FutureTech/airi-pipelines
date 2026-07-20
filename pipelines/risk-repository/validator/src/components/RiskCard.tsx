@@ -1,10 +1,8 @@
-import {
-  AXIS_FIELDS,
-  REVIEW_FIELDS,
-  type ReviewField,
-  type ReviewMode,
-  type ReviewResponse,
-  type RiskEntry,
+import type {
+  ReviewField,
+  ReviewMode,
+  ReviewResponse,
+  RiskEntry,
 } from "@api/_classification";
 import {
   Anchor,
@@ -19,6 +17,7 @@ import {
 } from "@mantine/core";
 import { useMemo, useRef, useState } from "react";
 import { submitReview } from "@/lib/api";
+import { AXIS_FIELDS, REVIEW_FIELDS } from "@/lib/fields";
 import { SUBDOMAIN_GROUPS, SUBDOMAIN_LABELS } from "@/lib/subdomains";
 
 interface AxisOption {
