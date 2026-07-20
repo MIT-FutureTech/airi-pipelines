@@ -82,3 +82,9 @@ export const SUBDOMAIN_GROUPS: SubdomainGroup[] = [
     items: [{ value: "X.1", label: "X.1 Unclassified / not a concrete risk" }],
   },
 ];
+
+export const SUBDOMAIN_LABELS: Record<string, string> = Object.fromEntries(
+  SUBDOMAIN_GROUPS.flatMap((group) =>
+    group.items.map((item) => [item.value, item.label]),
+  ),
+);

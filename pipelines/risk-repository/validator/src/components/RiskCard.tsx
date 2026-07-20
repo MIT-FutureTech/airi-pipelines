@@ -7,6 +7,7 @@ import {
   type RiskEntry,
 } from "@api/_classification";
 import {
+  Anchor,
   Badge,
   Button,
   Group,
@@ -16,9 +17,9 @@ import {
   Switch,
   Text,
 } from "@mantine/core";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { submitReview } from "@/lib/api";
-import { SUBDOMAIN_GROUPS } from "@/lib/subdomains";
+import { SUBDOMAIN_GROUPS, SUBDOMAIN_LABELS } from "@/lib/subdomains";
 
 interface AxisOption {
   value: string;
@@ -118,6 +119,21 @@ export function RiskCard({
   const coded =
     notARisk || AXIS_FIELDS.every((field) => fields[field].value !== null);
 
+  const suggestions = useMemo(() => {
+    const map = {} as Record<ReviewField, string | null>;
+    for (const field of REVIEW_FIELDS) {
+      map[field] = null;
+    }
+    for (const response of entry.pipelineResponses) {
+      map[response.field] = response.value;
+    }
+    return map;
+  }, [entry.pipelineResponses]);
+
+  const hasSuggestions = AXIS_FIELDS.some(
+    (field) => suggestions[field] !== null,
+  );
+
   const toResponses = (states: FieldStates): ReviewResponse[] => {
     const responses: ReviewResponse[] = [];
     for (const field of REVIEW_FIELDS) {
@@ -175,6 +191,15 @@ export function RiskCard({
     }
   };
 
+  const acceptSuggestions = async () => {
+    for (const field of AXIS_FIELDS) {
+      const suggested = suggestions[field];
+      if (suggested !== null && fields[field].value === null) {
+        await saveField(field, suggested);
+      }
+    }
+  };
+
   return (
     <Stack gap="md" h="100%">
       <Group justify="space-between" align="center">
@@ -223,6 +248,21 @@ export function RiskCard({
       </ScrollArea>
 
       <Stack gap="sm">
+        {hasSuggestions ? (
+          <Group justify="space-between">
+            <Text size="xs" c="dimmed">
+              Pipeline suggestions shown below.
+            </Text>
+            <Button
+              size="xs"
+              variant="light"
+              onClick={acceptSuggestions}
+              disabled={notARisk}
+            >
+              Accept suggestions
+            </Button>
+          </Group>
+        ) : null}
         <Switch
           label="Not a risk"
           checked={notARisk}
@@ -240,6 +280,7 @@ export function RiskCard({
             label={axis.label}
             options={axis.options}
             state={fields[axis.field]}
+            suggested={suggestions[axis.field]}
             disabled={notARisk}
             onSelect={(value) => saveField(axis.field, value)}
           />
@@ -263,6 +304,30 @@ export function RiskCard({
             disabled={notARisk || fields.subdomain.saving}
             searchable
           />
+          {suggestions.subdomain !== null &&
+          fields.subdomain.value === null &&
+          !notARisk ? (
+            <Group gap="xs">
+              <Text size="xs" c="dimmed">
+                Pipeline:{" "}
+                {SUBDOMAIN_LABELS[suggestions.subdomain] ??
+                  suggestions.subdomain}
+              </Text>
+              <Anchor
+                component="button"
+                type="button"
+                size="xs"
+                onClick={() => {
+                  const suggested = suggestions.subdomain;
+                  if (suggested !== null) {
+                    saveField("subdomain", suggested);
+                  }
+                }}
+              >
+                Use
+              </Anchor>
+            </Group>
+          ) : null}
           {fields.subdomain.error !== null ? (
             <Text c="red" size="xs">
               {fields.subdomain.error}
@@ -278,6 +343,7 @@ interface AxisButtonsProps {
   label: string;
   options: AxisOption[];
   state: FieldState;
+  suggested: string | null;
   disabled: boolean;
   onSelect: (value: string) => void;
 }
@@ -286,9 +352,15 @@ function AxisButtons({
   label,
   options,
   state,
+  suggested,
   disabled,
   onSelect,
 }: AxisButtonsProps) {
+  const suggestedLabel =
+    suggested === null
+      ? null
+      : (options.find((option) => option.value === suggested)?.label ??
+        suggested);
   return (
     <Stack gap={4}>
       <Text size="sm" fw={500}>
@@ -299,7 +371,13 @@ function AxisButtons({
           <Button
             key={option.value}
             size="xs"
-            variant={state.value === option.value ? "filled" : "light"}
+            variant={
+              state.value === option.value
+                ? "filled"
+                : option.value === suggested
+                  ? "outline"
+                  : "light"
+            }
             onClick={() => onSelect(option.value)}
             disabled={disabled || state.saving}
           >
@@ -307,6 +385,11 @@ function AxisButtons({
           </Button>
         ))}
       </Group>
+      {suggestedLabel !== null && state.value === null && !disabled ? (
+        <Text size="xs" c="dimmed">
+          Pipeline: {suggestedLabel}
+        </Text>
+      ) : null}
       {state.error !== null ? (
         <Text c="red" size="xs">
           {state.error}
