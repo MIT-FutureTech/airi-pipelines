@@ -1,9 +1,9 @@
 import type {
+  PapersResponse,
   ReviewMode,
   ReviewUpsertRequest,
   ReviewUpsertResponse,
   RiskManifestResponse,
-  RunsResponse,
 } from "@api/_classification";
 import type {
   DecisionRequest,
@@ -52,41 +52,67 @@ export async function submitDecision(
 }
 
 export interface RiskManifestParams {
-  extractionRun: string;
+  quickRef: string;
   reviewer: string;
   mode: ReviewMode;
-  pipelineReviewer: string | null;
 }
 
-let runsPromise: Promise<RunsResponse> | undefined;
+const papersCache = new Map<string, Promise<PapersResponse>>();
 
-export function getRuns(): Promise<RunsResponse> {
-  if (runsPromise === undefined) {
-    runsPromise = fetchJson<RunsResponse>("/api/runs", "runs");
+function papersUrl(reviewer: string): string {
+  return `/api/papers?reviewer=${encodeURIComponent(reviewer)}`;
+}
+
+export function getPapers(reviewer: string): Promise<PapersResponse> {
+  const url = papersUrl(reviewer);
+  let promise = papersCache.get(url);
+  if (promise === undefined) {
+    promise = fetchJson<PapersResponse>(url, "papers");
+    papersCache.set(url, promise);
   }
-  return runsPromise;
+  return promise;
 }
 
 const riskManifestCache = new Map<string, Promise<RiskManifestResponse>>();
 
-export function getRiskManifest(
-  params: RiskManifestParams,
-): Promise<RiskManifestResponse> {
+function riskManifestUrl(params: RiskManifestParams): string {
   const query = new URLSearchParams({
-    extractionRun: params.extractionRun,
+    quickRef: params.quickRef,
     reviewer: params.reviewer,
     mode: params.mode,
   });
-  if (params.pipelineReviewer !== null) {
-    query.set("pipelineReviewer", params.pipelineReviewer);
-  }
-  const url = `/api/risks/manifest?${query.toString()}`;
+  return `/api/risks/manifest?${query.toString()}`;
+}
+
+// Cached because `use()` needs a promise whose identity is stable across
+// renders. `useMemo` cannot supply one: React may discard a memo and recompute,
+// which would suspend on a fresh promise every time.
+export function getRiskManifest(
+  params: RiskManifestParams,
+): Promise<RiskManifestResponse> {
+  const url = riskManifestUrl(params);
   let promise = riskManifestCache.get(url);
   if (promise === undefined) {
     promise = fetchJson<RiskManifestResponse>(url, "risk manifest");
     riskManifestCache.set(url, promise);
   }
   return promise;
+}
+
+export async function fetchRiskManifest(
+  params: RiskManifestParams,
+): Promise<RiskManifestResponse> {
+  const url = riskManifestUrl(params);
+  const fresh = fetchJson<RiskManifestResponse>(url, "risk manifest");
+  riskManifestCache.set(url, fresh);
+  return await fresh;
+}
+
+// The caches hold whatever was true when a paper was opened. Drop a paper's
+// entries on the way out so re-entering it shows the reviews written since.
+export function invalidateClassification(params: RiskManifestParams): void {
+  riskManifestCache.delete(riskManifestUrl(params));
+  papersCache.delete(papersUrl(params.reviewer));
 }
 
 export async function submitReview(
@@ -102,4 +128,15 @@ export async function submitReview(
     throw new Error(`Failed to submit review: HTTP ${response.status} ${text}`);
   }
   return (await response.json()) as ReviewUpsertResponse;
+}
+
+export async function deleteReview(reviewId: string): Promise<void> {
+  const response = await fetch(
+    `/api/reviews?reviewId=${encodeURIComponent(reviewId)}`,
+    { method: "DELETE" },
+  );
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`Failed to delete review: HTTP ${response.status} ${text}`);
+  }
 }

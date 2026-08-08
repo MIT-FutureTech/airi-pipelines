@@ -1,5 +1,6 @@
 import type { ReviewResponse, RiskEntry } from "@api/_classification";
 import {
+  Alert,
   AppShell,
   Badge,
   Button,
@@ -13,39 +14,56 @@ import { useHotkeys } from "@mantine/hooks";
 import { use, useMemo, useState } from "react";
 import { RiskCard } from "@/components/RiskCard";
 import { RiskSidebar } from "@/components/RiskSidebar";
-import { getRiskManifest } from "@/lib/api";
-import { isRiskCoded } from "@/lib/coding";
+import { fetchRiskManifest, getRiskManifest } from "@/lib/api";
+import { codableRisks, isRiskCoded, pipelineIsReady } from "@/lib/coding";
 import type { ClassificationSelection } from "@/lib/task";
+import { ancestorsOf, indexRisks } from "@/lib/tree";
 
 interface Props {
   reviewer: string;
   selection: ClassificationSelection;
   onExit: () => void;
+  onSwitchToBlind: () => void;
 }
 
-export function ClassificationReview({ reviewer, selection, onExit }: Props) {
-  const initial = use(
-    getRiskManifest({
-      extractionRun: selection.extractionRun,
-      reviewer,
-      mode: selection.mode,
-      pipelineReviewer: selection.pipelineReviewer,
-    }),
-  );
+export function ClassificationReview({
+  reviewer,
+  selection,
+  onExit,
+  onSwitchToBlind,
+}: Props) {
+  const { quickRef, mode } = selection;
+  const initial = use(getRiskManifest({ quickRef, reviewer, mode }));
   const [risks, setRisks] = useState<RiskEntry[]>(initial.risks);
   const [activeId, setActiveId] = useState<string | null>(() =>
     firstUncodedId(initial.risks),
   );
-  const [search, setSearch] = useState("");
+  const [checking, setChecking] = useState(false);
+  const [checkError, setCheckError] = useState<string | null>(null);
 
-  const activeIndex = useMemo(() => {
-    if (activeId === null) {
-      return -1;
+  const codable = codableRisks(risks);
+  const waitingForPipeline = mode === "anchored" && !pipelineIsReady(risks);
+
+  const checkForPipeline = async () => {
+    setChecking(true);
+    setCheckError(null);
+    try {
+      const fresh = await fetchRiskManifest({ quickRef, reviewer, mode });
+      setRisks(fresh.risks);
+    } catch (err) {
+      setCheckError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setChecking(false);
     }
-    return risks.findIndex((risk) => risk.id === activeId);
-  }, [risks, activeId]);
+  };
 
-  const activeEntry = activeIndex === -1 ? null : risks[activeIndex];
+  const index = useMemo(() => indexRisks(risks), [risks]);
+
+  const activeEntry = risks.find((risk) => risk.id === activeId) ?? null;
+  const codableIndex =
+    activeEntry === null || !activeEntry.codable
+      ? -1
+      : codable.findIndex((risk) => risk.id === activeEntry.id);
 
   const selectAndScroll = (id: string | null) => {
     setActiveId(id);
@@ -59,18 +77,20 @@ export function ClassificationReview({ reviewer, selection, onExit }: Props) {
   };
 
   const navigate = (offset: number) => {
-    if (risks.length === 0) {
+    if (codable.length === 0) {
       return;
     }
-    if (activeIndex === -1) {
-      selectAndScroll(risks[0].id);
+    if (codableIndex === -1) {
+      selectAndScroll(codable[0].id);
       return;
     }
-    const next = Math.max(0, Math.min(risks.length - 1, activeIndex + offset));
-    if (next === activeIndex) {
-      return;
+    const next = Math.max(
+      0,
+      Math.min(codable.length - 1, codableIndex + offset),
+    );
+    if (next !== codableIndex) {
+      selectAndScroll(codable[next].id);
     }
-    selectAndScroll(risks[next].id);
   };
 
   useHotkeys([
@@ -94,10 +114,12 @@ export function ClassificationReview({ reviewer, selection, onExit }: Props) {
       padding="md"
     >
       <AppShell.Header>
-        <Group h="100%" px="md" justify="space-between">
-          <Group gap="sm">
-            <Title order={4}>Classification review</Title>
-            <Badge variant="light">{selection.extractionRun}</Badge>
+        <Group h="100%" px="md" justify="space-between" wrap="nowrap">
+          <Group gap="sm" wrap="nowrap" style={{ minWidth: 0 }}>
+            <Title order={4}>{selection.quickRef}</Title>
+            <Text size="sm" c="dimmed" lineClamp={1}>
+              {initial.title ?? ""}
+            </Text>
             <Badge
               variant="light"
               color={selection.mode === "anchored" ? "grape" : "blue"}
@@ -105,17 +127,12 @@ export function ClassificationReview({ reviewer, selection, onExit }: Props) {
               {selection.mode}
             </Badge>
           </Group>
-          <Group gap="md">
-            <Group gap="xs">
-              <Text size="sm" c="dimmed">
-                Reviewer:
-              </Text>
-              <Text size="sm" fw={500}>
-                {reviewer}
-              </Text>
-            </Group>
+          <Group gap="md" wrap="nowrap">
+            <Text size="sm" fw={500}>
+              {reviewer}
+            </Text>
             <Button size="xs" variant="subtle" onClick={onExit}>
-              Back to tasks
+              Back to papers
             </Button>
           </Group>
         </Group>
@@ -125,16 +142,21 @@ export function ClassificationReview({ reviewer, selection, onExit }: Props) {
           risks={risks}
           activeId={activeId}
           onSelect={selectAndScroll}
-          search={search}
-          onSearchChange={setSearch}
         />
       </AppShell.Navbar>
       <AppShell.Main style={{ height: "calc(100vh - 56px)" }}>
-        {activeEntry === null ? (
+        {waitingForPipeline ? (
+          <WaitingForPipeline
+            checking={checking}
+            error={checkError}
+            onCheckAgain={checkForPipeline}
+            onSwitchToBlind={onSwitchToBlind}
+          />
+        ) : activeEntry === null ? (
           <Center h="100%" p="md">
             <Stack gap="sm" align="center">
               <Title order={2}>All coded</Title>
-              <Text c="dimmed">Every risk in this run has been coded.</Text>
+              <Text c="dimmed">Every risk in this paper has been coded.</Text>
               <Text c="dimmed" size="sm">
                 Revisit any risk from the sidebar to revise it.
               </Text>
@@ -145,9 +167,10 @@ export function ClassificationReview({ reviewer, selection, onExit }: Props) {
             key={activeEntry.id}
             reviewer={reviewer}
             entry={activeEntry}
+            ancestors={ancestorsOf(index, activeEntry)}
             mode={selection.mode}
-            position={activeIndex + 1}
-            total={risks.length}
+            position={codableIndex + 1}
+            total={codable.length}
             onResponsesChanged={handleResponsesChanged}
           />
         )}
@@ -156,7 +179,46 @@ export function ClassificationReview({ reviewer, selection, onExit }: Props) {
   );
 }
 
+interface WaitingProps {
+  checking: boolean;
+  error: string | null;
+  onCheckAgain: () => void;
+  onSwitchToBlind: () => void;
+}
+
+function WaitingForPipeline({
+  checking,
+  error,
+  onCheckAgain,
+  onSwitchToBlind,
+}: WaitingProps) {
+  return (
+    <Center h="100%" p="md">
+      <Stack gap="md" align="center" maw={440}>
+        <Title order={3}>Not classified yet</Title>
+        <Text c="dimmed" ta="center">
+          The pipeline has not classified this paper. Anchored review starts
+          once its classification is in.
+        </Text>
+        {error !== null ? (
+          <Alert color="red" title="Could not check" w="100%">
+            {error}
+          </Alert>
+        ) : null}
+        <Group gap="sm">
+          <Button onClick={onCheckAgain} loading={checking}>
+            Check again
+          </Button>
+          <Button variant="default" onClick={onSwitchToBlind}>
+            Review blind instead
+          </Button>
+        </Group>
+      </Stack>
+    </Center>
+  );
+}
+
 function firstUncodedId(risks: RiskEntry[]): string | null {
-  const found = risks.find((risk) => !isRiskCoded(risk.responses));
+  const found = codableRisks(risks).find((risk) => !isCoded(risk.responses));
   return found?.id ?? null;
 }

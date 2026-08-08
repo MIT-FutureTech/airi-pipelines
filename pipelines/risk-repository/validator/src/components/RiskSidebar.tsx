@@ -1,87 +1,42 @@
 import type { RiskEntry } from "@api/_classification";
-import {
-  Badge,
-  NavLink,
-  ScrollArea,
-  Stack,
-  Text,
-  TextInput,
-} from "@mantine/core";
-import { IconSearch } from "@tabler/icons-react";
+import { Badge, NavLink, ScrollArea, Stack, Text } from "@mantine/core";
 import { useMemo } from "react";
-import { isNotARisk, isRiskCoded } from "@/lib/coding";
+import { codableRisks, isNotARisk, isRiskCoded } from "@/lib/coding";
+import { REJECTED_ORIGIN } from "@/lib/fields";
+import { depthOf, indexRisks } from "@/lib/tree";
 
 interface Props {
   risks: RiskEntry[];
   activeId: string | null;
   onSelect: (id: string) => void;
-  search: string;
-  onSearchChange: (value: string) => void;
 }
 
-export function RiskSidebar({
-  risks,
-  activeId,
-  onSelect,
-  search,
-  onSearchChange,
-}: Props) {
-  const codedCount = useMemo(
-    () => risks.filter((risk) => isRiskCoded(risk.responses)).length,
-    [risks],
-  );
-
-  const visible = useMemo(() => {
-    const query = search.trim().toLowerCase();
-    if (query === "") {
-      return risks;
-    }
-    return risks.filter((risk) => {
-      if (risk.readableId.toLowerCase().includes(query)) {
-        return true;
-      }
-      return risk.description.toLowerCase().includes(query);
-    });
-  }, [risks, search]);
+export function RiskSidebar({ risks, activeId, onSelect }: Props) {
+  const index = useMemo(() => indexRisks(risks), [risks]);
+  const codable = codableRisks(risks);
+  const codedCount = codable.filter((risk) =>
+    isRiskCoded(risk.responses),
+  ).length;
 
   return (
     <Stack gap="sm" h="100%">
       <Text size="sm" c="dimmed">
-        {codedCount} / {risks.length} coded
+        {codedCount} / {codable.length} coded
       </Text>
-      <TextInput
-        size="sm"
-        placeholder="Search ID or description"
-        value={search}
-        leftSection={<IconSearch size={14} />}
-        onChange={(event) => {
-          onSearchChange(event.currentTarget.value);
-        }}
-        onKeyDown={(event) => {
-          if (event.key === "Escape") {
-            onSearchChange("");
-          }
-        }}
-      />
       <ScrollArea style={{ flex: 1, minHeight: 0 }}>
-        {visible.length === 0 ? (
-          <Text c="dimmed" size="sm">
-            No risks match.
-          </Text>
-        ) : (
-          <Stack gap={0}>
-            {visible.map((entry) => (
-              <SidebarRow
-                key={entry.id}
-                entry={entry}
-                active={entry.id === activeId}
-                onClick={() => {
-                  onSelect(entry.id);
-                }}
-              />
-            ))}
-          </Stack>
-        )}
+        <Stack gap={0}>
+          {risks.map((entry) => (
+            <SidebarRow
+              key={entry.id}
+              entry={entry}
+              depth={depthOf(index, entry)}
+              active={entry.id === activeId}
+              onClick={() => {
+                onSelect(entry.id);
+              }}
+            />
+          ))}
+        </Stack>
       </ScrollArea>
     </Stack>
   );
@@ -89,38 +44,62 @@ export function RiskSidebar({
 
 interface RowProps {
   entry: RiskEntry;
+  depth: number;
   active: boolean;
   onClick: () => void;
 }
 
-function SidebarRow({ entry, active, onClick }: RowProps) {
-  const notARisk = isNotARisk(entry.responses);
-  const coded = isRiskCoded(entry.responses);
-  const badge = notARisk ? "NR" : coded ? "✓" : "—";
+function SidebarRow({ entry, depth, active, onClick }: RowProps) {
+  const rejected = entry.origin === REJECTED_ORIGIN;
   return (
     <NavLink
       data-risk-id={entry.id}
       active={active}
       onClick={onClick}
-      label={entry.readableId}
-      description={truncate(entry.description, 64)}
-      leftSection={
-        <Badge
-          size="sm"
-          variant="light"
-          color={coded && !notARisk ? "green" : "gray"}
-          w="2.5rem"
-        >
-          {badge}
-        </Badge>
+      pl={`calc(var(--mantine-spacing-xs) + ${depth * 14}px)`}
+      opacity={rejected ? 0.45 : 1}
+      label={
+        <Text size="sm" fw={entry.codable ? 400 : 600} lineClamp={2}>
+          {entry.name}
+        </Text>
       }
+      description={entry.readableId}
+      leftSection={<StatusBadge entry={entry} rejected={rejected} />}
     />
   );
 }
 
-function truncate(text: string, max: number): string {
-  if (text.length <= max) {
-    return text;
+function StatusBadge({
+  entry,
+  rejected,
+}: {
+  entry: RiskEntry;
+  rejected: boolean;
+}) {
+  if (rejected) {
+    return (
+      <Badge size="sm" variant="light" color="red" w="2.5rem">
+        ✕
+      </Badge>
+    );
   }
-  return `${text.slice(0, max)}…`;
+  if (!entry.codable) {
+    return (
+      <Badge size="sm" variant="transparent" color="gray" w="2.5rem">
+        ⌄
+      </Badge>
+    );
+  }
+  const notARisk = isNotARisk(entry.responses);
+  const coded = isRiskCoded(entry.responses);
+  return (
+    <Badge
+      size="sm"
+      variant="light"
+      color={notARisk ? "gray" : coded ? "green" : "gray"}
+      w="2.5rem"
+    >
+      {notARisk ? "NR" : coded ? "✓" : "—"}
+    </Badge>
+  );
 }

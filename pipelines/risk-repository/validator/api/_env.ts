@@ -1,4 +1,4 @@
-interface AirtableEnv {
+export interface AirtableEnv {
   pat: string;
   baseId: string;
   documentsTable: string;

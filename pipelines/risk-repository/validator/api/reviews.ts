@@ -1,6 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import {
-  AirtableError,
   createRecord,
   deleteRecords,
   escapeFormulaString,
@@ -9,6 +8,7 @@ import {
 } from "./_airtable.js";
 import {
   AXIS_FIELDS,
+  NOT_A_RISK,
   REVIEW_FIELD_VALUES,
   REVIEW_FIELDS,
   REVIEW_MODES,
@@ -19,11 +19,17 @@ import {
   type ReviewUpsertResponse,
 } from "./_classification.js";
 import { readAirtableEnv } from "./_env.js";
+import { handleError, queryString } from "./_http.js";
+import { isPipelineReviewer } from "./_reviews.js";
 
 export default async function handler(
   req: VercelRequest,
   res: VercelResponse,
 ): Promise<void> {
+  if (req.method === "DELETE") {
+    await handleDelete(req, res);
+    return;
+  }
   if (req.method !== "POST") {
     res.status(405).json({ error: "Method not allowed" });
     return;
@@ -32,6 +38,12 @@ export default async function handler(
   const parsed = parseBody(req.body);
   if (parsed === null) {
     res.status(400).json({ error: "Invalid request body" });
+    return;
+  }
+  if (isPipelineReviewer(parsed.reviewer)) {
+    res
+      .status(400)
+      .json({ error: "Reviewer name is reserved for the pipeline" });
     return;
   }
 
@@ -61,7 +73,7 @@ export default async function handler(
             fields,
           );
 
-    if (parsed.field === "validity" && parsed.value === "not-a-risk") {
+    if (parsed.field === "validity" && parsed.value === NOT_A_RISK) {
       await clearAxisRows(env, parsed.reviewer, parsed.riskId);
     }
 
@@ -72,6 +84,24 @@ export default async function handler(
       value: parsed.value,
     };
     res.status(200).json(body);
+  } catch (error) {
+    handleError(res, error);
+  }
+}
+
+async function handleDelete(
+  req: VercelRequest,
+  res: VercelResponse,
+): Promise<void> {
+  const reviewId = queryString(req.query.reviewId);
+  if (reviewId === null) {
+    res.status(400).json({ error: "reviewId query parameter is required" });
+    return;
+  }
+  try {
+    const env = readAirtableEnv();
+    await deleteRecords(env.pat, env.baseId, env.reviewsTable, [reviewId]);
+    res.status(200).json({ reviewId });
   } catch (error) {
     handleError(res, error);
   }
@@ -165,15 +195,4 @@ function isValidValue(field: ReviewField, value: string): boolean {
 
 function isMode(value: string): value is ReviewMode {
   return (REVIEW_MODES as readonly string[]).includes(value);
-}
-
-function handleError(res: VercelResponse, error: unknown): void {
-  if (error instanceof AirtableError) {
-    res
-      .status(502)
-      .json({ error: "Airtable request failed", detail: error.body });
-    return;
-  }
-  const message = error instanceof Error ? error.message : String(error);
-  res.status(500).json({ error: message });
 }
