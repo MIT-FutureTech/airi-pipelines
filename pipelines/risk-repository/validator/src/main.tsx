@@ -2,8 +2,10 @@ import "@mantine/core/styles.css";
 import { MantineProvider } from "@mantine/core";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import { ErrorBoundary } from "react-error-boundary";
 import { App } from "@/components/App";
-import { theme } from "@/lib/theme";
+import { ErrorScreen } from "@/components/ErrorScreen";
+import { cssVariablesResolver, theme } from "@/lib/theme";
 
 const root = document.getElementById("root");
 if (root === null) {
@@ -12,8 +14,14 @@ if (root === null) {
 
 createRoot(root).render(
   <StrictMode>
-    <MantineProvider theme={theme} defaultColorScheme="auto">
-      <App />
+    <MantineProvider
+      theme={theme}
+      cssVariablesResolver={cssVariablesResolver}
+      defaultColorScheme="auto"
+    >
+      <ErrorBoundary FallbackComponent={ErrorScreen}>
+        <App />
+      </ErrorBoundary>
     </MantineProvider>
   </StrictMode>,
 );

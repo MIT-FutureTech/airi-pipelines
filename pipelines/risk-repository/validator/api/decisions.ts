@@ -1,12 +1,16 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import {
+  DECISIONS,
+  type Decision,
+  type DecisionRequest,
+} from "../shared/screening.js";
+import {
   AirtableError,
   type AirtableRecord,
   createRecord,
   updateRecord,
 } from "./_airtable.js";
 import { readAirtableEnv } from "./_env.js";
-import { DECISIONS, type Decision, type DecisionRequest } from "./_shared.js";
 import { type DecisionFields, STAGE } from "./_types.js";
 
 export default async function handler(
