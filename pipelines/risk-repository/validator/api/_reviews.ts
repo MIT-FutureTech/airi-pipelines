@@ -1,13 +1,13 @@
 import {
+  PIPELINE_REVIEWER_PREFIX,
+  type ReviewFields,
+  type ReviewResponse,
+} from "../shared/classification.js";
+import {
   type AirtableRecord,
   escapeFormulaString,
   listAllRecords,
 } from "./_airtable.js";
-import {
-  PIPELINE_REVIEWER_PREFIX,
-  type ReviewFields,
-  type ReviewResponse,
-} from "./_classification.js";
 import type { AirtableEnv } from "./_env.js";
 
 const REVIEW_FETCH_FIELDS = [

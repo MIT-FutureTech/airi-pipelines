@@ -1,4 +1,3 @@
-import type { PaperEntry, ReviewMode } from "@api/_classification";
 import {
   Badge,
   Container,
@@ -10,6 +9,7 @@ import {
   Title,
   UnstyledButton,
 } from "@mantine/core";
+import type { PaperEntry, ReviewMode } from "@shared/classification";
 import { use, useMemo, useState } from "react";
 import { getPapers } from "@/lib/api";
 import { navigate } from "@/lib/route";

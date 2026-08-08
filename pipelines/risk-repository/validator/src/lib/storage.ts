@@ -1,4 +1,4 @@
-import type { ReviewMode } from "@api/_classification";
+import type { ReviewMode } from "@shared/classification";
 import type { HighlightGroup } from "./highlight";
 
 const REVIEWER_KEY = "validator.reviewer";

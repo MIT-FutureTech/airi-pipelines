@@ -4,12 +4,12 @@ import type {
   ReviewUpsertRequest,
   ReviewUpsertResponse,
   RiskManifestResponse,
-} from "@api/_classification";
+} from "@shared/classification";
 import type {
   DecisionRequest,
   DecisionResponse,
   ManifestResponse,
-} from "@api/_shared";
+} from "@shared/screening";
 
 const manifestCache = new Map<string, Promise<ManifestResponse>>();
 

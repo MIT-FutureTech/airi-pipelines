@@ -1,5 +1,5 @@
+import { REJECTED_ORIGIN, type RiskFields } from "../shared/classification.js";
 import type { AirtableRecord } from "./_airtable.js";
-import { REJECTED_ORIGIN, type RiskFields } from "./_classification.js";
 
 export function isRejected(risk: AirtableRecord<RiskFields>): boolean {
   return risk.fields.Origin === REJECTED_ORIGIN;

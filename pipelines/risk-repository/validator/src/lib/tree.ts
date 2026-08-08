@@ -1,4 +1,4 @@
-import type { RiskEntry } from "@api/_classification";
+import type { RiskEntry } from "@shared/classification";
 
 export type RiskIndex = Map<string, RiskEntry>;
 

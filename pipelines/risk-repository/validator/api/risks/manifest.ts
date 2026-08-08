@@ -1,10 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import {
-  type AirtableRecord,
-  escapeFormulaString,
-  listAllRecords,
-} from "../_airtable.js";
-import {
   type ProposedExtractionFields,
   REVIEW_MODES,
   type ReviewFields,
@@ -13,7 +8,12 @@ import {
   type RiskFields,
   type RiskManifestResponse,
   type RiskOrigin,
-} from "../_classification.js";
+} from "../../shared/classification.js";
+import {
+  type AirtableRecord,
+  escapeFormulaString,
+  listAllRecords,
+} from "../_airtable.js";
 import { readAirtableEnv } from "../_env.js";
 import { parseEvidence } from "../_evidence.js";
 import { handleError, queryString } from "../_http.js";

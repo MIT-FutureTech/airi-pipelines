@@ -1,12 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import {
-  createRecord,
-  deleteRecords,
-  escapeFormulaString,
-  listAllRecords,
-  updateRecord,
-} from "./_airtable.js";
-import {
   AXIS_FIELDS,
   NOT_A_RISK,
   REVIEW_FIELD_VALUES,
@@ -17,7 +10,14 @@ import {
   type ReviewMode,
   type ReviewUpsertRequest,
   type ReviewUpsertResponse,
-} from "./_classification.js";
+} from "../shared/classification.js";
+import {
+  createRecord,
+  deleteRecords,
+  escapeFormulaString,
+  listAllRecords,
+  updateRecord,
+} from "./_airtable.js";
 import { readAirtableEnv } from "./_env.js";
 import { handleError, queryString } from "./_http.js";
 import { isPipelineReviewer } from "./_reviews.js";

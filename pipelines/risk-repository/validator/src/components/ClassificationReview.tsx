@@ -1,8 +1,3 @@
-import type {
-  ReviewMode,
-  ReviewResponse,
-  RiskEntry,
-} from "@api/_classification";
 import {
   Alert,
   AppShell,
@@ -15,11 +10,17 @@ import {
   Title,
 } from "@mantine/core";
 import { useHotkeys } from "@mantine/hooks";
+import type {
+  ReviewMode,
+  ReviewResponse,
+  RiskEntry,
+} from "@shared/classification";
+import { isCoded } from "@shared/coding";
 import { use, useMemo, useState } from "react";
 import { RiskCard } from "@/components/RiskCard";
 import { RiskSidebar } from "@/components/RiskSidebar";
 import { fetchRiskManifest, getRiskManifest } from "@/lib/api";
-import { codableRisks, isRiskCoded, pipelineIsReady } from "@/lib/coding";
+import { codableRisks, pipelineIsReady } from "@/lib/risks";
 import { navigate } from "@/lib/route";
 import { ancestorsOf, indexRisks } from "@/lib/tree";
 

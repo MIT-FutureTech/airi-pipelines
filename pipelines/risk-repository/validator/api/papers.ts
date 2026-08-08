@@ -1,5 +1,4 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { type AirtableRecord, listAllRecords } from "./_airtable.js";
 import type {
   PaperEntry,
   PaperState,
@@ -7,8 +6,9 @@ import type {
   ProposedExtractionFields,
   ReviewFields,
   RiskFields,
-} from "./_classification.js";
-import { type Coding, isCoded } from "./_coding.js";
+} from "../shared/classification.js";
+import { type Coding, isCoded } from "../shared/coding.js";
+import { type AirtableRecord, listAllRecords } from "./_airtable.js";
 import { readAirtableEnv } from "./_env.js";
 import { handleError, queryString } from "./_http.js";
 import {

@@ -1,4 +1,3 @@
-import type { Decision, ManifestEntry } from "@api/_shared";
 import {
   Badge,
   NavLink,
@@ -7,6 +6,7 @@ import {
   Text,
   TextInput,
 } from "@mantine/core";
+import type { Decision, ManifestEntry } from "@shared/screening";
 import { IconSearch } from "@tabler/icons-react";
 import { useMemo } from "react";
 import { DECISION_COLORS } from "@/lib/theme";
