@@ -114,23 +114,28 @@ export function ClassificationReview({
       padding="md"
     >
       <AppShell.Header>
-        <Group h="100%" px="md" justify="space-between" wrap="nowrap">
-          <Group gap="sm" wrap="nowrap" style={{ minWidth: 0 }}>
-            <Title order={4}>{selection.quickRef}</Title>
-            <Text size="sm" c="dimmed" lineClamp={1}>
-              {initial.title ?? ""}
-            </Text>
-            <Badge
-              variant="light"
-              color={selection.mode === "anchored" ? "grape" : "blue"}
-            >
-              {selection.mode}
-            </Badge>
-          </Group>
-          <Group gap="md" wrap="nowrap">
+        <Group h="100%" px="md" gap="md" wrap="nowrap">
+          <Title order={4} style={{ flexShrink: 0 }}>
+            {quickRef}
+          </Title>
+          <Text
+            size="sm"
+            c="dimmed"
+            lineClamp={1}
+            style={{ flex: 1, minWidth: 0 }}
+          >
+            {initial.title ?? ""}
+          </Text>
+          <Group gap="sm" wrap="nowrap" style={{ flexShrink: 0 }}>
             <Text size="sm" fw={500}>
               {reviewer}
             </Text>
+            <Badge
+              variant="light"
+              color={mode === "anchored" ? "grape" : "blue"}
+            >
+              {mode}
+            </Badge>
             <Button size="xs" variant="subtle" onClick={onExit}>
               Back to papers
             </Button>
@@ -168,7 +173,7 @@ export function ClassificationReview({
             reviewer={reviewer}
             entry={activeEntry}
             ancestors={ancestorsOf(index, activeEntry)}
-            mode={selection.mode}
+            mode={mode}
             position={codableIndex + 1}
             total={codable.length}
             onResponsesChanged={handleResponsesChanged}
