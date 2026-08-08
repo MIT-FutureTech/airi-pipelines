@@ -3,7 +3,7 @@ import { MantineProvider } from "@mantine/core";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "@/components/App";
-import { theme } from "@/lib/theme";
+import { cssVariablesResolver, theme } from "@/lib/theme";
 
 const root = document.getElementById("root");
 if (root === null) {
@@ -12,7 +12,11 @@ if (root === null) {
 
 createRoot(root).render(
   <StrictMode>
-    <MantineProvider theme={theme} defaultColorScheme="auto">
+    <MantineProvider
+      theme={theme}
+      cssVariablesResolver={cssVariablesResolver}
+      defaultColorScheme="auto"
+    >
       <App />
     </MantineProvider>
   </StrictMode>,
