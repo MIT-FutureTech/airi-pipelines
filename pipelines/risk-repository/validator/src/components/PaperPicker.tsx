@@ -107,7 +107,7 @@ function PaperRow({ paper, onOpen }: RowProps) {
         borderRadius: "var(--mantine-radius-sm)",
         padding: "var(--mantine-spacing-sm)",
         cursor: openable ? "pointer" : "not-allowed",
-        opacity: openable ? 1 : 0.55,
+        opacity: openable ? 1 : 0.6,
       }}
     >
       <Group justify="space-between" wrap="nowrap" align="flex-start">
