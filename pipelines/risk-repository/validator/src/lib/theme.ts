@@ -1,5 +1,5 @@
-import type { Decision } from "@api/_shared";
-import { createTheme } from "@mantine/core";
+import { type CSSVariablesResolver, createTheme } from "@mantine/core";
+import type { Decision } from "@shared/screening";
 
 export const theme = createTheme({
   colors: {
@@ -16,6 +16,12 @@ export const theme = createTheme({
       "#ffffff",
     ],
   },
+});
+
+export const cssVariablesResolver: CSSVariablesResolver = (mantineTheme) => ({
+  variables: {},
+  light: { "--mantine-color-dimmed": mantineTheme.colors.gray[7] },
+  dark: { "--mantine-color-dimmed": mantineTheme.colors.dark[1] },
 });
 
 export const DECISION_COLORS: Record<Decision, string> = {

@@ -37,7 +37,7 @@
       // Vercel serverless functions are deployed as plain .js and run as
       // Node ESM. Path aliases aren't resolved at runtime, and relative
       // imports need the .js extension matching the emitted file.
-      "includes": ["api/**"],
+      "includes": ["api/**", "shared/**"],
       "linter": {
         "rules": {
           "style": {
@@ -46,12 +46,12 @@
               "options": {
                 "patterns": [
                   {
-                    "group": ["@api/*", "@/*"],
-                    "message": "Use relative imports inside api/"
+                    "group": ["@shared/*", "@/*"],
+                    "message": "Use relative imports inside api/ and shared/"
                   },
                   {
                     "group": ["./**", "../**", "!./**/*.js", "!../**/*.js"],
-                    "message": "Relative imports inside api/ must end with .js"
+                    "message": "Relative imports inside api/ and shared/ must end with .js"
                   }
                 ]
               }
