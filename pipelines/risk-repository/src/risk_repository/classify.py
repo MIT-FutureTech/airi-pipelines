@@ -104,18 +104,6 @@ def make_causal_classifier(
     )
 
 
-async def classify_causal(
-    classifier: LLMClassifier[CausalClassification],
-    risk: ExtractedRisk,
-) -> CausalClassification:
-    result = await classifier.classify(format_classification_user_prompt(risk))
-    if result.usage is None:
-        logger.info("No LLM usage returned")
-    else:
-        logger.info(f"Usage: {result.usage.model_dump_json()}")
-    return result.value
-
-
 def make_domain_classifier(
     client: LLMClient,
 ) -> LLMClassifier[DomainClassification]:
@@ -126,11 +114,12 @@ def make_domain_classifier(
     )
 
 
-async def classify_domain(
-    classifier: LLMClassifier[DomainClassification],
+async def classify_risk[T: BaseModel](
+    classifier: LLMClassifier[T],
     risk: ExtractedRisk,
-) -> DomainClassification:
-    result = await classifier.classify(format_classification_user_prompt(risk))
+) -> T:
+    user_prompt = format_classification_user_prompt(risk)
+    result = await classifier.classify(user_prompt)
     if result.usage is None:
         logger.info("No LLM usage returned")
     else:
@@ -286,8 +275,8 @@ async def _classify_one(
         for i, risk in enumerate(extraction.risks):
             risk_id = f"{record.readable_id}-{i:03}"
             with log_context(risk_id=risk_id):
-                causal = await classify_causal(causal_classifier, risk)
-                domain = await classify_domain(domain_classifier, risk)
+                causal = await classify_risk(causal_classifier, risk)
+                domain = await classify_risk(domain_classifier, risk)
                 classified = ClassifiedRisk(
                     risk_id=risk_id, causal=causal, domain=domain
                 )
