@@ -1,7 +1,8 @@
-import { Alert, Button, Center, Loader, Stack } from "@mantine/core";
+import { Center, Loader } from "@mantine/core";
 import { Suspense, useState } from "react";
-import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
+import { ErrorBoundary } from "react-error-boundary";
 import { ClassificationReview } from "@/components/ClassificationReview";
+import { ErrorScreen } from "@/components/ErrorScreen";
 import { NamePrompt } from "@/components/NamePrompt";
 import { PaperPicker } from "@/components/PaperPicker";
 import { TaskLauncher } from "@/components/TaskLauncher";
@@ -67,7 +68,7 @@ interface ScreenProps {
 
 function Screen({ resetKey, children }: ScreenProps) {
   return (
-    <ErrorBoundary fallbackRender={renderError} resetKeys={[resetKey]}>
+    <ErrorBoundary FallbackComponent={ErrorScreen} resetKeys={[resetKey]}>
       <Suspense
         fallback={
           <Center h="100vh">
@@ -78,24 +79,5 @@ function Screen({ resetKey, children }: ScreenProps) {
         {children}
       </Suspense>
     </ErrorBoundary>
-  );
-}
-
-function renderError({ error }: FallbackProps) {
-  return (
-    <Center h="100vh" p="md">
-      <Stack gap="md" maw={600}>
-        <Alert color="red" title="Error">
-          {error instanceof Error ? error.message : String(error)}
-        </Alert>
-        <Button
-          variant="default"
-          onClick={() => navigate({ name: "tasks" })}
-          style={{ alignSelf: "flex-start" }}
-        >
-          Back to tasks
-        </Button>
-      </Stack>
-    </Center>
   );
 }
