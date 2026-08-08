@@ -40,6 +40,7 @@ export function ClassificationReview({
   );
   const [checking, setChecking] = useState(false);
   const [checkError, setCheckError] = useState<string | null>(null);
+  const [expandedAncestors, setExpandedAncestors] = useState<string[]>([]);
 
   const codable = codableRisks(risks);
   const waitingForPipeline = mode === "anchored" && !pipelineIsReady(risks);
@@ -61,7 +62,7 @@ export function ClassificationReview({
 
   const activeEntry = risks.find((risk) => risk.id === activeId) ?? null;
   const codableIndex =
-    activeEntry === null || !activeEntry.codable
+    activeEntry === null
       ? -1
       : codable.findIndex((risk) => risk.id === activeEntry.id);
 
@@ -173,10 +174,12 @@ export function ClassificationReview({
             reviewer={reviewer}
             entry={activeEntry}
             ancestors={ancestorsOf(index, activeEntry)}
+            expandedAncestors={expandedAncestors}
             mode={mode}
             position={codableIndex + 1}
             total={codable.length}
             onResponsesChanged={handleResponsesChanged}
+            onExpandedAncestorsChange={setExpandedAncestors}
           />
         )}
       </AppShell.Main>
