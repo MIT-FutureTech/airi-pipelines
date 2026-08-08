@@ -14,6 +14,11 @@ import {
 import { use, useMemo, useState } from "react";
 import { getPapers } from "@/lib/api";
 import type { ClassificationSelection } from "@/lib/task";
+import {
+  loadPaperPickerPrefs,
+  type PaperPickerPrefs,
+  savePaperPickerPrefs,
+} from "@/lib/storage";
 
 interface Props {
   reviewer: string;
@@ -40,13 +45,28 @@ const STATUS_COLORS: Record<PaperStatus, string> = {
   Complete: "green",
 };
 
-export function PaperPicker({ reviewer, onStart, onBack }: Props) {
+export function PaperPicker({ reviewer }: Props) {
   const { papers } = use(getPapers(reviewer));
-  const [mode, setMode] = useState<ReviewMode>("blind");
-  const [assignee, setAssignee] = useState<string | null>(null);
-  const [status, setStatus] = useState<string | null>(null);
+  const [prefs, setPrefs] = useState<PaperPickerPrefs>(loadPaperPickerPrefs);
 
   const assignees = useMemo(() => assigneeOptions(papers), [papers]);
+
+  const update = (changes: Partial<PaperPickerPrefs>) => {
+    const next = { ...prefs, ...changes };
+    setPrefs(next);
+    savePaperPickerPrefs(next);
+  };
+
+  const { mode } = prefs;
+  const assignee =
+    prefs.assignee !== null && assignees.includes(prefs.assignee)
+      ? prefs.assignee
+      : null;
+  const status =
+    prefs.status !== null &&
+    (PAPER_STATUSES as readonly string[]).includes(prefs.status)
+      ? prefs.status
+      : null;
 
   const visible = papers.filter(
     (paper) =>
@@ -76,7 +96,7 @@ export function PaperPicker({ reviewer, onStart, onBack }: Props) {
           </Text>
           <SegmentedControl
             value={mode}
-            onChange={(value) => setMode(value as ReviewMode)}
+            onChange={(value) => update({ mode: value as ReviewMode })}
             data={[
               { value: "blind", label: "Blind" },
               { value: "anchored", label: "Anchored" },
@@ -95,7 +115,7 @@ export function PaperPicker({ reviewer, onStart, onBack }: Props) {
             placeholder="All assignees"
             data={assignees}
             value={assignee}
-            onChange={setAssignee}
+            onChange={(value) => update({ assignee: value })}
             clearable
           />
           <Select
@@ -103,7 +123,7 @@ export function PaperPicker({ reviewer, onStart, onBack }: Props) {
             placeholder="All statuses"
             data={[...PAPER_STATUSES]}
             value={status}
-            onChange={setStatus}
+            onChange={(value) => update({ status: value })}
             clearable
           />
         </Group>
