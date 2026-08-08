@@ -19,6 +19,16 @@ async function fetchJson<T>(url: string, label: string): Promise<T> {
     const body = await response.text();
     throw new Error(`Failed to load ${label}: HTTP ${response.status} ${body}`);
   }
+  // `vite` alone serves index.html for /api/*, so a non-JSON 200 here means the
+  // serverless functions are not running.
+  const contentType = response.headers.get("content-type") ?? "none";
+  if (!contentType.includes("application/json")) {
+    throw new Error(
+      `Failed to load ${label}: expected JSON from ${url} but the content type ` +
+        `was ${contentType}. Run \`npm run dev:vercel\`, or set ` +
+        "VITE_API_PROXY_TARGET to use a deployed API.",
+    );
+  }
   return (await response.json()) as T;
 }
 
