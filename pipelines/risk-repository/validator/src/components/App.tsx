@@ -5,6 +5,7 @@ import { ClassificationReview } from "@/components/ClassificationReview";
 import { NamePrompt } from "@/components/NamePrompt";
 import { TaskLauncher } from "@/components/TaskLauncher";
 import { Validator } from "@/components/Validator";
+import { invalidateClassification } from "@/lib/api";
 import { clearReviewer, loadReviewer, saveReviewer } from "@/lib/storage";
 import type { TaskSelection } from "@/lib/task";
 
@@ -40,7 +41,7 @@ export function App() {
   const selectionKey =
     selection.task === "screening"
       ? "screening"
-      : `classification:${selection.extractionRun}:${selection.mode}`;
+      : `classification:${selection.quickRef}:${selection.mode}`;
 
   return (
     <ErrorBoundary
@@ -60,7 +61,17 @@ export function App() {
           <ClassificationReview
             reviewer={reviewer}
             selection={selection}
-            onExit={() => setSelection(null)}
+            onExit={() => {
+              invalidateClassification({
+                quickRef: selection.quickRef,
+                reviewer,
+                mode: selection.mode,
+              });
+              setSelection(null);
+            }}
+            onSwitchToBlind={() =>
+              setSelection({ ...selection, mode: "blind" })
+            }
           />
         )}
       </Suspense>

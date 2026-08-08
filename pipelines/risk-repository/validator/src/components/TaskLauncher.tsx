@@ -12,7 +12,7 @@ import {
 } from "@mantine/core";
 import { Suspense, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
-import { ClassificationSetup } from "@/components/ClassificationSetup";
+import { PaperPicker } from "@/components/PaperPicker";
 import type { TaskSelection } from "@/lib/task";
 
 interface Props {
@@ -38,7 +38,8 @@ export function TaskLauncher({ reviewer, onSelect, onChangeName }: Props) {
             </Center>
           }
         >
-          <ClassificationSetup
+          <PaperPicker
+            reviewer={reviewer}
             onStart={onSelect}
             onBack={() => setConfiguring(false)}
           />
@@ -80,7 +81,7 @@ function SetupError({ error, onBack }: FallbackProps & { onBack: () => void }) {
   return (
     <Container size="xs" pt="xl">
       <Stack gap="md">
-        <Alert color="red" title="Failed to load extraction runs">
+        <Alert color="red" title="Failed to load papers">
           {error instanceof Error ? error.message : String(error)}
         </Alert>
         <Button variant="default" onClick={onBack}>

@@ -40,8 +40,7 @@ export const SUBDOMAINS = [
 ] as const;
 export type Subdomain = (typeof SUBDOMAINS)[number];
 
-export const VALIDITIES = ["ok", "not-a-risk"] as const;
-export type Validity = (typeof VALIDITIES)[number];
+export const NOT_A_RISK = "not-a-risk";
 
 export const REVIEW_FIELDS = [
   "validity",
@@ -60,7 +59,7 @@ export const AXIS_FIELDS: readonly ReviewField[] = [
 ];
 
 export const REVIEW_FIELD_VALUES: Record<ReviewField, readonly string[]> = {
-  validity: VALIDITIES,
+  validity: [NOT_A_RISK],
   entity: ENTITIES,
   intent: INTENTS,
   timing: TIMINGS,
@@ -71,6 +70,41 @@ export const REVIEW_MODES = ["blind", "anchored"] as const;
 export type ReviewMode = (typeof REVIEW_MODES)[number];
 
 export const PIPELINE_REVIEWER_PREFIX = "pipeline:";
+
+export const RISK_ORIGINS = [
+  "model-added, human-approved",
+  "model-added, human-edited",
+  "human-added",
+  "model-added, human-rejected",
+] as const;
+export type RiskOrigin = (typeof RISK_ORIGINS)[number];
+
+export const REJECTED_ORIGIN = "model-added, human-rejected";
+
+export const CLASSIFICATION_PROGRESS_VALUES = [
+  "Not Started",
+  "In Progress",
+  "Complete",
+] as const;
+export type ClassificationProgress =
+  (typeof CLASSIFICATION_PROGRESS_VALUES)[number];
+
+export const PAPER_STATES = [
+  "awaiting-extraction",
+  "classifying",
+  "ready",
+] as const;
+export type PaperState = (typeof PAPER_STATES)[number];
+
+export interface EvidenceField {
+  key: string;
+  value: string;
+}
+
+export interface EvidenceItem {
+  index: number;
+  fields: EvidenceField[];
+}
 
 export interface ReviewResponse {
   id: string;
@@ -83,30 +117,38 @@ export interface ReviewResponse {
 export interface RiskEntry {
   id: string;
   readableId: string;
-  extractionRun: string;
-  documentTitle: string | null;
+  name: string;
+  parentId: string | null;
+  codable: boolean;
+  origin: RiskOrigin;
   description: string;
+  descriptionPage: number | null;
   supportingQuote: string;
-  authorCategory: string | null;
-  authorSubcategory: string | null;
+  additionalEvidence: EvidenceItem[];
   responses: ReviewResponse[];
   pipelineResponses: ReviewResponse[];
 }
 
 export interface RiskManifestResponse {
-  extractionRun: string;
+  quickRef: string;
+  title: string | null;
   mode: ReviewMode;
   risks: RiskEntry[];
 }
 
-export interface ExtractionRunInfo {
-  extractionRun: string;
-  riskCount: number;
-  pipelineReviewers: string[];
+export interface PaperEntry {
+  quickRef: string;
+  title: string | null;
+  assignee: string | null;
+  progress: ClassificationProgress | null;
+  state: PaperState;
+  codableCount: number;
+  reviewerCodedCount: number;
+  pipelineCodedCount: number;
 }
 
-export interface RunsResponse {
-  runs: ExtractionRunInfo[];
+export interface PapersResponse {
+  papers: PaperEntry[];
 }
 
 export interface ReviewUpsertRequest {
@@ -126,14 +168,26 @@ export interface ReviewUpsertResponse {
   value: string;
 }
 
+export interface AirtableCollaborator {
+  id: string;
+  email?: string;
+  name?: string;
+}
+
 export interface RiskFields {
-  ExtractionRun?: string;
   ReadableId?: string;
-  DocumentTitle?: string;
+  QuickRef?: string;
+  Name?: string;
+  Parent?: string[];
+  Children?: string[];
   Description?: string;
+  DescriptionPage?: number;
   SupportingQuote?: string;
-  AuthorCategory?: string;
-  AuthorSubcategory?: string;
+  AdditionalEvidence?: string;
+  Reviewer?: string;
+  Origin?: RiskOrigin;
+  ExtractionRun?: string;
+  ApprovedAt?: string;
 }
 
 export interface ReviewFields {
@@ -143,4 +197,11 @@ export interface ReviewFields {
   Value?: string;
   Mode?: ReviewMode;
   Comment?: string;
+}
+
+export interface ProposedExtractionFields {
+  QuickRef?: string;
+  Title?: string[];
+  ClassificationReviewer?: AirtableCollaborator;
+  ClassificationProgress?: ClassificationProgress;
 }

@@ -1,14 +1,17 @@
 import type {
+  EvidenceItem,
   ReviewField,
   ReviewMode,
   ReviewResponse,
   RiskEntry,
 } from "@api/_classification";
 import {
+  Alert,
   Anchor,
   Badge,
   Button,
   Group,
+  Paper,
   ScrollArea,
   Select,
   Stack,
@@ -16,8 +19,13 @@ import {
   Text,
 } from "@mantine/core";
 import { useMemo, useRef, useState } from "react";
-import { submitReview } from "@/lib/api";
-import { AXIS_FIELDS, REVIEW_FIELDS } from "@/lib/fields";
+import { deleteReview, submitReview } from "@/lib/api";
+import {
+  AXIS_FIELDS,
+  NOT_A_RISK,
+  REJECTED_ORIGIN,
+  REVIEW_FIELDS,
+} from "@/lib/fields";
 import { SUBDOMAIN_GROUPS, SUBDOMAIN_LABELS } from "@/lib/subdomains";
 
 interface AxisOption {
@@ -94,6 +102,7 @@ function initFieldStates(entry: RiskEntry): FieldStates {
 interface Props {
   reviewer: string;
   entry: RiskEntry;
+  ancestors: RiskEntry[];
   mode: ReviewMode;
   position: number;
   total: number;
@@ -103,6 +112,7 @@ interface Props {
 export function RiskCard({
   reviewer,
   entry,
+  ancestors,
   mode,
   position,
   total,
@@ -114,7 +124,7 @@ export function RiskCard({
   const fieldsRef = useRef(fields);
   fieldsRef.current = fields;
 
-  const notARisk = fields.validity.value === "not-a-risk";
+  const notARisk = fields.validity.value === NOT_A_RISK;
   const coded =
     notARisk || AXIS_FIELDS.every((field) => fields[field].value !== null);
 
@@ -174,7 +184,7 @@ export function RiskCard({
           error: null,
         },
       };
-      if (field === "validity" && value === "not-a-risk") {
+      if (field === "validity" && value === NOT_A_RISK) {
         for (const axis of AXIS_FIELDS) {
           next[axis] = { ...EMPTY_FIELD };
         }
@@ -186,6 +196,32 @@ export function RiskCard({
       setFields((prev) => ({
         ...prev,
         [field]: { ...prev[field], saving: false, error: message },
+      }));
+    }
+  };
+
+  const clearValidity = async () => {
+    const reviewId = fieldsRef.current.validity.reviewId;
+    if (reviewId === null) {
+      return;
+    }
+    setFields((prev) => ({
+      ...prev,
+      validity: { ...prev.validity, saving: true, error: null },
+    }));
+    try {
+      await deleteReview(reviewId);
+      const next: FieldStates = {
+        ...fieldsRef.current,
+        validity: { ...EMPTY_FIELD },
+      };
+      setFields(next);
+      onResponsesChanged(entry.id, toResponses(next));
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      setFields((prev) => ({
+        ...prev,
+        validity: { ...prev.validity, saving: false, error: message },
       }));
     }
   };
@@ -203,138 +239,222 @@ export function RiskCard({
     <Stack gap="md" h="100%">
       <Group justify="space-between" align="center">
         <Text size="sm" c="dimmed">
-          {position} / {total} · {entry.readableId}
+          {entry.codable ? `${position} / ${total} · ` : ""}
+          {entry.readableId}
         </Text>
-        {notARisk ? (
-          <Badge color="gray" variant="light">
-            not a risk
-          </Badge>
-        ) : coded ? (
-          <Badge color="green" variant="light">
-            coded
-          </Badge>
-        ) : null}
+        <Group gap="xs">
+          {entry.origin === REJECTED_ORIGIN ? (
+            <Badge color="red" variant="light">
+              rejected in extraction
+            </Badge>
+          ) : null}
+          {!entry.codable ? (
+            <Badge color="gray" variant="light">
+              context only
+            </Badge>
+          ) : notARisk ? (
+            <Badge color="gray" variant="light">
+              not a risk
+            </Badge>
+          ) : coded ? (
+            <Badge color="green" variant="light">
+              coded
+            </Badge>
+          ) : null}
+        </Group>
       </Group>
 
       <ScrollArea style={{ flex: 1, minHeight: 0 }}>
         <Stack gap="md">
-          <RiskField label="Description">
-            <Text style={{ whiteSpace: "pre-wrap" }}>{entry.description}</Text>
-          </RiskField>
-          <RiskField label="Supporting quote">
-            <Text style={{ whiteSpace: "pre-wrap" }} fs="italic">
-              {entry.supportingQuote}
-            </Text>
-          </RiskField>
-          <Group gap="xl" align="flex-start">
-            {entry.authorCategory !== null ? (
-              <RiskField label="Author category">
-                <Text size="sm">{entry.authorCategory}</Text>
-              </RiskField>
-            ) : null}
-            {entry.authorSubcategory !== null ? (
-              <RiskField label="Author subcategory">
-                <Text size="sm">{entry.authorSubcategory}</Text>
-              </RiskField>
-            ) : null}
-          </Group>
-          {entry.documentTitle !== null ? (
-            <Text size="xs" c="dimmed">
-              {entry.documentTitle}
-            </Text>
+          {ancestors.length > 0 ? (
+            <AncestorTrail ancestors={ancestors} />
+          ) : null}
+          <Text fw={600} size="lg">
+            {entry.name}
+          </Text>
+          {entry.description !== "" ? (
+            <RiskField
+              label={
+                entry.descriptionPage === null
+                  ? "Description"
+                  : `Description (p. ${entry.descriptionPage})`
+              }
+            >
+              <Text style={{ whiteSpace: "pre-wrap" }}>
+                {entry.description}
+              </Text>
+            </RiskField>
+          ) : null}
+          {entry.supportingQuote !== "" ? (
+            <RiskField label="Supporting quote">
+              <Text style={{ whiteSpace: "pre-wrap" }} fs="italic">
+                {entry.supportingQuote}
+              </Text>
+            </RiskField>
+          ) : null}
+          {entry.additionalEvidence.length > 0 ? (
+            <RiskField label="Additional evidence">
+              <Stack gap="xs">
+                {entry.additionalEvidence.map((item) => (
+                  <EvidenceCard key={item.index} item={item} />
+                ))}
+              </Stack>
+            </RiskField>
           ) : null}
         </Stack>
       </ScrollArea>
 
-      <Stack gap="sm">
-        {hasSuggestions ? (
-          <Group justify="space-between">
-            <Text size="xs" c="dimmed">
-              Pipeline suggestions shown below.
-            </Text>
-            <Button
-              size="xs"
-              variant="light"
-              onClick={acceptSuggestions}
-              disabled={notARisk}
-            >
-              Accept suggestions
-            </Button>
-          </Group>
-        ) : null}
-        <Switch
-          label="Not a risk"
-          checked={notARisk}
-          onChange={(event) => {
-            saveField(
-              "validity",
-              event.currentTarget.checked ? "not-a-risk" : "ok",
-            );
-          }}
-          disabled={fields.validity.saving}
-        />
-        {CAUSAL_AXES.map((axis) => (
-          <AxisButtons
-            key={axis.field}
-            label={axis.label}
-            options={axis.options}
-            state={fields[axis.field]}
-            suggested={suggestions[axis.field]}
-            disabled={notARisk}
-            onSelect={(value) => saveField(axis.field, value)}
-          />
-        ))}
-        <Stack gap={4}>
-          <Text size="sm" fw={500}>
-            Subdomain
-          </Text>
-          <Select
-            placeholder="Select subdomain"
-            data={SUBDOMAIN_GROUPS.map((group) => ({
-              group: group.domain,
-              items: group.items,
-            }))}
-            value={fields.subdomain.value}
-            onChange={(value) => {
-              if (value !== null) {
-                saveField("subdomain", value);
-              }
-            }}
-            disabled={notARisk || fields.subdomain.saving}
-            searchable
-          />
-          {suggestions.subdomain !== null &&
-          fields.subdomain.value === null &&
-          !notARisk ? (
-            <Group gap="xs">
+      {entry.codable ? (
+        <Stack gap="sm">
+          {hasSuggestions ? (
+            <Group justify="space-between">
               <Text size="xs" c="dimmed">
-                Pipeline:{" "}
-                {SUBDOMAIN_LABELS[suggestions.subdomain] ??
-                  suggestions.subdomain}
+                Pipeline classification shown below.
               </Text>
-              <Anchor
-                component="button"
-                type="button"
+              <Button
                 size="xs"
-                onClick={() => {
-                  const suggested = suggestions.subdomain;
-                  if (suggested !== null) {
-                    saveField("subdomain", suggested);
-                  }
-                }}
+                variant="light"
+                onClick={acceptSuggestions}
+                disabled={notARisk}
               >
-                Use
-              </Anchor>
+                Accept suggestions
+              </Button>
             </Group>
           ) : null}
-          {fields.subdomain.error !== null ? (
+          <Switch
+            label="Not a risk"
+            checked={notARisk}
+            onChange={(event) => {
+              if (event.currentTarget.checked) {
+                saveField("validity", NOT_A_RISK);
+              } else {
+                clearValidity();
+              }
+            }}
+            disabled={fields.validity.saving}
+          />
+          {fields.validity.error !== null ? (
             <Text c="red" size="xs">
-              {fields.subdomain.error}
+              {fields.validity.error}
             </Text>
           ) : null}
+          {CAUSAL_AXES.map((axis) => (
+            <AxisButtons
+              key={axis.field}
+              label={axis.label}
+              options={axis.options}
+              state={fields[axis.field]}
+              suggested={suggestions[axis.field]}
+              disabled={notARisk}
+              onSelect={(value) => saveField(axis.field, value)}
+            />
+          ))}
+          <Stack gap={4}>
+            <Text size="sm" fw={500}>
+              Subdomain
+            </Text>
+            <Select
+              placeholder="Select subdomain"
+              data={SUBDOMAIN_GROUPS.map((group) => ({
+                group: group.domain,
+                items: group.items,
+              }))}
+              value={fields.subdomain.value}
+              onChange={(value) => {
+                if (value !== null) {
+                  saveField("subdomain", value);
+                }
+              }}
+              disabled={notARisk || fields.subdomain.saving}
+              searchable
+            />
+            {suggestions.subdomain !== null &&
+            fields.subdomain.value === null &&
+            !notARisk ? (
+              <Group gap="xs">
+                <Text size="xs" c="dimmed">
+                  Pipeline:{" "}
+                  {SUBDOMAIN_LABELS[suggestions.subdomain] ??
+                    suggestions.subdomain}
+                </Text>
+                <Anchor
+                  component="button"
+                  type="button"
+                  size="xs"
+                  onClick={() => {
+                    const suggested = suggestions.subdomain;
+                    if (suggested !== null) {
+                      saveField("subdomain", suggested);
+                    }
+                  }}
+                >
+                  Use
+                </Anchor>
+              </Group>
+            ) : null}
+            {fields.subdomain.error !== null ? (
+              <Text c="red" size="xs">
+                {fields.subdomain.error}
+              </Text>
+            ) : null}
+          </Stack>
         </Stack>
-      </Stack>
+      ) : (
+        <Alert color="gray" variant="light">
+          Only the deepest risks are classified. This entry groups the risks
+          below it and is shown for context.
+        </Alert>
+      )}
     </Stack>
+  );
+}
+
+function AncestorTrail({ ancestors }: { ancestors: RiskEntry[] }) {
+  return (
+    <Paper withBorder p="sm" bg="var(--mantine-color-default-hover)">
+      <Stack gap="xs">
+        <Text size="xs" c="dimmed" tt="uppercase" fw={600}>
+          Authors' grouping
+        </Text>
+        {ancestors.map((ancestor, index) => (
+          <Stack key={ancestor.id} gap={2} pl={index * 12}>
+            <Text size="sm" fw={500}>
+              {ancestor.name}
+            </Text>
+            {ancestor.description !== "" ? (
+              <Text size="xs" c="dimmed">
+                {ancestor.description}
+              </Text>
+            ) : null}
+            {ancestor.supportingQuote !== "" &&
+            ancestor.supportingQuote !== ancestor.description ? (
+              <Text size="xs" c="dimmed" fs="italic">
+                {ancestor.supportingQuote}
+              </Text>
+            ) : null}
+          </Stack>
+        ))}
+      </Stack>
+    </Paper>
+  );
+}
+
+function EvidenceCard({ item }: { item: EvidenceItem }) {
+  return (
+    <Paper withBorder p="xs">
+      <Stack gap={4}>
+        {item.fields.map((field) => (
+          <Group key={field.key} gap="xs" align="flex-start" wrap="nowrap">
+            <Text size="xs" c="dimmed" tt="uppercase" fw={600} miw="4.5rem">
+              {field.key}
+            </Text>
+            <Text size="sm" style={{ whiteSpace: "pre-wrap" }}>
+              {field.value}
+            </Text>
+          </Group>
+        ))}
+      </Stack>
+    </Paper>
   );
 }
 
