@@ -11,6 +11,8 @@ interface Props {
   onSelect: (id: string) => void;
 }
 
+const MARKER_WIDTH = "2.5rem";
+
 export function RiskSidebar({ risks, activeId, onSelect }: Props) {
   const index = useMemo(() => indexRisks(risks), [risks]);
   const codable = codableRisks(risks);
@@ -25,81 +27,89 @@ export function RiskSidebar({ risks, activeId, onSelect }: Props) {
       </Text>
       <ScrollArea style={{ flex: 1, minHeight: 0 }}>
         <Stack gap={0}>
-          {risks.map((entry) => (
-            <SidebarRow
-              key={entry.id}
-              entry={entry}
-              depth={depthOf(index, entry)}
-              active={entry.id === activeId}
-              onClick={() => {
-                onSelect(entry.id);
-              }}
-            />
-          ))}
+          {risks.map((entry) => {
+            const indent = depthOf(index, entry) * 14;
+            return entry.codable ? (
+              <CodableRow
+                key={entry.id}
+                entry={entry}
+                indent={indent}
+                active={entry.id === activeId}
+                onClick={() => {
+                  onSelect(entry.id);
+                }}
+              />
+            ) : (
+              <GroupingRow key={entry.id} entry={entry} indent={indent} />
+            );
+          })}
         </Stack>
       </ScrollArea>
     </Stack>
   );
 }
 
-interface RowProps {
+function indentStyle(indent: number): string {
+  return `calc(var(--mantine-spacing-xs) + ${indent}px)`;
+}
+
+interface CodableRowProps {
   entry: RiskEntry;
-  depth: number;
+  indent: number;
   active: boolean;
   onClick: () => void;
 }
 
-function SidebarRow({ entry, depth, active, onClick }: RowProps) {
-  const rejected = entry.origin === REJECTED_ORIGIN;
+function CodableRow({ entry, indent, active, onClick }: CodableRowProps) {
+  const notARisk = isNotARisk(entry.responses);
+  const coded = isRiskCoded(entry.responses);
   return (
     <NavLink
       data-risk-id={entry.id}
       active={active}
       onClick={onClick}
-      pl={`calc(var(--mantine-spacing-xs) + ${depth * 14}px)`}
-      opacity={rejected ? 0.45 : 1}
+      pl={indentStyle(indent)}
       label={
-        <Text size="sm" fw={entry.codable ? 400 : 600} lineClamp={2}>
+        <Text size="sm" lineClamp={2}>
           {entry.name}
         </Text>
       }
       description={entry.readableId}
-      leftSection={<StatusBadge entry={entry} rejected={rejected} />}
+      leftSection={
+        <Badge
+          size="sm"
+          variant="light"
+          color={coded && !notARisk ? "green" : "gray"}
+          w={MARKER_WIDTH}
+        >
+          {notARisk ? "NR" : coded ? "✓" : "—"}
+        </Badge>
+      }
     />
   );
 }
 
-function StatusBadge({
-  entry,
-  rejected,
-}: {
-  entry: RiskEntry;
-  rejected: boolean;
-}) {
-  if (rejected) {
-    return (
-      <Badge size="sm" variant="light" color="red" w="2.5rem">
-        ✕
-      </Badge>
-    );
-  }
-  if (!entry.codable) {
-    return (
-      <Badge size="sm" variant="transparent" color="gray" w="2.5rem">
-        ⌄
-      </Badge>
-    );
-  }
-  const notARisk = isNotARisk(entry.responses);
-  const coded = isRiskCoded(entry.responses);
+function GroupingRow({ entry, indent }: { entry: RiskEntry; indent: number }) {
+  const rejected = entry.origin === REJECTED_ORIGIN;
   return (
-    <Badge
-      size="sm"
-      variant="light"
-      color={notARisk ? "gray" : coded ? "green" : "gray"}
-      w="2.5rem"
+    <Stack
+      gap={0}
+      py={8}
+      pl={indentStyle(indent)}
+      pr="xs"
+      opacity={rejected ? 0.6 : 1}
     >
-      {notARisk ? "NR" : coded ? "✓" : "—"}
-    </Badge>
+      <Text
+        size="sm"
+        fw={600}
+        lineClamp={2}
+        td={rejected ? "line-through" : undefined}
+      >
+        {entry.name}
+      </Text>
+      <Text size="xs" c="dimmed">
+        {entry.readableId}
+      </Text>
+    </Stack>
   );
 }
