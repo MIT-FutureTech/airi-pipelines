@@ -5,6 +5,7 @@ import {
   Container,
   Group,
   SegmentedControl,
+  Select,
   Stack,
   Text,
   Title,
@@ -22,14 +23,40 @@ interface Props {
 
 const UNASSIGNED = "Unassigned";
 
+const PAPER_STATUSES = [
+  "Awaiting extraction",
+  "Classifying",
+  "Not started",
+  "In progress",
+  "Complete",
+] as const;
+type PaperStatus = (typeof PAPER_STATUSES)[number];
+
+const STATUS_COLORS: Record<PaperStatus, string> = {
+  "Awaiting extraction": "gray",
+  Classifying: "yellow",
+  "Not started": "gray",
+  "In progress": "blue",
+  Complete: "green",
+};
+
 export function PaperPicker({ reviewer, onStart, onBack }: Props) {
   const { papers } = use(getPapers(reviewer));
   const [mode, setMode] = useState<ReviewMode>("blind");
+  const [assignee, setAssignee] = useState<string | null>(null);
+  const [status, setStatus] = useState<string | null>(null);
 
-  const groups = useMemo(() => groupByAssignee(papers), [papers]);
+  const assignees = useMemo(() => assigneeOptions(papers), [papers]);
+
+  const visible = papers.filter(
+    (paper) =>
+      (assignee === null || assigneeOf(paper) === assignee) &&
+      (status === null || paperStatus(paper) === status),
+  );
+  const groups = groupByAssignee(visible);
 
   return (
-    <Container size="sm" pt="xl" pb="xl">
+    <Container size="md" pt="xl" pb="xl">
       <Stack gap="lg">
         <Group justify="space-between" align="flex-start">
           <Stack gap={2}>
@@ -62,13 +89,36 @@ export function PaperPicker({ reviewer, onStart, onBack }: Props) {
           </Text>
         </Stack>
 
-        {papers.length === 0 ? (
-          <Text c="dimmed">No papers found.</Text>
+        <Group grow align="flex-end">
+          <Select
+            label="Assignee"
+            placeholder="All assignees"
+            data={assignees}
+            value={assignee}
+            onChange={setAssignee}
+            clearable
+          />
+          <Select
+            label="Status"
+            placeholder="All statuses"
+            data={[...PAPER_STATUSES]}
+            value={status}
+            onChange={setStatus}
+            clearable
+          />
+        </Group>
+
+        {visible.length === 0 ? (
+          <Text c="dimmed">
+            {papers.length === 0
+              ? "No papers found."
+              : "No papers match these filters."}
+          </Text>
         ) : (
-          groups.map(([assignee, assigned]) => (
-            <Stack key={assignee} gap="xs">
+          groups.map(([groupName, assigned]) => (
+            <Stack key={groupName} gap="xs">
               <Text size="sm" fw={600} c="dimmed" tt="uppercase">
-                {assignee}
+                {groupName}
               </Text>
               {assigned.map((paper) => (
                 <PaperRow
@@ -102,6 +152,7 @@ function PaperRow({ paper, onOpen }: RowProps) {
     <UnstyledButton
       onClick={openable ? onOpen : undefined}
       disabled={!openable}
+      w="100%"
       style={{
         border: "1px solid var(--mantine-color-default-border)",
         borderRadius: "var(--mantine-radius-sm)",
@@ -110,55 +161,77 @@ function PaperRow({ paper, onOpen }: RowProps) {
         opacity: openable ? 1 : 0.6,
       }}
     >
-      <Group justify="space-between" wrap="nowrap" align="flex-start">
-        <Stack gap={2} style={{ minWidth: 0 }}>
+      <Stack gap={4}>
+        <Group justify="space-between" wrap="nowrap" gap="sm">
           <Text fw={500}>{paper.quickRef}</Text>
-          <Text size="sm" c="dimmed" lineClamp={2}>
-            {paper.title ?? "Untitled"}
-          </Text>
-        </Stack>
-        <Group gap="xs" wrap="nowrap">
-          {paper.progress !== null ? (
-            <Badge variant="outline" color="gray">
-              {paper.progress}
-            </Badge>
-          ) : null}
-          <StateBadge paper={paper} />
+          <Group gap="xs" wrap="nowrap">
+            {paper.progress !== null ? (
+              <Badge variant="outline" color="gray">
+                {paper.progress}
+              </Badge>
+            ) : null}
+            <StatusBadge paper={paper} />
+          </Group>
         </Group>
-      </Group>
+        <Text size="sm" lineClamp={2}>
+          {paper.title ?? "Untitled"}
+        </Text>
+      </Stack>
     </UnstyledButton>
   );
 }
 
-function StateBadge({ paper }: { paper: PaperEntry }) {
-  if (paper.state === "awaiting-extraction") {
-    return (
-      <Badge color="gray" variant="light">
-        awaiting extraction
-      </Badge>
-    );
-  }
-  if (paper.state === "classifying") {
-    return (
-      <Badge color="yellow" variant="light">
-        classifying…
-      </Badge>
-    );
-  }
+function StatusBadge({ paper }: { paper: PaperEntry }) {
+  const status = paperStatus(paper);
+  const label =
+    paper.state === "ready"
+      ? `${paper.reviewerCodedCount} / ${paper.codableCount} coded`
+      : status.toLowerCase();
   return (
-    <Badge
-      color={paper.reviewerCodedCount === paper.codableCount ? "green" : "blue"}
-      variant="light"
-    >
-      {paper.reviewerCodedCount} / {paper.codableCount} coded
+    <Badge color={STATUS_COLORS[status]} variant="light">
+      {label}
     </Badge>
   );
+}
+
+function paperStatus(paper: PaperEntry): PaperStatus {
+  if (paper.state === "awaiting-extraction") {
+    return "Awaiting extraction";
+  }
+  if (paper.state === "classifying") {
+    return "Classifying";
+  }
+  if (paper.reviewerCodedCount === 0) {
+    return "Not started";
+  }
+  return paper.reviewerCodedCount === paper.codableCount
+    ? "Complete"
+    : "In progress";
+}
+
+function assigneeOf(paper: PaperEntry): string {
+  return paper.assignee ?? UNASSIGNED;
+}
+
+function assigneeOptions(papers: PaperEntry[]): string[] {
+  const names = [...new Set(papers.map(assigneeOf))];
+  return names.sort(compareAssignees);
+}
+
+function compareAssignees(a: string, b: string): number {
+  if (a === UNASSIGNED) {
+    return 1;
+  }
+  if (b === UNASSIGNED) {
+    return -1;
+  }
+  return a.localeCompare(b);
 }
 
 function groupByAssignee(papers: PaperEntry[]): [string, PaperEntry[]][] {
   const groups = new Map<string, PaperEntry[]>();
   for (const paper of papers) {
-    const key = paper.assignee ?? UNASSIGNED;
+    const key = assigneeOf(paper);
     const list = groups.get(key);
     if (list === undefined) {
       groups.set(key, [paper]);
@@ -166,13 +239,5 @@ function groupByAssignee(papers: PaperEntry[]): [string, PaperEntry[]][] {
       list.push(paper);
     }
   }
-  return [...groups.entries()].sort(([a], [b]) => {
-    if (a === UNASSIGNED) {
-      return 1;
-    }
-    if (b === UNASSIGNED) {
-      return -1;
-    }
-    return a.localeCompare(b);
-  });
+  return [...groups.entries()].sort(([a], [b]) => compareAssignees(a, b));
 }
