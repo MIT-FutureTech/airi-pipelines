@@ -66,12 +66,14 @@ export function TaskLauncher({ reviewer, onSelect, onChangeName }: Props) {
           </Anchor>
         </Group>
         <Text fw={500}>Choose a task</Text>
-        <Button onClick={() => onSelect({ task: "screening" })}>
-          Abstract screening
-        </Button>
-        <Button variant="light" onClick={() => setConfiguring(true)}>
-          Classification review
-        </Button>
+        <Group>
+          <Button onClick={() => onSelect({ task: "screening" })}>
+            Abstract screening
+          </Button>
+          <Button onClick={() => setConfiguring(true)}>
+            Classification review
+          </Button>
+        </Group>
       </Stack>
     </Container>
   );
