@@ -1,7 +1,9 @@
+import type { ReviewMode } from "@api/_classification";
 import type { HighlightGroup } from "./highlight";
 
 const REVIEWER_KEY = "validator.reviewer";
 const HIGHLIGHT_GROUPS_KEY = "validator.highlightGroups";
+const PAPER_PICKER_KEY = "validator.paperPicker";
 
 export function loadReviewer(): string | null {
   const value = window.localStorage.getItem(REVIEWER_KEY);
@@ -29,4 +31,22 @@ export function loadHighlightGroups(): HighlightGroup[] {
 
 export function saveHighlightGroups(groups: HighlightGroup[]): void {
   window.localStorage.setItem(HIGHLIGHT_GROUPS_KEY, JSON.stringify(groups));
+}
+
+export interface PaperPickerPrefs {
+  mode: ReviewMode;
+  assignee: string | null;
+  status: string | null;
+}
+
+export function loadPaperPickerPrefs(): PaperPickerPrefs {
+  const value = window.localStorage.getItem(PAPER_PICKER_KEY);
+  if (value === null) {
+    return { mode: "blind", assignee: null, status: null };
+  }
+  return JSON.parse(value) as PaperPickerPrefs;
+}
+
+export function savePaperPickerPrefs(prefs: PaperPickerPrefs): void {
+  window.localStorage.setItem(PAPER_PICKER_KEY, JSON.stringify(prefs));
 }
