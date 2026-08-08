@@ -118,11 +118,9 @@ export async function fetchRiskManifest(
   return await fresh;
 }
 
-// The caches hold whatever was true when a paper was opened. Drop a paper's
-// entries on the way out so re-entering it shows the reviews written since.
-export function invalidateClassification(params: RiskManifestParams): void {
-  riskManifestCache.delete(riskManifestUrl(params));
-  papersCache.delete(papersUrl(params.reviewer));
+function invalidateClassificationCaches(): void {
+  riskManifestCache.clear();
+  papersCache.clear();
 }
 
 export async function submitReview(
@@ -137,6 +135,7 @@ export async function submitReview(
     const text = await response.text();
     throw new Error(`Failed to submit review: HTTP ${response.status} ${text}`);
   }
+  invalidateClassificationCaches();
   return (await response.json()) as ReviewUpsertResponse;
 }
 
@@ -149,4 +148,5 @@ export async function deleteReview(reviewId: string): Promise<void> {
     const text = await response.text();
     throw new Error(`Failed to delete review: HTTP ${response.status} ${text}`);
   }
+  invalidateClassificationCaches();
 }

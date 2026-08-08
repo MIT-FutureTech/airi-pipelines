@@ -1,4 +1,8 @@
-import type { ReviewResponse, RiskEntry } from "@api/_classification";
+import type {
+  ReviewMode,
+  ReviewResponse,
+  RiskEntry,
+} from "@api/_classification";
 import {
   Alert,
   AppShell,
@@ -16,23 +20,16 @@ import { RiskCard } from "@/components/RiskCard";
 import { RiskSidebar } from "@/components/RiskSidebar";
 import { fetchRiskManifest, getRiskManifest } from "@/lib/api";
 import { codableRisks, isRiskCoded, pipelineIsReady } from "@/lib/coding";
-import type { ClassificationSelection } from "@/lib/task";
+import { navigate } from "@/lib/route";
 import { ancestorsOf, indexRisks } from "@/lib/tree";
 
 interface Props {
   reviewer: string;
-  selection: ClassificationSelection;
-  onExit: () => void;
-  onSwitchToBlind: () => void;
+  quickRef: string;
+  mode: ReviewMode;
 }
 
-export function ClassificationReview({
-  reviewer,
-  selection,
-  onExit,
-  onSwitchToBlind,
-}: Props) {
-  const { quickRef, mode } = selection;
+export function ClassificationReview({ reviewer, quickRef, mode }: Props) {
   const initial = use(getRiskManifest({ quickRef, reviewer, mode }));
   const [risks, setRisks] = useState<RiskEntry[]>(initial.risks);
   const [activeId, setActiveId] = useState<string | null>(() =>
@@ -77,7 +74,7 @@ export function ClassificationReview({
     }
   };
 
-  const navigate = (offset: number) => {
+  const step = (offset: number) => {
     if (codable.length === 0) {
       return;
     }
@@ -95,8 +92,8 @@ export function ClassificationReview({
   };
 
   useHotkeys([
-    ["ArrowLeft", () => navigate(-1)],
-    ["ArrowRight", () => navigate(1)],
+    ["ArrowLeft", () => step(-1)],
+    ["ArrowRight", () => step(1)],
   ]);
 
   const handleResponsesChanged = (
@@ -137,7 +134,11 @@ export function ClassificationReview({
             >
               {mode}
             </Badge>
-            <Button size="xs" variant="subtle" onClick={onExit}>
+            <Button
+              size="xs"
+              variant="subtle"
+              onClick={() => navigate({ name: "papers" })}
+            >
               Back to papers
             </Button>
           </Group>
@@ -156,7 +157,9 @@ export function ClassificationReview({
             checking={checking}
             error={checkError}
             onCheckAgain={checkForPipeline}
-            onSwitchToBlind={onSwitchToBlind}
+            onSwitchToBlind={() =>
+              navigate({ name: "classification", quickRef, mode: "blind" })
+            }
           />
         ) : activeEntry === null ? (
           <Center h="100%" p="md">

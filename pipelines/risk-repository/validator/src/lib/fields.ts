@@ -2,7 +2,7 @@
 // api/_classification (erased at build time). Importing its runtime values would
 // make the browser fetch /api/*.ts, which `vercel dev` routes to the serverless
 // functions runtime, returning 404 and breaking the page.
-import type { ReviewField, RiskOrigin } from "@api/_classification";
+import type { ReviewField, ReviewMode, RiskOrigin } from "@api/_classification";
 
 export const REVIEW_FIELDS: readonly ReviewField[] = [
   "validity",
@@ -18,6 +18,8 @@ export const AXIS_FIELDS: readonly ReviewField[] = [
   "timing",
   "subdomain",
 ];
+
+export const REVIEW_MODES: readonly ReviewMode[] = ["blind", "anchored"];
 
 export const REJECTED_ORIGIN: RiskOrigin = "model-added, human-rejected";
 
