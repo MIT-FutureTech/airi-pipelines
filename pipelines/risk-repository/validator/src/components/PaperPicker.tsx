@@ -13,7 +13,7 @@ import {
 } from "@mantine/core";
 import { use, useMemo, useState } from "react";
 import { getPapers } from "@/lib/api";
-import type { ClassificationSelection } from "@/lib/task";
+import { navigate } from "@/lib/route";
 import {
   loadPaperPickerPrefs,
   type PaperPickerPrefs,
@@ -22,8 +22,6 @@ import {
 
 interface Props {
   reviewer: string;
-  onStart: (selection: ClassificationSelection) => void;
-  onBack: () => void;
 }
 
 const UNASSIGNED = "Unassigned";
@@ -85,7 +83,11 @@ export function PaperPicker({ reviewer }: Props) {
               Reviewing as {reviewer}
             </Text>
           </Stack>
-          <Button variant="default" size="xs" onClick={onBack}>
+          <Button
+            variant="default"
+            size="xs"
+            onClick={() => navigate({ name: "tasks" })}
+          >
             Back
           </Button>
         </Group>
@@ -145,8 +147,8 @@ export function PaperPicker({ reviewer }: Props) {
                   key={paper.quickRef}
                   paper={paper}
                   onOpen={() => {
-                    onStart({
-                      task: "classification",
+                    navigate({
+                      name: "classification",
                       quickRef: paper.quickRef,
                       mode,
                     });
