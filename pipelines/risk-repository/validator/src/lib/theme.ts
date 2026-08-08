@@ -1,5 +1,5 @@
-import type { Decision } from "@api/_shared";
 import { type CSSVariablesResolver, createTheme } from "@mantine/core";
+import type { Decision } from "@shared/screening";
 
 export const theme = createTheme({
   colors: {

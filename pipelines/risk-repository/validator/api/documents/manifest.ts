@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+import type { ManifestEntry } from "../../shared/screening.js";
 import {
   AirtableError,
   type AirtableRecord,
@@ -6,7 +7,6 @@ import {
   listAllRecords,
 } from "../_airtable.js";
 import { readAirtableEnv } from "../_env.js";
-import type { ManifestEntry } from "../_shared.js";
 import { type DecisionFields, type DocumentFields, STAGE } from "../_types.js";
 
 export default async function handler(

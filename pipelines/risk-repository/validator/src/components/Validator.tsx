@@ -1,4 +1,3 @@
-import type { Decision, ManifestEntry } from "@api/_shared";
 import {
   ActionIcon,
   AppShell,
@@ -11,6 +10,7 @@ import {
   Tooltip,
 } from "@mantine/core";
 import { useHotkeys } from "@mantine/hooks";
+import type { Decision, ManifestEntry } from "@shared/screening";
 import { IconHighlight, IconKeyboard } from "@tabler/icons-react";
 import { use, useMemo, useState } from "react";
 import { DocumentCard } from "@/components/DocumentCard";

@@ -1,4 +1,4 @@
-import type { EvidenceField, EvidenceItem } from "./_classification.js";
+import type { EvidenceField, EvidenceItem } from "../shared/classification.js";
 
 // Supported shapes:
 //   - JSON string containing an array of objects

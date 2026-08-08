@@ -1,4 +1,3 @@
-import type { Decision, ManifestEntry } from "@api/_shared";
 import {
   Alert,
   Badge,
@@ -11,6 +10,7 @@ import {
   Title,
 } from "@mantine/core";
 import { useHotkeys } from "@mantine/hooks";
+import type { Decision, ManifestEntry } from "@shared/screening";
 import { Fragment, useMemo, useState } from "react";
 import { submitDecision } from "@/lib/api";
 import { type HighlightGroup, highlightText } from "@/lib/highlight";

@@ -1,4 +1,3 @@
-// Classification-review contract shared between the frontend and the API routes.
 // Taxonomy value domains mirror
 // pipelines/risk-repository/src/risk_repository/classify.py.
 

@@ -1,10 +1,3 @@
-import type {
-  EvidenceItem,
-  ReviewField,
-  ReviewMode,
-  ReviewResponse,
-  RiskEntry,
-} from "@api/_classification";
 import {
   Accordion,
   Anchor,
@@ -18,9 +11,18 @@ import {
   Switch,
   Text,
 } from "@mantine/core";
+import {
+  AXIS_FIELDS,
+  type EvidenceItem,
+  NOT_A_RISK,
+  REVIEW_FIELDS,
+  type ReviewField,
+  type ReviewMode,
+  type ReviewResponse,
+  type RiskEntry,
+} from "@shared/classification";
 import { useMemo, useRef, useState } from "react";
 import { deleteReview, submitReview } from "@/lib/api";
-import { AXIS_FIELDS, NOT_A_RISK, REVIEW_FIELDS } from "@/lib/fields";
 import { SUBDOMAIN_GROUPS, SUBDOMAIN_LABELS } from "@/lib/subdomains";
 
 interface AxisOption {

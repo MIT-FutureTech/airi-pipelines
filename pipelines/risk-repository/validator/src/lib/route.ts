@@ -1,6 +1,5 @@
-import type { ReviewMode } from "@api/_classification";
+import { REVIEW_MODES, type ReviewMode } from "@shared/classification";
 import { useSyncExternalStore } from "react";
-import { REVIEW_MODES } from "@/lib/fields";
 
 export type Route =
   | { name: "tasks" }

@@ -1,8 +1,8 @@
-import type { RiskEntry } from "@api/_classification";
 import { Badge, NavLink, ScrollArea, Stack, Text } from "@mantine/core";
+import { REJECTED_ORIGIN, type RiskEntry } from "@shared/classification";
+import { isCoded, isNotARisk } from "@shared/coding";
 import { useMemo } from "react";
-import { codableRisks, isNotARisk, isRiskCoded } from "@/lib/coding";
-import { REJECTED_ORIGIN } from "@/lib/fields";
+import { codableRisks } from "@/lib/risks";
 import { depthOf, indexRisks } from "@/lib/tree";
 
 interface Props {
@@ -16,9 +16,7 @@ const MARKER_WIDTH = "2.5rem";
 export function RiskSidebar({ risks, activeId, onSelect }: Props) {
   const index = useMemo(() => indexRisks(risks), [risks]);
   const codable = codableRisks(risks);
-  const codedCount = codable.filter((risk) =>
-    isRiskCoded(risk.responses),
-  ).length;
+  const codedCount = codable.filter((risk) => isCoded(risk.responses)).length;
 
   return (
     <Stack gap="sm" h="100%">
@@ -62,7 +60,7 @@ interface CodableRowProps {
 
 function CodableRow({ entry, indent, active, onClick }: CodableRowProps) {
   const notARisk = isNotARisk(entry.responses);
-  const coded = isRiskCoded(entry.responses);
+  const coded = isCoded(entry.responses);
   return (
     <NavLink
       data-risk-id={entry.id}
