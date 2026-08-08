@@ -134,13 +134,6 @@ export function ClassificationReview({ reviewer, quickRef, mode }: Props) {
             >
               {mode}
             </Badge>
-            <Button
-              size="xs"
-              variant="subtle"
-              onClick={() => navigate({ name: "papers" })}
-            >
-              Back to papers
-            </Button>
           </Group>
         </Group>
       </AppShell.Header>

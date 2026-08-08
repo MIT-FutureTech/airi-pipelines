@@ -1,7 +1,6 @@
 import type { PaperEntry, ReviewMode } from "@api/_classification";
 import {
   Badge,
-  Button,
   Container,
   Group,
   SegmentedControl,
@@ -83,13 +82,6 @@ export function PaperPicker({ reviewer }: Props) {
               Reviewing as {reviewer}
             </Text>
           </Stack>
-          <Button
-            variant="default"
-            size="xs"
-            onClick={() => navigate({ name: "tasks" })}
-          >
-            Back
-          </Button>
         </Group>
 
         <Stack gap={4}>
