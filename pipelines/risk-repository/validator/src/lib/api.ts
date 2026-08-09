@@ -1,9 +1,9 @@
 import type {
   PapersResponse,
   ReviewMode,
-  ReviewUpsertRequest,
-  ReviewUpsertResponse,
   RiskManifestResponse,
+  SaveCodingsRequest,
+  SaveCodingsResponse,
 } from "@shared/classification";
 import type {
   DecisionRequest,
@@ -121,30 +121,18 @@ function invalidateClassificationCaches(): void {
   papersCache.clear();
 }
 
-export async function submitReview(
-  body: ReviewUpsertRequest,
-): Promise<ReviewUpsertResponse> {
-  const response = await fetch("/api/reviews", {
+export async function saveCodings(
+  body: SaveCodingsRequest,
+): Promise<SaveCodingsResponse> {
+  const response = await fetch("/api/codings", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(`Failed to submit review: HTTP ${response.status} ${text}`);
+    throw new Error(`Failed to save coding: HTTP ${response.status} ${text}`);
   }
   invalidateClassificationCaches();
-  return (await response.json()) as ReviewUpsertResponse;
-}
-
-export async function deleteReview(reviewId: string): Promise<void> {
-  const response = await fetch(
-    `/api/reviews?reviewId=${encodeURIComponent(reviewId)}`,
-    { method: "DELETE" },
-  );
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`Failed to delete review: HTTP ${response.status} ${text}`);
-  }
-  invalidateClassificationCaches();
+  return (await response.json()) as SaveCodingsResponse;
 }

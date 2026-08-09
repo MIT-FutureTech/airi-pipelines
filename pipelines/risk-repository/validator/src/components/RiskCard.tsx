@@ -17,12 +17,11 @@ import {
   NOT_A_RISK,
   REVIEW_FIELDS,
   type ReviewField,
-  type ReviewMode,
-  type ReviewResponse,
   type RiskEntry,
 } from "@shared/classification";
-import { useMemo, useRef, useState } from "react";
-import { deleteReview, submitReview } from "@/lib/api";
+import { isCoded } from "@shared/coding";
+import { useMemo } from "react";
+import { type Draft, draftCodings, withNotARisk } from "@/lib/draft";
 import { SUBDOMAIN_GROUPS, SUBDOMAIN_LABELS } from "@/lib/subdomains";
 
 interface AxisOption {
@@ -64,70 +63,39 @@ const CAUSAL_AXES: {
   },
 ];
 
-interface FieldState {
-  value: string | null;
-  reviewId: string | null;
-  saving: boolean;
-  error: string | null;
-}
-
-type FieldStates = Record<ReviewField, FieldState>;
-
-const EMPTY_FIELD: FieldState = {
-  value: null,
-  reviewId: null,
-  saving: false,
-  error: null,
-};
-
-function initFieldStates(entry: RiskEntry): FieldStates {
-  const states = {} as FieldStates;
-  for (const field of REVIEW_FIELDS) {
-    states[field] = { ...EMPTY_FIELD };
-  }
-  for (const response of entry.responses) {
-    states[response.field] = {
-      value: response.value,
-      reviewId: response.id,
-      saving: false,
-      error: null,
-    };
-  }
-  return states;
-}
-
 interface Props {
-  reviewer: string;
   entry: RiskEntry;
   ancestors: RiskEntry[];
   expandedAncestors: string[];
-  mode: ReviewMode;
+  draft: Draft;
+  dirty: boolean;
+  saving: boolean;
+  saved: boolean;
+  error: string | null;
   position: number;
   total: number;
-  onResponsesChanged: (riskId: string, responses: ReviewResponse[]) => void;
+  onDraftChange: (draft: Draft) => void;
+  onSave: () => void;
   onExpandedAncestorsChange: (ids: string[]) => void;
 }
 
 export function RiskCard({
-  reviewer,
   entry,
   ancestors,
   expandedAncestors,
-  mode,
+  draft,
+  dirty,
+  saving,
+  saved,
+  error,
   position,
   total,
-  onResponsesChanged,
+  onDraftChange,
+  onSave,
   onExpandedAncestorsChange,
 }: Props) {
-  const [fields, setFields] = useState<FieldStates>(() =>
-    initFieldStates(entry),
-  );
-  const fieldsRef = useRef(fields);
-  fieldsRef.current = fields;
-
-  const notARisk = fields.validity.value === NOT_A_RISK;
-  const coded =
-    notARisk || AXIS_FIELDS.every((field) => fields[field].value !== null);
+  const notARisk = draft.validity === NOT_A_RISK;
+  const coded = isCoded(draftCodings(draft));
 
   const suggestions = useMemo(() => {
     const map = {} as Record<ReviewField, string | null>;
@@ -144,96 +112,19 @@ export function RiskCard({
     (field) => suggestions[field] !== null,
   );
 
-  const toResponses = (states: FieldStates): ReviewResponse[] => {
-    const responses: ReviewResponse[] = [];
-    for (const field of REVIEW_FIELDS) {
-      const state = states[field];
-      if (state.value !== null && state.reviewId !== null) {
-        responses.push({
-          id: state.reviewId,
-          field,
-          value: state.value,
-          mode,
-          comment: null,
-        });
-      }
-    }
-    return responses;
+  const setValue = (field: ReviewField, value: string) => {
+    onDraftChange({ ...draft, [field]: value });
   };
 
-  const saveField = async (field: ReviewField, value: string) => {
-    setFields((prev) => ({
-      ...prev,
-      [field]: { ...prev[field], value, saving: true, error: null },
-    }));
-    try {
-      const response = await submitReview({
-        reviewer,
-        riskId: entry.id,
-        reviewId: fieldsRef.current[field].reviewId,
-        field,
-        value,
-        mode,
-        comment: null,
-      });
-      const next: FieldStates = {
-        ...fieldsRef.current,
-        [field]: {
-          value,
-          reviewId: response.reviewId,
-          saving: false,
-          error: null,
-        },
-      };
-      if (field === "validity" && value === NOT_A_RISK) {
-        for (const axis of AXIS_FIELDS) {
-          next[axis] = { ...EMPTY_FIELD };
-        }
-      }
-      setFields(next);
-      onResponsesChanged(entry.id, toResponses(next));
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      setFields((prev) => ({
-        ...prev,
-        [field]: { ...prev[field], saving: false, error: message },
-      }));
-    }
-  };
-
-  const clearValidity = async () => {
-    const reviewId = fieldsRef.current.validity.reviewId;
-    if (reviewId === null) {
-      return;
-    }
-    setFields((prev) => ({
-      ...prev,
-      validity: { ...prev.validity, saving: true, error: null },
-    }));
-    try {
-      await deleteReview(reviewId);
-      const next: FieldStates = {
-        ...fieldsRef.current,
-        validity: { ...EMPTY_FIELD },
-      };
-      setFields(next);
-      onResponsesChanged(entry.id, toResponses(next));
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      setFields((prev) => ({
-        ...prev,
-        validity: { ...prev.validity, saving: false, error: message },
-      }));
-    }
-  };
-
-  const acceptSuggestions = async () => {
+  const acceptSuggestions = () => {
+    const next: Draft = { ...draft, validity: null };
     for (const field of AXIS_FIELDS) {
       const suggested = suggestions[field];
-      if (suggested !== null && fields[field].value === null) {
-        await saveField(field, suggested);
+      if (suggested !== null) {
+        next[field] = suggested;
       }
     }
+    onDraftChange(next);
   };
 
   return (
@@ -289,28 +180,20 @@ export function RiskCard({
           label="Not a risk"
           checked={notARisk}
           onChange={(event) => {
-            if (event.currentTarget.checked) {
-              saveField("validity", NOT_A_RISK);
-            } else {
-              clearValidity();
-            }
+            onDraftChange(withNotARisk(draft, event.currentTarget.checked));
           }}
-          disabled={fields.validity.saving}
         />
-        {fields.validity.error !== null ? (
-          <Text c="red" size="xs">
-            {fields.validity.error}
-          </Text>
-        ) : null}
         {CAUSAL_AXES.map((axis) => (
           <AxisButtons
             key={axis.field}
             label={axis.label}
             options={axis.options}
-            state={fields[axis.field]}
+            value={draft[axis.field]}
             suggested={suggestions[axis.field]}
             disabled={notARisk}
-            onSelect={(value) => saveField(axis.field, value)}
+            onSelect={(value) => {
+              setValue(axis.field, value);
+            }}
           />
         ))}
         <Stack gap={4}>
@@ -323,17 +206,17 @@ export function RiskCard({
               group: group.domain,
               items: group.items,
             }))}
-            value={fields.subdomain.value}
+            value={draft.subdomain}
             onChange={(value) => {
               if (value !== null) {
-                saveField("subdomain", value);
+                setValue("subdomain", value);
               }
             }}
-            disabled={notARisk || fields.subdomain.saving}
+            disabled={notARisk}
             searchable
           />
           {suggestions.subdomain !== null &&
-          fields.subdomain.value === null &&
+          draft.subdomain === null &&
           !notARisk ? (
             <Group gap="xs">
               <Text size="xs" c="dimmed">
@@ -348,7 +231,7 @@ export function RiskCard({
                 onClick={() => {
                   const suggested = suggestions.subdomain;
                   if (suggested !== null) {
-                    saveField("subdomain", suggested);
+                    setValue("subdomain", suggested);
                   }
                 }}
               >
@@ -356,15 +239,60 @@ export function RiskCard({
               </Anchor>
             </Group>
           ) : null}
-          {fields.subdomain.error !== null ? (
-            <Text c="red" size="xs">
-              {fields.subdomain.error}
-            </Text>
-          ) : null}
         </Stack>
+        <Group justify="space-between" align="center">
+          <SaveStatus
+            dirty={dirty}
+            saving={saving}
+            saved={saved}
+            error={error}
+          />
+          <Button onClick={onSave} disabled={!dirty} loading={saving}>
+            Save
+          </Button>
+        </Group>
       </Stack>
     </Stack>
   );
+}
+
+interface SaveStatusProps {
+  dirty: boolean;
+  saving: boolean;
+  saved: boolean;
+  error: string | null;
+}
+
+function SaveStatus({ dirty, saving, saved, error }: SaveStatusProps) {
+  if (error !== null) {
+    return (
+      <Text size="sm" c="red">
+        {error}
+      </Text>
+    );
+  }
+  if (saving) {
+    return (
+      <Text size="sm" c="dimmed">
+        Saving…
+      </Text>
+    );
+  }
+  if (dirty) {
+    return (
+      <Text size="sm" c="dimmed">
+        Unsaved changes
+      </Text>
+    );
+  }
+  if (saved) {
+    return (
+      <Text size="sm" c="green">
+        Saved
+      </Text>
+    );
+  }
+  return null;
 }
 
 interface AncestorTrailProps {
@@ -496,7 +424,7 @@ function EvidenceCard({ item }: { item: EvidenceItem }) {
 interface AxisButtonsProps {
   label: string;
   options: AxisOption[];
-  state: FieldState;
+  value: string | null;
   suggested: string | null;
   disabled: boolean;
   onSelect: (value: string) => void;
@@ -505,7 +433,7 @@ interface AxisButtonsProps {
 function AxisButtons({
   label,
   options,
-  state,
+  value,
   suggested,
   disabled,
   onSelect,
@@ -526,27 +454,24 @@ function AxisButtons({
             key={option.value}
             size="xs"
             variant={
-              state.value === option.value
+              value === option.value
                 ? "filled"
                 : option.value === suggested
                   ? "outline"
                   : "light"
             }
-            onClick={() => onSelect(option.value)}
-            disabled={disabled || state.saving}
+            onClick={() => {
+              onSelect(option.value);
+            }}
+            disabled={disabled}
           >
             {option.label}
           </Button>
         ))}
       </Group>
-      {suggestedLabel !== null && state.value === null && !disabled ? (
+      {suggestedLabel !== null && value === null && !disabled ? (
         <Text size="xs" c="dimmed">
           Pipeline: {suggestedLabel}
-        </Text>
-      ) : null}
-      {state.error !== null ? (
-        <Text c="red" size="xs">
-          {state.error}
         </Text>
       ) : null}
     </Stack>

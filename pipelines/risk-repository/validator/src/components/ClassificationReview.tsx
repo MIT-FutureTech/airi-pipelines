@@ -10,16 +10,18 @@ import {
   Title,
 } from "@mantine/core";
 import { useHotkeys } from "@mantine/hooks";
-import type {
-  ReviewMode,
-  ReviewResponse,
-  RiskEntry,
-} from "@shared/classification";
+import type { ReviewMode, RiskEntry } from "@shared/classification";
 import { isCoded } from "@shared/coding";
-import { use, useMemo, useState } from "react";
+import { use, useEffect, useMemo, useState } from "react";
 import { RiskCard } from "@/components/RiskCard";
 import { RiskSidebar } from "@/components/RiskSidebar";
-import { fetchRiskManifest, getRiskManifest } from "@/lib/api";
+import { fetchRiskManifest, getRiskManifest, saveCodings } from "@/lib/api";
+import {
+  codingsRequest,
+  type Draft,
+  draftEquals,
+  draftFromResponses,
+} from "@/lib/draft";
 import { codableRisks, pipelineIsReady } from "@/lib/risks";
 import { navigate } from "@/lib/route";
 import { ancestorsOf, indexRisks } from "@/lib/tree";
@@ -30,12 +32,20 @@ interface Props {
   mode: ReviewMode;
 }
 
+type SaveState =
+  | { status: "idle" }
+  | { status: "saving"; riskId: string }
+  | { status: "saved"; riskId: string }
+  | { status: "failed"; riskId: string; message: string };
+
 export function ClassificationReview({ reviewer, quickRef, mode }: Props) {
   const [manifest] = useState(() =>
     getRiskManifest({ quickRef, reviewer, mode }),
   );
   const initial = use(manifest);
   const [risks, setRisks] = useState<RiskEntry[]>(initial.risks);
+  const [drafts, setDrafts] = useState<Record<string, Draft>>({});
+  const [save, setSave] = useState<SaveState>({ status: "idle" });
   const [activeId, setActiveId] = useState<string | null>(() =>
     firstUncodedId(initial.risks),
   );
@@ -45,6 +55,34 @@ export function ClassificationReview({ reviewer, quickRef, mode }: Props) {
 
   const codable = codableRisks(risks);
   const waitingForPipeline = mode === "anchored" && !pipelineIsReady(risks);
+
+  const dirtyIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const risk of risks) {
+      const draft = drafts[risk.id];
+      if (
+        draft !== undefined &&
+        !draftEquals(draft, draftFromResponses(risk.responses))
+      ) {
+        ids.add(risk.id);
+      }
+    }
+    return ids;
+  }, [risks, drafts]);
+
+  const hasUnsavedWork = dirtyIds.size > 0;
+  useEffect(() => {
+    if (!hasUnsavedWork) {
+      return;
+    }
+    const warn = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => {
+      window.removeEventListener("beforeunload", warn);
+    };
+  }, [hasUnsavedWork]);
 
   const checkForPipeline = async () => {
     setChecking(true);
@@ -62,6 +100,10 @@ export function ClassificationReview({ reviewer, quickRef, mode }: Props) {
   const index = useMemo(() => indexRisks(risks), [risks]);
 
   const activeEntry = risks.find((risk) => risk.id === activeId) ?? null;
+  const activeDraft =
+    activeEntry === null
+      ? null
+      : (drafts[activeEntry.id] ?? draftFromResponses(activeEntry.responses));
   const codableIndex =
     activeEntry === null
       ? -1
@@ -95,19 +137,58 @@ export function ClassificationReview({ reviewer, quickRef, mode }: Props) {
     }
   };
 
+  const saveActive = async () => {
+    if (
+      activeEntry === null ||
+      activeDraft === null ||
+      !dirtyIds.has(activeEntry.id)
+    ) {
+      return;
+    }
+    const entry = activeEntry;
+    const draft = activeDraft;
+    setSave({ status: "saving", riskId: entry.id });
+    try {
+      const saved = await saveCodings(
+        codingsRequest({ reviewer, mode, entry, draft }),
+      );
+      setRisks((prev) =>
+        prev.map((risk) =>
+          risk.id === entry.id ? { ...risk, responses: saved.responses } : risk,
+        ),
+      );
+      setDrafts((prev) => {
+        const current = prev[entry.id];
+        if (current === undefined || !draftEquals(current, draft)) {
+          return prev;
+        }
+        const { [entry.id]: _saved, ...rest } = prev;
+        return rest;
+      });
+      setSave({ status: "saved", riskId: entry.id });
+    } catch (err) {
+      setSave({
+        status: "failed",
+        riskId: entry.id,
+        message: err instanceof Error ? err.message : String(err),
+      });
+      // A save can fail after part of it landed, so rebase on what Airtable
+      // actually holds; otherwise a retry duplicates the rows that succeeded.
+      fetchRiskManifest({ quickRef, reviewer, mode })
+        .then((fresh) => {
+          setRisks(fresh.risks);
+        })
+        .catch((error: unknown) => {
+          console.warn("Could not refresh after a failed save", error);
+        });
+    }
+  };
+
   useHotkeys([
     ["ArrowLeft", () => step(-1)],
     ["ArrowRight", () => step(1)],
   ]);
-
-  const handleResponsesChanged = (
-    riskId: string,
-    responses: ReviewResponse[],
-  ) => {
-    setRisks((prev) =>
-      prev.map((risk) => (risk.id === riskId ? { ...risk, responses } : risk)),
-    );
-  };
+  useHotkeys([["mod+Enter", () => void saveActive()]], []);
 
   return (
     <AppShell
@@ -145,6 +226,7 @@ export function ClassificationReview({ reviewer, quickRef, mode }: Props) {
         <RiskSidebar
           risks={risks}
           activeId={activeId}
+          dirtyIds={dirtyIds}
           onSelect={selectAndScroll}
         />
       </AppShell.Navbar>
@@ -158,7 +240,7 @@ export function ClassificationReview({ reviewer, quickRef, mode }: Props) {
               navigate({ name: "classification", quickRef, mode: "blind" })
             }
           />
-        ) : activeEntry === null ? (
+        ) : activeEntry === null || activeDraft === null ? (
           <Center h="100%" p="md">
             <Stack gap="sm" align="center">
               <Title order={2}>All coded</Title>
@@ -171,14 +253,24 @@ export function ClassificationReview({ reviewer, quickRef, mode }: Props) {
         ) : (
           <RiskCard
             key={activeEntry.id}
-            reviewer={reviewer}
             entry={activeEntry}
             ancestors={ancestorsOf(index, activeEntry)}
             expandedAncestors={expandedAncestors}
-            mode={mode}
+            draft={activeDraft}
+            dirty={dirtyIds.has(activeEntry.id)}
+            saving={save.status === "saving" && save.riskId === activeEntry.id}
+            saved={save.status === "saved" && save.riskId === activeEntry.id}
+            error={
+              save.status === "failed" && save.riskId === activeEntry.id
+                ? save.message
+                : null
+            }
             position={codableIndex + 1}
             total={codable.length}
-            onResponsesChanged={handleResponsesChanged}
+            onDraftChange={(draft) => {
+              setDrafts((prev) => ({ ...prev, [activeEntry.id]: draft }));
+            }}
+            onSave={() => void saveActive()}
             onExpandedAncestorsChange={setExpandedAncestors}
           />
         )}
