@@ -1,5 +1,6 @@
 import logging
 from enum import StrEnum
+from typing import Self
 
 from pydantic import BaseModel, Field
 
@@ -99,6 +100,31 @@ class RiskToClassify(RiskContent, frozen=True):
     risk_id: str
     ancestors: tuple[RiskContent, ...]
 
+    @classmethod
+    def from_extracted(cls, risk: ExtractedRisk, *, risk_id: str) -> Self:
+        """Convert a category/subcategory pair into a tree."""
+        if risk.subcategory.strip():
+            name = risk.subcategory
+            ancestors = (
+                RiskContent(
+                    name=risk.category,
+                    description="",
+                    supporting_quote="",
+                    additional_evidence=(),
+                ),
+            )
+        else:
+            name = risk.category
+            ancestors = ()
+        return cls(
+            risk_id=risk_id,
+            name=name,
+            description=risk.description,
+            supporting_quote=risk.supporting_quote,
+            additional_evidence=(),
+            ancestors=ancestors,
+        )
+
 
 class ClassifiedRisk(BaseModel):
     risk_id: str
@@ -132,7 +158,7 @@ def make_domain_classifier(
 
 async def classify_risk[T: BaseModel](
     classifier: LLMClassifier[T],
-    risk: ExtractedRisk,
+    risk: RiskToClassify,
 ) -> T:
     user_prompt = format_classification_user_prompt(risk)
     result = await classifier.classify(user_prompt)
@@ -244,27 +270,57 @@ When generating your response, follow the field order of the schema: the first f
 """
 
 _CLASSIFICATION_USER_PROMPT = """\
-The following risk was extracted from a paper. The category and subcategory indicate how
-the risk was classified by the original authors.
+The following risk was extracted from a paper.
 
 <risk>
-Authors' category: {category}
-Authors' subcategory: {subcategory}
-Authors' description: {description}
-Supporting quote: {supporting_quote}
+{risk}
 </risk>
 
 Please reclassify it according to our own taxonomy.
 """
 
+_CLASSIFICATION_CONTEXT = """\
+The risk sits inside the authors' own grouping of risks, given below from the outermost
+group inward. The grouping indicates how the original authors classified the risk.
 
-def format_classification_user_prompt(risk: ExtractedRisk) -> str:
-    return _CLASSIFICATION_USER_PROMPT.format(
-        category=risk.category,
-        subcategory=risk.subcategory,
-        description=risk.description,
-        supporting_quote=risk.supporting_quote,
+<enclosing-groups>
+{groups}
+</enclosing-groups>
+
+"""
+
+_CLASSIFICATION_GROUP = """\
+<group>
+{group}
+</group>"""
+
+
+def _format_content(content: RiskContent) -> str:
+    """Render a risk or group, omitting the fields its source left empty."""
+    lines = [
+        f"{label}: {value}"
+        for label, value in (
+            ("Name", content.name),
+            ("Description", content.description),
+            ("Supporting quote", content.supporting_quote),
+        )
+        if value
+    ]
+    if content.additional_evidence:
+        lines.append("Additional evidence:")
+        lines.extend(f"- {evidence}" for evidence in content.additional_evidence)
+    return "\n".join(lines)
+
+
+def format_classification_user_prompt(risk: RiskToClassify) -> str:
+    prompt = _CLASSIFICATION_USER_PROMPT.format(risk=_format_content(risk))
+    if not risk.ancestors:
+        return prompt
+    groups = "\n".join(
+        _CLASSIFICATION_GROUP.format(group=_format_content(ancestor))
+        for ancestor in risk.ancestors
     )
+    return _CLASSIFICATION_CONTEXT.format(groups=groups) + prompt
 
 
 async def _classify_one(
@@ -291,8 +347,9 @@ async def _classify_one(
         for i, risk in enumerate(extraction.risks):
             risk_id = f"{record.readable_id}-{i:03}"
             with log_context(risk_id=risk_id):
-                causal = await classify_risk(causal_classifier, risk)
-                domain = await classify_risk(domain_classifier, risk)
+                to_classify = RiskToClassify.from_extracted(risk)
+                causal = await classify_risk(causal_classifier, to_classify)
+                domain = await classify_risk(domain_classifier, to_classify)
                 classified = ClassifiedRisk(
                     risk_id=risk_id, causal=causal, domain=domain
                 )
