@@ -1,7 +1,6 @@
 import logging
 from collections.abc import AsyncGenerator, Iterable, Iterator
 from enum import StrEnum
-from typing import Self
 
 from pydantic import BaseModel, Field
 
@@ -86,13 +85,18 @@ class DomainClassification(BaseModel):
     )
 
 
+class Evidence(BaseModel, frozen=True):
+    text: str
+    quote: str
+
+
 class RiskContent(BaseModel, frozen=True):
     """A risk, or one of the enclosing groups in a paper's hierarchy of risks."""
 
     name: str
     description: str
     supporting_quote: str
-    additional_evidence: tuple[str, ...]
+    additional_evidence: tuple[Evidence, ...]
 
 
 class RiskToClassify(RiskContent, frozen=True):
@@ -101,30 +105,81 @@ class RiskToClassify(RiskContent, frozen=True):
     risk_id: str
     ancestors: tuple[RiskContent, ...]
 
-    @classmethod
-    def from_extracted(cls, risk: ExtractedRisk, *, risk_id: str) -> Self:
-        """Convert a category/subcategory pair into a tree."""
-        if risk.subcategory.strip():
-            name = risk.subcategory
-            ancestors = (
-                RiskContent(
-                    name=risk.category,
-                    description="",
-                    supporting_quote="",
-                    additional_evidence=(),
-                ),
-            )
-        else:
-            name = risk.category
-            ancestors = ()
-        return cls(
-            risk_id=risk_id,
-            name=name,
-            description=risk.description,
-            supporting_quote=risk.supporting_quote,
-            additional_evidence=(),
-            ancestors=ancestors,
+
+class RiskNode(BaseModel, frozen=True):
+    """One entry in a paper's hierarchy of risks.
+
+    An excluded node holds the tree together even if it itself is not classified.
+    """
+
+    node_id: str
+    parent_id: str | None
+    content: RiskContent
+    included: bool
+
+
+def codable_risks(nodes: Iterable[RiskNode]) -> Iterator[RiskToClassify]:
+    """Yield the nodes the classifier should code, each with its ancestors.
+
+    A node is codable when it is included and no included node names it as a
+    parent, so a node whose children were all excluded becomes codable itself.
+    """
+    by_id = {node.node_id: node for node in nodes}
+    parents = {node.parent_id for node in by_id.values() if node.included}
+    for node in by_id.values():
+        if not node.included or node.node_id in parents:
+            continue
+        yield RiskToClassify(
+            risk_id=node.node_id,
+            name=node.content.name,
+            description=node.content.description,
+            supporting_quote=node.content.supporting_quote,
+            additional_evidence=node.content.additional_evidence,
+            ancestors=_ancestors(node, by_id),
         )
+
+
+def _ancestors(node: RiskNode, by_id: dict[str, RiskNode]) -> tuple[RiskContent, ...]:
+    chain: list[RiskContent] = []
+    seen = {node.node_id}
+    parent_id = node.parent_id
+    while parent_id is not None:
+        if parent_id in seen:
+            raise ValueError(f"Risk hierarchy has a cycle through {parent_id}")
+        seen.add(parent_id)
+        parent = by_id[parent_id]
+        if parent.included:
+            chain.append(parent.content)
+        parent_id = parent.parent_id
+    chain.reverse()
+    return tuple(chain)
+
+
+def category_nodes(
+    content: RiskContent,
+    *,
+    risk_id: str,
+    category: str,
+) -> tuple[RiskNode, ...]:
+    if not category:
+        return (
+            RiskNode(node_id=risk_id, parent_id=None, content=content, included=True),
+        )
+    parent_id = f"{risk_id}/category"
+    return (
+        RiskNode(
+            node_id=parent_id,
+            parent_id=None,
+            content=RiskContent(
+                name=category,
+                description="",
+                supporting_quote="",
+                additional_evidence=(),
+            ),
+            included=True,
+        ),
+        RiskNode(node_id=risk_id, parent_id=parent_id, content=content, included=True),
+    )
 
 
 class ClassifiedRisk(BaseModel):
@@ -275,6 +330,25 @@ async def classify_documents(
         )
 
 
+def extracted_risk_nodes(risk: ExtractedRisk, *, risk_id: str) -> tuple[RiskNode, ...]:
+    if risk.subcategory.strip():
+        name = risk.subcategory
+        category = risk.category
+    else:
+        name = risk.category
+        category = ""
+    return category_nodes(
+        RiskContent(
+            name=name,
+            description=risk.description,
+            supporting_quote=risk.supporting_quote,
+            additional_evidence=(),
+        ),
+        risk_id=risk_id,
+        category=category,
+    )
+
+
 def _documents_to_classify(
     records: Iterable[DocumentRecord],
     settings: RiskRepositorySettings,
@@ -296,10 +370,13 @@ def _documents_to_classify(
         yield DocumentRisks(
             readable_id=record.readable_id,
             risks=tuple(
-                RiskToClassify.from_extracted(
-                    risk, risk_id=f"{record.readable_id}-{i:03}"
+                codable_risks(
+                    node
+                    for i, risk in enumerate(extraction.risks)
+                    for node in extracted_risk_nodes(
+                        risk, risk_id=f"{record.readable_id}-{i:03}"
+                    )
                 )
-                for i, risk in enumerate(extraction.risks)
             ),
         )
 
@@ -450,6 +527,12 @@ _CLASSIFICATION_GROUP = """\
 </group>"""
 
 
+def _format_evidence(evidence: Evidence) -> str:
+    if evidence.text and evidence.quote:
+        return f"- {evidence.text}\n  Quote: {evidence.quote}"
+    return f"- {evidence.text or evidence.quote}"
+
+
 def _format_content(content: RiskContent) -> str:
     """Render a risk or group, omitting the fields its source left empty."""
     lines = [
@@ -463,7 +546,9 @@ def _format_content(content: RiskContent) -> str:
     ]
     if content.additional_evidence:
         lines.append("Additional evidence:")
-        lines.extend(f"- {evidence}" for evidence in content.additional_evidence)
+        lines.extend(
+            _format_evidence(evidence) for evidence in content.additional_evidence
+        )
     return "\n".join(lines)
 
 
