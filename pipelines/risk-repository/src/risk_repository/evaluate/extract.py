@@ -2,7 +2,7 @@ from collections.abc import Iterable
 
 from pydantic import BaseModel, Field
 
-from risk_repository.evaluate.ground_truth import CategoryLevel, GroundTruthRisk
+from risk_repository.evaluate.ground_truth import CategoryLevel
 from risk_repository.evaluate.match import DocumentMatchResult
 from risk_repository.extract import ExtractedRisk
 
@@ -96,7 +96,7 @@ def evaluate_extraction(
 
         gt_side = SideTally()
         for risk, degree in zip(doc.gt_risks, gt_degrees, strict=True):
-            gt_side.record(_gt_level(risk), degree)
+            gt_side.record(risk.level, degree)
 
         pipeline_side = SideTally()
         for risk, degree in zip(doc.pipeline_risks, pipeline_degrees, strict=True):
@@ -122,12 +122,6 @@ def evaluate_extraction(
         pipeline=total_pipeline,
         per_document=per_document,
     )
-
-
-def _gt_level(risk: GroundTruthRisk) -> CategoryLevel:
-    if risk.category_level is not None:
-        return risk.category_level
-    return CategoryLevel.SUBCATEGORY if risk.subcategory else CategoryLevel.CATEGORY
 
 
 def _pipeline_level(risk: ExtractedRisk) -> CategoryLevel:
