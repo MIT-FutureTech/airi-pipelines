@@ -99,13 +99,41 @@ def pending_risks(
     return pending
 
 
-def _axis_values(classified: ClassifiedRisk) -> dict[ReviewField, str]:
-    return {
-        ReviewField.ENTITY: classified.causal.entity.value,
-        ReviewField.INTENT: classified.causal.intent.value,
-        ReviewField.TIMING: classified.causal.timing.value,
-        ReviewField.SUBDOMAIN: classified.domain.subdomain.value,
-    }
+class _AxisCoding(BaseModel, frozen=True):
+    field: ReviewField
+    value: str
+    comment: str
+
+
+def _axis_codings(classified: ClassifiedRisk) -> tuple[_AxisCoding, ...]:
+    """One coding per axis, each carrying the reasoning that produced it.
+
+    The causal reasoning covers three axes at once, so it repeats across them.
+    """
+    causal = classified.causal
+    domain = classified.domain
+    return (
+        _AxisCoding(
+            field=ReviewField.ENTITY,
+            value=causal.entity.value,
+            comment=causal.reasoning,
+        ),
+        _AxisCoding(
+            field=ReviewField.INTENT,
+            value=causal.intent.value,
+            comment=causal.reasoning,
+        ),
+        _AxisCoding(
+            field=ReviewField.TIMING,
+            value=causal.timing.value,
+            comment=causal.reasoning,
+        ),
+        _AxisCoding(
+            field=ReviewField.SUBDOMAIN,
+            value=domain.subdomain.value,
+            comment=domain.reasoning,
+        ),
+    )
 
 
 async def replace_pipeline_codings(
@@ -130,12 +158,13 @@ async def replace_pipeline_codings(
         {
             "Risk": [risk.risk_id],
             "Reviewer": reviewer,
-            "Field": field.value,
-            "Value": value,
+            "Field": coding.field.value,
+            "Value": coding.value,
             "Mode": PIPELINE_MODE,
+            "Comment": coding.comment,
         }
         for risk in classified
-        for field, value in _axis_values(risk).items()
+        for coding in _axis_codings(risk)
     ]
     await table.batch_create(rows)
     logger.info(
