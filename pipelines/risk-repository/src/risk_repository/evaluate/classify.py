@@ -9,11 +9,13 @@ from risk_repository.classify import (
     ClassificationResult,
     ClassifiedRisk,
     Entity,
+    Evidence,
     Intent,
     RiskContent,
-    RiskToClassify,
+    RiskNode,
     Subdomain,
     Timing,
+    category_nodes,
 )
 from risk_repository.evaluate.ground_truth import CategoryLevel, GroundTruthRisk
 from risk_repository.evaluate.match import DocumentMatchResult
@@ -49,28 +51,25 @@ class ClassificationMetrics(BaseModel):
     axes: list[AxisMetrics]
 
 
-def risk_to_classify(risk: GroundTruthRisk) -> RiskToClassify:
-    """Read a previous-iteration risk as a tree, keyed by its Ev_ID."""
+def ground_truth_nodes(risk: GroundTruthRisk) -> tuple[RiskNode, ...]:
+    """Read a previous-iteration risk as a node chain, keyed by its Ev_ID."""
     if risk.level is CategoryLevel.SUBCATEGORY and risk.subcategory:
         name = risk.subcategory
-        ancestors = (
-            RiskContent(
-                name=risk.category,
-                description="",
-                supporting_quote="",
-                additional_evidence=(),
-            ),
-        )
+        category = risk.category
     else:
         name = risk.category
-        ancestors = ()
-    return RiskToClassify(
+        category = ""
+    return category_nodes(
+        RiskContent(
+            name=name,
+            description=risk.description,
+            supporting_quote=risk.quote or "",
+            additional_evidence=tuple(
+                Evidence(text=text, quote="") for text in risk.additional_evidence
+            ),
+        ),
         risk_id=risk.ev_id,
-        name=name,
-        description=risk.description,
-        supporting_quote=risk.quote or "",
-        additional_evidence=tuple(risk.additional_evidence),
-        ancestors=ancestors,
+        category=category,
     )
 
 
