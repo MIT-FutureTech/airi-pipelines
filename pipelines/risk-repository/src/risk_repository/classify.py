@@ -1,4 +1,5 @@
 import logging
+from collections.abc import AsyncGenerator, Iterable, Iterator
 from enum import StrEnum
 from typing import Self
 
@@ -136,6 +137,18 @@ class ClassificationResult(BaseModel):
     risks: list[ClassifiedRisk]
 
 
+class DocumentRisks(BaseModel, frozen=True):
+    """One document's risks, in extraction order."""
+
+    readable_id: str
+    risks: tuple[RiskToClassify, ...]
+
+
+class ClassifiedDocument(BaseModel):
+    readable_id: str
+    classification: ClassificationResult
+
+
 def make_causal_classifier(
     client: LLMClient,
 ) -> LLMClassifier[CausalClassification]:
@@ -167,6 +180,148 @@ async def classify_risk[T: BaseModel](
     else:
         logger.info(f"Usage: {result.usage.model_dump_json()}")
     return result.value
+
+
+async def _classify_one_risk(
+    risk: RiskToClassify,
+    *,
+    causal_classifier: LLMClassifier[CausalClassification],
+    domain_classifier: LLMClassifier[DomainClassification],
+) -> ClassifiedRisk:
+    with log_context(risk_id=risk.risk_id):
+        causal = await classify_risk(causal_classifier, risk)
+        domain = await classify_risk(domain_classifier, risk)
+        classified = ClassifiedRisk(risk_id=risk.risk_id, causal=causal, domain=domain)
+        serialized = classified.model_dump_json(
+            exclude={"causal": {"reasoning"}, "domain": {"reasoning"}}
+        )
+        logger.info(f"Classified risk as {serialized}")
+        return classified
+
+
+async def classify_risks(
+    risks: Iterable[RiskToClassify],
+    *,
+    llm: LLMClient,
+    concurrency: int,
+    progress_description: str | None,
+) -> AsyncGenerator[ClassifiedRisk]:
+    """Classify risks concurrently, yielding each verdict as it arrives."""
+    causal_classifier = make_causal_classifier(llm)
+    domain_classifier = make_domain_classifier(llm)
+    runner = ConcurrentMap(
+        max_concurrency=concurrency,
+        progress_description=progress_description,
+    )
+    async for classified in runner.map(
+        risks,
+        _classify_one_risk,
+        causal_classifier=causal_classifier,
+        domain_classifier=domain_classifier,
+    ):
+        yield classified
+
+
+async def classify_documents(
+    documents: Iterable[DocumentRisks],
+    *,
+    llm: LLMClient,
+    concurrency: int,
+    progress_description: str | None,
+) -> AsyncGenerator[ClassifiedDocument]:
+    """Classify many documents' risks
+
+    Each document is yielded once all of its risks are classified, with the
+    order of its risks preserved.
+    """
+    outstanding: dict[str, DocumentRisks] = {}
+    verdicts: dict[str, dict[str, ClassifiedRisk]] = {}
+    owners: dict[str, str] = {}
+
+    def flatten() -> Iterator[RiskToClassify]:
+        for document in documents:
+            outstanding[document.readable_id] = document
+            verdicts[document.readable_id] = {}
+            for risk in document.risks:
+                owners[risk.risk_id] = document.readable_id
+                yield risk
+
+    async for classified in classify_risks(
+        risks=flatten(),
+        llm=llm,
+        concurrency=concurrency,
+        progress_description=progress_description,
+    ):
+        readable_id = owners.pop(classified.risk_id)
+        collected = verdicts[readable_id]
+        collected[classified.risk_id] = classified
+        document = outstanding[readable_id]
+        if len(collected) < len(document.risks):
+            continue
+        del outstanding[readable_id]
+        del verdicts[readable_id]
+        yield ClassifiedDocument(
+            readable_id=readable_id,
+            classification=ClassificationResult(
+                risks=[collected[risk.risk_id] for risk in document.risks]
+            ),
+        )
+
+    # Any remaining documents are ones which contain zero risks
+    for document in outstanding.values():
+        yield ClassifiedDocument(
+            readable_id=document.readable_id,
+            classification=ClassificationResult(risks=[]),
+        )
+
+
+def _documents_to_classify(
+    records: Iterable[DocumentRecord],
+    settings: RiskRepositorySettings,
+) -> Iterator[DocumentRisks]:
+    for record in records:
+        with log_context(readable_id=record.readable_id):
+            classify_path = result_path(
+                settings.output_dir, PipelineStage.CLASSIFY, record.readable_id
+            )
+            if not settings.force and classify_path.exists():
+                continue
+            extract_path = result_path(
+                settings.output_dir, PipelineStage.EXTRACT, record.readable_id
+            )
+            if not extract_path.exists():
+                logger.warning("Skipping document: no extraction results")
+                continue
+            extraction = load(extract_path, ExtractionResult)
+        yield DocumentRisks(
+            readable_id=record.readable_id,
+            risks=tuple(
+                RiskToClassify.from_extracted(
+                    risk, risk_id=f"{record.readable_id}-{i:03}"
+                )
+                for i, risk in enumerate(extraction.risks)
+            ),
+        )
+
+
+async def run_classification(
+    records: list[DocumentRecord],
+    *,
+    llm: LLMClient,
+    settings: RiskRepositorySettings,
+) -> None:
+    async for classified in classify_documents(
+        _documents_to_classify(records, settings),
+        llm=llm,
+        concurrency=settings.concurrency,
+        progress_description="Classifying",
+    ):
+        with log_context(readable_id=classified.readable_id):
+            classify_path = result_path(
+                settings.output_dir, PipelineStage.CLASSIFY, classified.readable_id
+            )
+            save(classify_path, classified.classification)
+            logger.info(f"Classified {len(classified.classification.risks)} risks")
 
 
 CAUSAL_TAXONOMY_SYSTEM_PROMPT = """
@@ -321,65 +476,3 @@ def format_classification_user_prompt(risk: RiskToClassify) -> str:
         for ancestor in risk.ancestors
     )
     return _CLASSIFICATION_CONTEXT.format(groups=groups) + prompt
-
-
-async def _classify_one(
-    record: DocumentRecord,
-    *,
-    causal_classifier: LLMClassifier[CausalClassification],
-    domain_classifier: LLMClassifier[DomainClassification],
-    settings: RiskRepositorySettings,
-) -> None:
-    with log_context(readable_id=record.readable_id):
-        classify_path = result_path(
-            settings.output_dir, PipelineStage.CLASSIFY, record.readable_id
-        )
-        if not settings.force and classify_path.exists():
-            return
-        extract_path = result_path(
-            settings.output_dir, PipelineStage.EXTRACT, record.readable_id
-        )
-        if not extract_path.exists():
-            logger.warning("Skipping document: no extraction results")
-            return
-        extraction = load(extract_path, ExtractionResult)
-        classified_risks: list[ClassifiedRisk] = []
-        for i, risk in enumerate(extraction.risks):
-            risk_id = f"{record.readable_id}-{i:03}"
-            with log_context(risk_id=risk_id):
-                to_classify = RiskToClassify.from_extracted(risk)
-                causal = await classify_risk(causal_classifier, to_classify)
-                domain = await classify_risk(domain_classifier, to_classify)
-                classified = ClassifiedRisk(
-                    risk_id=risk_id, causal=causal, domain=domain
-                )
-                serialized = classified.model_dump_json(
-                    exclude={"causal": {"reasoning"}, "domain": {"reasoning"}}
-                )
-                logger.info(f"Classified risk as {serialized}")
-            classified_risks.append(classified)
-        classification = ClassificationResult(risks=classified_risks)
-        save(classify_path, classification)
-        logger.info(f"Classified {len(classified_risks)} risks")
-
-
-async def run_classification(
-    records: list[DocumentRecord],
-    *,
-    llm: LLMClient,
-    settings: RiskRepositorySettings,
-) -> None:
-    causal_classifier = make_causal_classifier(llm)
-    domain_classifier = make_domain_classifier(llm)
-    runner = ConcurrentMap(
-        max_concurrency=settings.concurrency,
-        progress_description="Classifying",
-    )
-    async for _ in runner.map(
-        records,
-        _classify_one,
-        causal_classifier=causal_classifier,
-        domain_classifier=domain_classifier,
-        settings=settings,
-    ):
-        pass
