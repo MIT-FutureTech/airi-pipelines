@@ -1,15 +1,16 @@
 import logging
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable, Mapping, Sequence
 from enum import StrEnum
 
 from pydantic import BaseModel, Field
 
-from risk_repository.classify import DocumentRisks
-from toolbox.airtable import AirtableClient, Table
+from risk_repository.classify import ClassifiedRisk, DocumentRisks
+from toolbox.airtable import AirtableClient, JsonObject, Table
 
 logger = logging.getLogger(__name__)
 
 PIPELINE_REVIEWER_PREFIX = "pipeline:"
+PIPELINE_MODE = "blind"
 
 
 class ReviewField(StrEnum):
@@ -96,3 +97,47 @@ def pending_risks(
     total = sum(len(document.risks) for document in pending)
     logger.info(f"{total} risks in {len(pending)} papers need classifying")
     return pending
+
+
+def _axis_values(classified: ClassifiedRisk) -> dict[ReviewField, str]:
+    return {
+        ReviewField.ENTITY: classified.causal.entity.value,
+        ReviewField.INTENT: classified.causal.intent.value,
+        ReviewField.TIMING: classified.causal.timing.value,
+        ReviewField.SUBDOMAIN: classified.domain.subdomain.value,
+    }
+
+
+async def replace_pipeline_codings(
+    client: AirtableClient,
+    *,
+    base_id: str,
+    table_name: str,
+    reviewer: str,
+    classified: Sequence[ClassifiedRisk],
+    codings: Mapping[str, PipelineCoding],
+) -> None:
+    table = Table(client, base_id=base_id, table_name=table_name)
+    stale = [
+        review_id
+        for risk in classified
+        if risk.risk_id in codings
+        for review_id in codings[risk.risk_id].review_ids
+    ]
+    if stale:
+        await table.batch_delete(stale)
+    rows: list[JsonObject] = [
+        {
+            "Risk": [risk.risk_id],
+            "Reviewer": reviewer,
+            "Field": field.value,
+            "Value": value,
+            "Mode": PIPELINE_MODE,
+        }
+        for risk in classified
+        for field, value in _axis_values(risk).items()
+    ]
+    await table.batch_create(rows)
+    logger.info(
+        f"Wrote {len(rows)} rows for {len(classified)} risks, {len(stale)} stale rows deleted"
+    )
