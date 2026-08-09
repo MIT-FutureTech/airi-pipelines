@@ -16,13 +16,13 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
-from risk_repository.classify import ClassifiedRisk, classify_risks
+from risk_repository.classify import ClassifiedRisk, classify_risks, codable_risks
 from risk_repository.evaluate.classify import (
     AxisMetrics,
     Labels,
     ground_truth_labels,
+    ground_truth_nodes,
     predicted_labels,
-    risk_to_classify,
     score_classifications,
 )
 from risk_repository.evaluate.ground_truth import (
@@ -118,7 +118,9 @@ async def main() -> None:
         classified = [
             result
             async for result in classify_risks(
-                [risk_to_classify(risk) for risk in gt_risks],
+                codable_risks(
+                    node for risk in gt_risks for node in ground_truth_nodes(risk)
+                ),
                 llm=llm,
                 concurrency=args.concurrency,
                 progress_description="Classifying",
