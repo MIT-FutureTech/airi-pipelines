@@ -167,6 +167,26 @@ export interface ReviewUpsertResponse {
   value: string;
 }
 
+export interface CodingWrite {
+  reviewId: string | null;
+  field: ReviewField;
+  value: string;
+  comment: string | null;
+}
+
+export interface SaveCodingsRequest {
+  reviewer: string;
+  riskId: string;
+  mode: ReviewMode;
+  codings: CodingWrite[];
+  staleReviewIds: string[];
+}
+
+export interface SaveCodingsResponse {
+  riskId: string;
+  responses: ReviewResponse[];
+}
+
 export interface AirtableCollaborator {
   id: string;
   email?: string;
