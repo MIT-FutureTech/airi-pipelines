@@ -85,6 +85,12 @@ class GroundTruthRisk(BaseModel):
     timing: str | None
     subdomain_code: str | None
 
+    @property
+    def level(self) -> CategoryLevel:
+        if self.category_level is not None:
+            return self.category_level
+        return CategoryLevel.SUBCATEGORY if self.subcategory else CategoryLevel.CATEGORY
+
 
 class GroundTruth(BaseModel):
     documents: list[GroundTruthDocument]

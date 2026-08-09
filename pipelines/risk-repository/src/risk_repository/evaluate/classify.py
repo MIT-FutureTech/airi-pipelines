@@ -1,16 +1,21 @@
 import logging
 from collections import Counter
+from collections.abc import Sequence
 from pathlib import Path
 
 from pydantic import BaseModel
 
 from risk_repository.classify import (
     ClassificationResult,
+    ClassifiedRisk,
     Entity,
     Intent,
+    RiskContent,
+    RiskToClassify,
     Subdomain,
     Timing,
 )
+from risk_repository.evaluate.ground_truth import CategoryLevel, GroundTruthRisk
 from risk_repository.evaluate.match import DocumentMatchResult
 from risk_repository.results import PipelineStage, load, result_path
 
@@ -44,16 +49,69 @@ class ClassificationMetrics(BaseModel):
     axes: list[AxisMetrics]
 
 
-def evaluate_classification(
-    match_results: list[DocumentMatchResult],
-    results_dir: Path,
-) -> ClassificationMetrics:
+def risk_to_classify(risk: GroundTruthRisk) -> RiskToClassify:
+    """Read a previous-iteration risk as a tree, keyed by its Ev_ID."""
+    if risk.level is CategoryLevel.SUBCATEGORY and risk.subcategory:
+        name = risk.subcategory
+        ancestors = (
+            RiskContent(
+                name=risk.category,
+                description="",
+                supporting_quote="",
+                additional_evidence=(),
+            ),
+        )
+    else:
+        name = risk.category
+        ancestors = ()
+    return RiskToClassify(
+        risk_id=risk.ev_id,
+        name=name,
+        description=risk.description,
+        supporting_quote=risk.quote or "",
+        additional_evidence=tuple(risk.additional_evidence),
+        ancestors=ancestors,
+    )
+
+
+def score_classifications(
+    pairs: Sequence[tuple[GroundTruthRisk, ClassifiedRisk]],
+) -> list[AxisMetrics]:
+    """Score predicted labels against ground-truth labels, one metric per axis."""
     entity_pairs: list[tuple[Entity | None, Entity | None]] = []
     intent_pairs: list[tuple[Intent | None, Intent | None]] = []
     timing_pairs: list[tuple[Timing | None, Timing | None]] = []
     domain_pairs: list[tuple[str | None, str | None]] = []
     subdomain_pairs: list[tuple[str | None, str | None]] = []
-    matched_risks = 0
+
+    for gt_risk, predicted in pairs:
+        gt_entity = Entity(gt_risk.entity.lower()) if gt_risk.entity else None
+        gt_intent = Intent(gt_risk.intent.lower()) if gt_risk.intent else None
+        gt_timing = Timing(gt_risk.timing.lower()) if gt_risk.timing else None
+
+        entity_pairs.append((gt_entity, predicted.causal.entity))
+        intent_pairs.append((gt_intent, predicted.causal.intent))
+        timing_pairs.append((gt_timing, predicted.causal.timing))
+
+        gt_subdomain = gt_risk.subdomain_code
+        pl_subdomain = _subdomain_code(predicted.domain.subdomain)
+        subdomain_pairs.append((gt_subdomain, pl_subdomain))
+        domain_pairs.append((_domain_code(gt_subdomain), _domain_code(pl_subdomain)))
+
+    return [
+        _compute_axis_metrics("Entity", entity_pairs),
+        _compute_axis_metrics("Intent", intent_pairs),
+        _compute_axis_metrics("Timing", timing_pairs),
+        _compute_axis_metrics("Domain", domain_pairs),
+        _compute_axis_metrics("Subdomain", subdomain_pairs),
+    ]
+
+
+def evaluate_classification(
+    match_results: list[DocumentMatchResult],
+    results_dir: Path,
+) -> ClassificationMetrics:
+    pairs: list[tuple[GroundTruthRisk, ClassifiedRisk]] = []
 
     for doc in match_results:
         classification_path = result_path(
@@ -64,40 +122,21 @@ def evaluate_classification(
         classification = load(classification_path, ClassificationResult)
 
         for match in doc.matches:
-            gt_risk = doc.gt_risks[match.gt_index]
             if match.pipeline_index >= len(classification.risks):
                 logger.warning(
                     f"{doc.readable_id}: pipeline index {match.pipeline_index} out of range for classification results"
                 )
                 continue
-            pipeline_risk = classification.risks[match.pipeline_index]
-            pipeline_causal = pipeline_risk.causal
-            matched_risks += 1
-
-            gt_entity = Entity(gt_risk.entity.lower()) if gt_risk.entity else None
-            gt_intent = Intent(gt_risk.intent.lower()) if gt_risk.intent else None
-            gt_timing = Timing(gt_risk.timing.lower()) if gt_risk.timing else None
-
-            entity_pairs.append((gt_entity, pipeline_causal.entity))
-            intent_pairs.append((gt_intent, pipeline_causal.intent))
-            timing_pairs.append((gt_timing, pipeline_causal.timing))
-
-            gt_subdomain = gt_risk.subdomain_code
-            pl_subdomain = _subdomain_code(pipeline_risk.domain.subdomain)
-            subdomain_pairs.append((gt_subdomain, pl_subdomain))
-            domain_pairs.append(
-                (_domain_code(gt_subdomain), _domain_code(pl_subdomain))
+            pairs.append(
+                (
+                    doc.gt_risks[match.gt_index],
+                    classification.risks[match.pipeline_index],
+                )
             )
 
     return ClassificationMetrics(
-        matched_risks=matched_risks,
-        axes=[
-            _compute_axis_metrics("Entity", entity_pairs),
-            _compute_axis_metrics("Intent", intent_pairs),
-            _compute_axis_metrics("Timing", timing_pairs),
-            _compute_axis_metrics("Domain", domain_pairs),
-            _compute_axis_metrics("Subdomain", subdomain_pairs),
-        ],
+        matched_risks=len(pairs),
+        axes=score_classifications(pairs),
     )
 
 
