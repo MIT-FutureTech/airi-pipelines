@@ -14,6 +14,7 @@ from risk_repository.settings import (
 
 DEFAULT_RISKS_TABLE = "Risks 2026"
 DEFAULT_REVIEWS_TABLE = "Classification Reviews 2026"
+DEFAULT_PIPELINE_REVIEWER = "pipeline:v1"
 DEFAULT_LLM_TIMEOUT = 120.0
 
 
@@ -48,7 +49,7 @@ class ClassifyPendingSettings(
         """,
     )
     pipeline_reviewer: str = Field(
-        default=...,
+        default=DEFAULT_PIPELINE_REVIEWER,
         description="""
             Reviewer name to attribute the pipeline's rows to. Must start with
             'pipeline:' so the review app can tell it apart from a human.
