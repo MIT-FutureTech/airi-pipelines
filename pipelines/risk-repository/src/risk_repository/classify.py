@@ -86,13 +86,18 @@ class DomainClassification(BaseModel):
     )
 
 
+class Evidence(BaseModel, frozen=True):
+    text: str
+    quote: str
+
+
 class RiskContent(BaseModel, frozen=True):
     """A risk, or one of the enclosing groups in a paper's hierarchy of risks."""
 
     name: str
     description: str
     supporting_quote: str
-    additional_evidence: tuple[str, ...]
+    additional_evidence: tuple[Evidence, ...]
 
 
 class RiskToClassify(RiskContent, frozen=True):
@@ -450,6 +455,12 @@ _CLASSIFICATION_GROUP = """\
 </group>"""
 
 
+def _format_evidence(evidence: Evidence) -> str:
+    if evidence.text and evidence.quote:
+        return f"- {evidence.text}\n  Quote: {evidence.quote}"
+    return f"- {evidence.text or evidence.quote}"
+
+
 def _format_content(content: RiskContent) -> str:
     """Render a risk or group, omitting the fields its source left empty."""
     lines = [
@@ -463,7 +474,9 @@ def _format_content(content: RiskContent) -> str:
     ]
     if content.additional_evidence:
         lines.append("Additional evidence:")
-        lines.extend(f"- {evidence}" for evidence in content.additional_evidence)
+        lines.extend(
+            _format_evidence(evidence) for evidence in content.additional_evidence
+        )
     return "\n".join(lines)
 
 
