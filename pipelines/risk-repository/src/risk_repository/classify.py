@@ -84,6 +84,22 @@ class DomainClassification(BaseModel):
     )
 
 
+class RiskContent(BaseModel, frozen=True):
+    """A risk, or one of the enclosing groups in a paper's hierarchy of risks."""
+
+    name: str
+    description: str
+    supporting_quote: str
+    additional_evidence: tuple[str, ...]
+
+
+class RiskToClassify(RiskContent, frozen=True):
+    """A risk and its enclosing groups, ordered outermost first."""
+
+    risk_id: str
+    ancestors: tuple[RiskContent, ...]
+
+
 class ClassifiedRisk(BaseModel):
     risk_id: str
     causal: CausalClassification
