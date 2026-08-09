@@ -74,36 +74,51 @@ def risk_to_classify(risk: GroundTruthRisk) -> RiskToClassify:
     )
 
 
+class Labels(BaseModel, frozen=True):
+    entity: Entity | None
+    intent: Intent | None
+    timing: Timing | None
+    subdomain: str | None
+
+    @property
+    def domain(self) -> str | None:
+        return _domain_code(self.subdomain)
+
+
+def ground_truth_labels(risk: GroundTruthRisk) -> Labels:
+    return Labels(
+        entity=Entity(risk.entity.lower()) if risk.entity else None,
+        intent=Intent(risk.intent.lower()) if risk.intent else None,
+        timing=Timing(risk.timing.lower()) if risk.timing else None,
+        subdomain=risk.subdomain_code,
+    )
+
+
+def predicted_labels(classified: ClassifiedRisk) -> Labels:
+    return Labels(
+        entity=classified.causal.entity,
+        intent=classified.causal.intent,
+        timing=classified.causal.timing,
+        subdomain=_subdomain_code(classified.domain.subdomain),
+    )
+
+
 def score_classifications(
     pairs: Sequence[tuple[GroundTruthRisk, ClassifiedRisk]],
 ) -> list[AxisMetrics]:
     """Score predicted labels against ground-truth labels, one metric per axis."""
-    entity_pairs: list[tuple[Entity | None, Entity | None]] = []
-    intent_pairs: list[tuple[Intent | None, Intent | None]] = []
-    timing_pairs: list[tuple[Timing | None, Timing | None]] = []
-    domain_pairs: list[tuple[str | None, str | None]] = []
-    subdomain_pairs: list[tuple[str | None, str | None]] = []
-
-    for gt_risk, predicted in pairs:
-        gt_entity = Entity(gt_risk.entity.lower()) if gt_risk.entity else None
-        gt_intent = Intent(gt_risk.intent.lower()) if gt_risk.intent else None
-        gt_timing = Timing(gt_risk.timing.lower()) if gt_risk.timing else None
-
-        entity_pairs.append((gt_entity, predicted.causal.entity))
-        intent_pairs.append((gt_intent, predicted.causal.intent))
-        timing_pairs.append((gt_timing, predicted.causal.timing))
-
-        gt_subdomain = gt_risk.subdomain_code
-        pl_subdomain = _subdomain_code(predicted.domain.subdomain)
-        subdomain_pairs.append((gt_subdomain, pl_subdomain))
-        domain_pairs.append((_domain_code(gt_subdomain), _domain_code(pl_subdomain)))
-
+    labelled = [
+        (ground_truth_labels(gt_risk), predicted_labels(predicted))
+        for gt_risk, predicted in pairs
+    ]
     return [
-        _compute_axis_metrics("Entity", entity_pairs),
-        _compute_axis_metrics("Intent", intent_pairs),
-        _compute_axis_metrics("Timing", timing_pairs),
-        _compute_axis_metrics("Domain", domain_pairs),
-        _compute_axis_metrics("Subdomain", subdomain_pairs),
+        _compute_axis_metrics("Entity", [(g.entity, p.entity) for g, p in labelled]),
+        _compute_axis_metrics("Intent", [(g.intent, p.intent) for g, p in labelled]),
+        _compute_axis_metrics("Timing", [(g.timing, p.timing) for g, p in labelled]),
+        _compute_axis_metrics("Domain", [(g.domain, p.domain) for g, p in labelled]),
+        _compute_axis_metrics(
+            "Subdomain", [(g.subdomain, p.subdomain) for g, p in labelled]
+        ),
     ]
 
 
