@@ -167,11 +167,8 @@ export function RiskCard({
       <Stack gap="sm">
         {hasSuggestions ? (
           <Group justify="space-between">
-            <Text size="xs" c="dimmed">
-              Pipeline classification shown below.
-            </Text>
+            <Text c="dimmed">Pipeline classification shown below</Text>
             <Button
-              size="xs"
               variant="light"
               onClick={acceptSuggestions}
               disabled={notARisk}
