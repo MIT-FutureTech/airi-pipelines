@@ -66,3 +66,5 @@ The `check` script runs the formatter, linter and type checker.
 ```bash
 npm run check
 ```
+
+- link to PDF
