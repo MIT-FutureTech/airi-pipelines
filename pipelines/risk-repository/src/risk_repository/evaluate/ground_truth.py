@@ -85,6 +85,12 @@ class GroundTruthRisk(BaseModel):
     timing: str | None
     subdomain_code: str | None
 
+    @property
+    def level(self) -> CategoryLevel:
+        if self.category_level is not None:
+            return self.category_level
+        return CategoryLevel.SUBCATEGORY if self.subcategory else CategoryLevel.CATEGORY
+
 
 class GroundTruth(BaseModel):
     documents: list[GroundTruthDocument]
@@ -95,6 +101,26 @@ class GroundTruth(BaseModel):
         for risk in self.risks:
             by_doc.setdefault(risk.document_readable_id, []).append(risk)
         return by_doc
+
+
+async def fetch_ground_truth_risks(
+    client: AirtableClient,
+    *,
+    base_id: str,
+    view: str | None,
+) -> list[GroundTruthRisk]:
+    """Read curated risks, optionally narrowed to an Airtable view."""
+    doc_id_to_readable_id = await _fetch_id_map(client, base_id)
+    causal_map = await _fetch_causal_map(client, base_id)
+    subdomain_map = await _fetch_subdomain_map(client, base_id)
+    return await _fetch_risks(
+        client,
+        base_id=base_id,
+        doc_id_to_readable_id=doc_id_to_readable_id,
+        causal_map=causal_map,
+        subdomain_map=subdomain_map,
+        view=view,
+    )
 
 
 async def fetch_ground_truth(
@@ -108,16 +134,7 @@ async def fetch_ground_truth(
         base_id=base_id,
         documents_table_name=documents_table_name,
     )
-    doc_id_to_readable_id = await _fetch_id_map(client, base_id)
-    causal_map = await _fetch_causal_map(client, base_id)
-    subdomain_map = await _fetch_subdomain_map(client, base_id)
-    risks = await _fetch_risks(
-        client,
-        base_id=base_id,
-        doc_id_to_readable_id=doc_id_to_readable_id,
-        causal_map=causal_map,
-        subdomain_map=subdomain_map,
-    )
+    risks = await fetch_ground_truth_risks(client, base_id=base_id, view=None)
     logger.info(f"Loaded ground truth: {len(documents)} documents, {len(risks)} risks")
     return GroundTruth(documents=documents, risks=risks)
 
@@ -288,10 +305,11 @@ async def _fetch_risks(
     doc_id_to_readable_id: dict[str, str],
     causal_map: dict[str, str],
     subdomain_map: dict[str, str],
+    view: str | None,
 ) -> list[GroundTruthRisk]:
     table = Table(client, base_id=base_id, table_name="AI Risk Database")
     risks: list[GroundTruthRisk] = []
-    async for record in table.iterate():
+    async for record in table.iterate(view=view):
         raw = _UnresolvedRisk.model_validate(record.fields)
         readable_id = doc_id_to_readable_id[raw.document_ids[0]]
         risks.append(
