@@ -94,9 +94,7 @@ function riskManifestUrl(params: RiskManifestParams): string {
   return `/api/risks/manifest?${query.toString()}`;
 }
 
-// Cached because `use()` needs a promise whose identity is stable across
-// renders. `useMemo` cannot supply one: React may discard a memo and recompute,
-// which would suspend on a fresh promise every time.
+// Writes clear this cache, so callers must hold the promise they get in state.
 export function getRiskManifest(
   params: RiskManifestParams,
 ): Promise<RiskManifestResponse> {

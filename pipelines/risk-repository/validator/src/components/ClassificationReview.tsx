@@ -31,7 +31,10 @@ interface Props {
 }
 
 export function ClassificationReview({ reviewer, quickRef, mode }: Props) {
-  const initial = use(getRiskManifest({ quickRef, reviewer, mode }));
+  const [manifest] = useState(() =>
+    getRiskManifest({ quickRef, reviewer, mode }),
+  );
+  const initial = use(manifest);
   const [risks, setRisks] = useState<RiskEntry[]>(initial.risks);
   const [activeId, setActiveId] = useState<string | null>(() =>
     firstUncodedId(initial.risks),
