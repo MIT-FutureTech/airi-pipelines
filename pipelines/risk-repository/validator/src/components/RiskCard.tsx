@@ -127,6 +127,10 @@ export function RiskCard({
     onDraftChange(next);
   };
 
+  const remaining = notARisk
+    ? 0
+    : AXIS_FIELDS.filter((field) => draft[field] === null).length;
+
   return (
     <Stack gap="md" h="100%">
       <Group justify="space-between" align="center">
@@ -246,8 +250,14 @@ export function RiskCard({
             saving={saving}
             saved={saved}
             error={error}
+            remaining={remaining}
           />
-          <Button onClick={onSave} disabled={!dirty} loading={saving}>
+          <Button
+            onClick={onSave}
+            variant={remaining ? "light" : "filled"}
+            disabled={!dirty}
+            loading={saving}
+          >
             Save
           </Button>
         </Group>
@@ -261,9 +271,16 @@ interface SaveStatusProps {
   saving: boolean;
   saved: boolean;
   error: string | null;
+  remaining: number;
 }
 
-function SaveStatus({ dirty, saving, saved, error }: SaveStatusProps) {
+function SaveStatus({
+  dirty,
+  saving,
+  saved,
+  error,
+  remaining,
+}: SaveStatusProps) {
   if (error !== null) {
     return (
       <Text size="sm" c="red">
@@ -278,21 +295,31 @@ function SaveStatus({ dirty, saving, saved, error }: SaveStatusProps) {
       </Text>
     );
   }
+  const outstanding =
+    remaining === 0
+      ? null
+      : `${remaining} ${remaining === 1 ? "axis" : "axes"} left`;
   if (dirty) {
     return (
       <Text size="sm" c="dimmed">
-        Unsaved changes
+        {outstanding === null
+          ? "Unsaved changes"
+          : `Unsaved changes · ${outstanding}`}
       </Text>
     );
   }
   if (saved) {
     return (
       <Text size="sm" c="green">
-        Saved
+        {outstanding === null ? "Saved" : `Saved · ${outstanding}`}
       </Text>
     );
   }
-  return null;
+  return outstanding === null ? null : (
+    <Text size="sm" c="dimmed">
+      {outstanding}
+    </Text>
+  );
 }
 
 interface AncestorTrailProps {
