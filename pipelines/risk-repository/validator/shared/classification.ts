@@ -150,23 +150,6 @@ export interface PapersResponse {
   papers: PaperEntry[];
 }
 
-export interface ReviewUpsertRequest {
-  reviewer: string;
-  riskId: string;
-  reviewId: string | null;
-  field: ReviewField;
-  value: string;
-  mode: ReviewMode;
-  comment: string | null;
-}
-
-export interface ReviewUpsertResponse {
-  riskId: string;
-  reviewId: string;
-  field: ReviewField;
-  value: string;
-}
-
 export interface CodingWrite {
   reviewId: string | null;
   field: ReviewField;
