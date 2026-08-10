@@ -13,6 +13,12 @@ import type {
 
 const manifestCache = new Map<string, Promise<ManifestResponse>>();
 
+function encodeQuery(params: Record<string, string>): string {
+  return Object.entries(params)
+    .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+    .join("&");
+}
+
 async function fetchJson<T>(url: string, label: string): Promise<T> {
   const response = await fetch(url);
   if (!response.ok) {
@@ -36,7 +42,7 @@ export function getManifest(reviewer: string): Promise<ManifestResponse> {
   let promise = manifestCache.get(reviewer);
   if (promise === undefined) {
     promise = fetchJson<ManifestResponse>(
-      `/api/documents/manifest?reviewer=${encodeURIComponent(reviewer)}`,
+      `/api/documents/manifest?${encodeQuery({ reviewer })}`,
       "manifest",
     );
     manifestCache.set(reviewer, promise);
@@ -70,7 +76,7 @@ export interface RiskManifestParams {
 const papersCache = new Map<string, Promise<PapersResponse>>();
 
 function papersUrl(reviewer: string): string {
-  return `/api/papers?reviewer=${encodeURIComponent(reviewer)}`;
+  return `/api/papers?${encodeQuery({ reviewer })}`;
 }
 
 export function getPapers(reviewer: string): Promise<PapersResponse> {
@@ -86,12 +92,12 @@ export function getPapers(reviewer: string): Promise<PapersResponse> {
 const riskManifestCache = new Map<string, Promise<RiskManifestResponse>>();
 
 function riskManifestUrl(params: RiskManifestParams): string {
-  const query = new URLSearchParams({
+  const query = encodeQuery({
     quickRef: params.quickRef,
     reviewer: params.reviewer,
     mode: params.mode,
   });
-  return `/api/risks/manifest?${query.toString()}`;
+  return `/api/risks/manifest?${query}`;
 }
 
 // Writes clear this cache, so callers must hold the promise they get in state.
