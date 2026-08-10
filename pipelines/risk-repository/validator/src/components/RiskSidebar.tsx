@@ -8,12 +8,13 @@ import { depthOf, indexRisks } from "@/lib/tree";
 interface Props {
   risks: RiskEntry[];
   activeId: string | null;
+  dirtyIds: ReadonlySet<string>;
   onSelect: (id: string) => void;
 }
 
 const MARKER_WIDTH = "2.5rem";
 
-export function RiskSidebar({ risks, activeId, onSelect }: Props) {
+export function RiskSidebar({ risks, activeId, dirtyIds, onSelect }: Props) {
   const index = useMemo(() => indexRisks(risks), [risks]);
   const codable = codableRisks(risks);
   const codedCount = codable.filter((risk) => isCoded(risk.responses)).length;
@@ -33,6 +34,7 @@ export function RiskSidebar({ risks, activeId, onSelect }: Props) {
                 entry={entry}
                 indent={indent}
                 active={entry.id === activeId}
+                dirty={dirtyIds.has(entry.id)}
                 onClick={() => {
                   onSelect(entry.id);
                 }}
@@ -55,10 +57,17 @@ interface CodableRowProps {
   entry: RiskEntry;
   indent: number;
   active: boolean;
+  dirty: boolean;
   onClick: () => void;
 }
 
-function CodableRow({ entry, indent, active, onClick }: CodableRowProps) {
+function CodableRow({
+  entry,
+  indent,
+  active,
+  dirty,
+  onClick,
+}: CodableRowProps) {
   const notARisk = isNotARisk(entry.responses);
   const coded = isCoded(entry.responses);
   return (
@@ -76,9 +85,10 @@ function CodableRow({ entry, indent, active, onClick }: CodableRowProps) {
       leftSection={
         <Badge
           size="sm"
-          variant="light"
-          color={coded && !notARisk ? "green" : "gray"}
+          variant={dirty ? "filled" : "light"}
+          color={dirty ? "orange" : coded && !notARisk ? "green" : "gray"}
           w={MARKER_WIDTH}
+          title={dirty ? "Unsaved changes" : undefined}
         >
           {notARisk ? "NR" : coded ? "✓" : "—"}
         </Badge>

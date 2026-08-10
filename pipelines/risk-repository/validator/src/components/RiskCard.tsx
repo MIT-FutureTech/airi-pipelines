@@ -7,9 +7,11 @@ import {
   Paper,
   ScrollArea,
   Select,
+  SimpleGrid,
   Stack,
   Switch,
   Text,
+  Textarea,
 } from "@mantine/core";
 import {
   AXIS_FIELDS,
@@ -17,117 +19,54 @@ import {
   NOT_A_RISK,
   REVIEW_FIELDS,
   type ReviewField,
-  type ReviewMode,
-  type ReviewResponse,
   type RiskEntry,
 } from "@shared/classification";
-import { useMemo, useRef, useState } from "react";
-import { deleteReview, submitReview } from "@/lib/api";
-import { SUBDOMAIN_GROUPS, SUBDOMAIN_LABELS } from "@/lib/subdomains";
-
-interface AxisOption {
-  value: string;
-  label: string;
-}
-
-const CAUSAL_AXES: {
-  field: ReviewField;
-  label: string;
-  options: AxisOption[];
-}[] = [
-  {
-    field: "entity",
-    label: "Entity",
-    options: [
-      { value: "human", label: "Human" },
-      { value: "ai", label: "AI" },
-      { value: "other", label: "Other" },
-    ],
-  },
-  {
-    field: "intent",
-    label: "Intent",
-    options: [
-      { value: "intentional", label: "Intentional" },
-      { value: "unintentional", label: "Unintentional" },
-      { value: "other", label: "Other" },
-    ],
-  },
-  {
-    field: "timing",
-    label: "Timing",
-    options: [
-      { value: "pre-deployment", label: "Pre-deployment" },
-      { value: "post-deployment", label: "Post-deployment" },
-      { value: "other", label: "Other" },
-    ],
-  },
-];
-
-interface FieldState {
-  value: string | null;
-  reviewId: string | null;
-  saving: boolean;
-  error: string | null;
-}
-
-type FieldStates = Record<ReviewField, FieldState>;
-
-const EMPTY_FIELD: FieldState = {
-  value: null,
-  reviewId: null,
-  saving: false,
-  error: null,
-};
-
-function initFieldStates(entry: RiskEntry): FieldStates {
-  const states = {} as FieldStates;
-  for (const field of REVIEW_FIELDS) {
-    states[field] = { ...EMPTY_FIELD };
-  }
-  for (const response of entry.responses) {
-    states[response.field] = {
-      value: response.value,
-      reviewId: response.id,
-      saving: false,
-      error: null,
-    };
-  }
-  return states;
-}
+import { isCoded } from "@shared/coding";
+import { type ReactNode, useMemo } from "react";
+import { PipelineCard } from "@/components/PipelineCard";
+import {
+  type Draft,
+  draftCodings,
+  withComment,
+  withNotARisk,
+  withValue,
+} from "@/lib/draft";
+import { type AxisOption, CAUSAL_AXES, valueLabel } from "@/lib/fields";
+import { SUBDOMAIN_GROUPS } from "@/lib/subdomains";
 
 interface Props {
-  reviewer: string;
   entry: RiskEntry;
   ancestors: RiskEntry[];
   expandedAncestors: string[];
-  mode: ReviewMode;
+  draft: Draft;
+  dirty: boolean;
+  saving: boolean;
+  saved: boolean;
+  error: string | null;
   position: number;
   total: number;
-  onResponsesChanged: (riskId: string, responses: ReviewResponse[]) => void;
+  onDraftChange: (draft: Draft) => void;
+  onSave: () => void;
   onExpandedAncestorsChange: (ids: string[]) => void;
 }
 
 export function RiskCard({
-  reviewer,
   entry,
   ancestors,
   expandedAncestors,
-  mode,
+  draft,
+  dirty,
+  saving,
+  saved,
+  error,
   position,
   total,
-  onResponsesChanged,
+  onDraftChange,
+  onSave,
   onExpandedAncestorsChange,
 }: Props) {
-  const [fields, setFields] = useState<FieldStates>(() =>
-    initFieldStates(entry),
-  );
-  const fieldsRef = useRef(fields);
-  fieldsRef.current = fields;
-
-  const notARisk = fields.validity.value === NOT_A_RISK;
-  const coded =
-    notARisk || AXIS_FIELDS.every((field) => fields[field].value !== null);
+  const notARisk = draft.validity.value === NOT_A_RISK;
+  const coded = isCoded(draftCodings(draft));
 
   const suggestions = useMemo(() => {
     const map = {} as Record<ReviewField, string | null>;
@@ -143,98 +82,30 @@ export function RiskCard({
   const hasSuggestions = AXIS_FIELDS.some(
     (field) => suggestions[field] !== null,
   );
+  const suggestedSubdomain = suggestions.subdomain;
 
-  const toResponses = (states: FieldStates): ReviewResponse[] => {
-    const responses: ReviewResponse[] = [];
-    for (const field of REVIEW_FIELDS) {
-      const state = states[field];
-      if (state.value !== null && state.reviewId !== null) {
-        responses.push({
-          id: state.reviewId,
-          field,
-          value: state.value,
-          mode,
-          comment: null,
-        });
-      }
-    }
-    return responses;
+  const setValue = (field: ReviewField, value: string) => {
+    onDraftChange(withValue(draft, field, value));
   };
 
-  const saveField = async (field: ReviewField, value: string) => {
-    setFields((prev) => ({
-      ...prev,
-      [field]: { ...prev[field], value, saving: true, error: null },
-    }));
-    try {
-      const response = await submitReview({
-        reviewer,
-        riskId: entry.id,
-        reviewId: fieldsRef.current[field].reviewId,
-        field,
-        value,
-        mode,
-        comment: null,
-      });
-      const next: FieldStates = {
-        ...fieldsRef.current,
-        [field]: {
-          value,
-          reviewId: response.reviewId,
-          saving: false,
-          error: null,
-        },
-      };
-      if (field === "validity" && value === NOT_A_RISK) {
-        for (const axis of AXIS_FIELDS) {
-          next[axis] = { ...EMPTY_FIELD };
-        }
-      }
-      setFields(next);
-      onResponsesChanged(entry.id, toResponses(next));
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      setFields((prev) => ({
-        ...prev,
-        [field]: { ...prev[field], saving: false, error: message },
-      }));
-    }
+  const setComment = (field: ReviewField, comment: string) => {
+    onDraftChange(withComment(draft, field, comment));
   };
 
-  const clearValidity = async () => {
-    const reviewId = fieldsRef.current.validity.reviewId;
-    if (reviewId === null) {
-      return;
-    }
-    setFields((prev) => ({
-      ...prev,
-      validity: { ...prev.validity, saving: true, error: null },
-    }));
-    try {
-      await deleteReview(reviewId);
-      const next: FieldStates = {
-        ...fieldsRef.current,
-        validity: { ...EMPTY_FIELD },
-      };
-      setFields(next);
-      onResponsesChanged(entry.id, toResponses(next));
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      setFields((prev) => ({
-        ...prev,
-        validity: { ...prev.validity, saving: false, error: message },
-      }));
-    }
-  };
-
-  const acceptSuggestions = async () => {
+  const acceptSuggestions = () => {
+    let next = withNotARisk(draft, false);
     for (const field of AXIS_FIELDS) {
       const suggested = suggestions[field];
-      if (suggested !== null && fields[field].value === null) {
-        await saveField(field, suggested);
+      if (suggested !== null) {
+        next = withValue(next, field, suggested);
       }
     }
+    onDraftChange(next);
   };
+
+  const remaining = notARisk
+    ? 0
+    : AXIS_FIELDS.filter((field) => draft[field].value === null).length;
 
   return (
     <Stack gap="md" h="100%">
@@ -266,104 +137,271 @@ export function RiskCard({
             {entry.name}
           </Text>
           <RiskDetails risk={entry} />
+          {hasSuggestions ? (
+            <PipelineCard responses={entry.pipelineResponses} />
+          ) : null}
         </Stack>
       </ScrollArea>
 
       <Stack gap="sm">
         {hasSuggestions ? (
-          <Group justify="space-between">
-            <Text size="xs" c="dimmed">
-              Pipeline classification shown below.
-            </Text>
+          <Group justify="end">
             <Button
-              size="xs"
               variant="light"
               onClick={acceptSuggestions}
               disabled={notARisk}
             >
-              Accept suggestions
+              Accept pipeline suggestions
             </Button>
           </Group>
         ) : null}
-        <Switch
-          label="Not a risk"
-          checked={notARisk}
-          onChange={(event) => {
-            if (event.currentTarget.checked) {
-              saveField("validity", NOT_A_RISK);
-            } else {
-              clearValidity();
-            }
-          }}
-          disabled={fields.validity.saving}
+        <FieldRow
+          control={
+            <Switch
+              label="Not a risk"
+              checked={notARisk}
+              onChange={(event) => {
+                onDraftChange(withNotARisk(draft, event.currentTarget.checked));
+              }}
+            />
+          }
+          comment={
+            <NoteField
+              value={draft.validity.comment}
+              disabled={!notARisk}
+              placeholder={
+                notARisk
+                  ? "Why is this not a risk?"
+                  : "Mark not a risk to add a note"
+              }
+              onChange={(comment) => {
+                setComment("validity", comment);
+              }}
+            />
+          }
         />
-        {fields.validity.error !== null ? (
-          <Text c="red" size="xs">
-            {fields.validity.error}
-          </Text>
-        ) : null}
         {CAUSAL_AXES.map((axis) => (
-          <AxisButtons
+          <FieldRow
             key={axis.field}
-            label={axis.label}
-            options={axis.options}
-            state={fields[axis.field]}
-            suggested={suggestions[axis.field]}
-            disabled={notARisk}
-            onSelect={(value) => saveField(axis.field, value)}
+            control={
+              <AxisButtons
+                label={axis.label}
+                options={axis.options}
+                value={draft[axis.field].value}
+                suggested={suggestions[axis.field]}
+                disabled={notARisk}
+                onSelect={(value) => {
+                  setValue(axis.field, value);
+                }}
+              />
+            }
+            comment={
+              <NoteField
+                value={draft[axis.field].comment}
+                disabled={notARisk || draft[axis.field].value === null}
+                placeholder={notePlaceholder(
+                  axis.label,
+                  draft[axis.field].value,
+                )}
+                onChange={(comment) => {
+                  setComment(axis.field, comment);
+                }}
+              />
+            }
           />
         ))}
-        <Stack gap={4}>
-          <Text size="sm" fw={500}>
-            Subdomain
-          </Text>
-          <Select
-            placeholder="Select subdomain"
-            data={SUBDOMAIN_GROUPS.map((group) => ({
-              group: group.domain,
-              items: group.items,
-            }))}
-            value={fields.subdomain.value}
-            onChange={(value) => {
-              if (value !== null) {
-                saveField("subdomain", value);
-              }
-            }}
-            disabled={notARisk || fields.subdomain.saving}
-            searchable
-          />
-          {suggestions.subdomain !== null &&
-          fields.subdomain.value === null &&
-          !notARisk ? (
-            <Group gap="xs">
-              <Text size="xs" c="dimmed">
-                Pipeline:{" "}
-                {SUBDOMAIN_LABELS[suggestions.subdomain] ??
-                  suggestions.subdomain}
+        <FieldRow
+          control={
+            <Stack gap={4}>
+              <Text size="sm" fw={500}>
+                Subdomain
               </Text>
-              <Anchor
-                component="button"
-                type="button"
-                size="xs"
-                onClick={() => {
-                  const suggested = suggestions.subdomain;
-                  if (suggested !== null) {
-                    saveField("subdomain", suggested);
+              <Select
+                placeholder={
+                  suggestedSubdomain
+                    ? valueLabel("subdomain", suggestedSubdomain)
+                    : "Select subdomain"
+                }
+                data={SUBDOMAIN_GROUPS.map((group) => ({
+                  group: group.domain,
+                  items: group.items,
+                }))}
+                value={draft.subdomain.value}
+                onChange={(value) => {
+                  if (value !== null) {
+                    setValue("subdomain", value);
                   }
                 }}
-              >
-                Use
-              </Anchor>
-            </Group>
-          ) : null}
-          {fields.subdomain.error !== null ? (
-            <Text c="red" size="xs">
-              {fields.subdomain.error}
-            </Text>
-          ) : null}
-        </Stack>
+                disabled={notARisk}
+                searchable
+              />
+              {suggestedSubdomain !== null && !notARisk ? (
+                <Group gap="xs">
+                  <Text size="xs" c="dimmed">
+                    {pipelineHint(
+                      draft.subdomain.value,
+                      suggestedSubdomain,
+                      valueLabel("subdomain", suggestedSubdomain),
+                    )}
+                  </Text>
+                  {draft.subdomain.value === suggestedSubdomain ? null : (
+                    <Anchor
+                      component="button"
+                      type="button"
+                      size="xs"
+                      onClick={() => {
+                        setValue("subdomain", suggestedSubdomain);
+                      }}
+                    >
+                      Use
+                    </Anchor>
+                  )}
+                </Group>
+              ) : null}
+            </Stack>
+          }
+          comment={
+            <NoteField
+              value={draft.subdomain.comment}
+              disabled={notARisk || draft.subdomain.value === null}
+              placeholder={notePlaceholder("Subdomain", draft.subdomain.value)}
+              onChange={(comment) => {
+                setComment("subdomain", comment);
+              }}
+            />
+          }
+        />
+        <Group justify="space-between" align="center">
+          <SaveStatus
+            dirty={dirty}
+            saving={saving}
+            saved={saved}
+            error={error}
+            remaining={remaining}
+          />
+          <Button
+            onClick={onSave}
+            variant={remaining ? "light" : "filled"}
+            disabled={!dirty}
+            loading={saving}
+          >
+            Save
+          </Button>
+        </Group>
       </Stack>
     </Stack>
+  );
+}
+
+function pipelineHint(
+  value: string | null,
+  suggested: string,
+  suggestedLabel: string,
+): string {
+  if (value === null) {
+    return `Pipeline: ${suggestedLabel}`;
+  }
+  return value === suggested
+    ? "Matches pipeline"
+    : `Differs from pipeline: ${suggestedLabel}`;
+}
+
+interface FieldRowProps {
+  control: ReactNode;
+  comment: ReactNode;
+}
+
+function FieldRow({ control, comment }: FieldRowProps) {
+  return (
+    <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md" verticalSpacing="xs">
+      {control}
+      {comment}
+    </SimpleGrid>
+  );
+}
+
+interface NoteFieldProps {
+  value: string;
+  placeholder: string;
+  disabled: boolean;
+  onChange: (comment: string) => void;
+}
+
+function NoteField({ value, placeholder, disabled, onChange }: NoteFieldProps) {
+  return (
+    <Textarea
+      value={value}
+      placeholder={placeholder}
+      disabled={disabled}
+      onChange={(event) => {
+        onChange(event.currentTarget.value);
+      }}
+      autosize
+      minRows={2}
+      maxRows={6}
+    />
+  );
+}
+
+function notePlaceholder(label: string, value: string | null): string {
+  return value === null
+    ? "Select a value first"
+    : `Note on ${label.toLowerCase()}`;
+}
+
+interface SaveStatusProps {
+  dirty: boolean;
+  saving: boolean;
+  saved: boolean;
+  error: string | null;
+  remaining: number;
+}
+
+function SaveStatus({
+  dirty,
+  saving,
+  saved,
+  error,
+  remaining,
+}: SaveStatusProps) {
+  if (error !== null) {
+    return (
+      <Text size="sm" c="red">
+        {error}
+      </Text>
+    );
+  }
+  if (saving) {
+    return (
+      <Text size="sm" c="dimmed">
+        Saving…
+      </Text>
+    );
+  }
+  const outstanding =
+    remaining === 0
+      ? null
+      : `${remaining} ${remaining === 1 ? "axis" : "axes"} left`;
+  if (dirty) {
+    return (
+      <Text size="sm" c="dimmed">
+        {outstanding === null
+          ? "Unsaved changes"
+          : `Unsaved changes · ${outstanding}`}
+      </Text>
+    );
+  }
+  if (saved) {
+    return (
+      <Text size="sm" c="green">
+        {outstanding === null ? "Saved" : `Saved · ${outstanding}`}
+      </Text>
+    );
+  }
+  return outstanding === null ? null : (
+    <Text size="sm" c="dimmed">
+      {outstanding}
+    </Text>
   );
 }
 
@@ -496,7 +534,7 @@ function EvidenceCard({ item }: { item: EvidenceItem }) {
 interface AxisButtonsProps {
   label: string;
   options: AxisOption[];
-  state: FieldState;
+  value: string | null;
   suggested: string | null;
   disabled: boolean;
   onSelect: (value: string) => void;
@@ -505,7 +543,7 @@ interface AxisButtonsProps {
 function AxisButtons({
   label,
   options,
-  state,
+  value,
   suggested,
   disabled,
   onSelect,
@@ -526,27 +564,24 @@ function AxisButtons({
             key={option.value}
             size="xs"
             variant={
-              state.value === option.value
+              value === option.value
                 ? "filled"
                 : option.value === suggested
                   ? "outline"
                   : "light"
             }
-            onClick={() => onSelect(option.value)}
-            disabled={disabled || state.saving}
+            onClick={() => {
+              onSelect(option.value);
+            }}
+            disabled={disabled}
           >
             {option.label}
           </Button>
         ))}
       </Group>
-      {suggestedLabel !== null && state.value === null && !disabled ? (
+      {suggested !== null && suggestedLabel !== null && !disabled ? (
         <Text size="xs" c="dimmed">
-          Pipeline: {suggestedLabel}
-        </Text>
-      ) : null}
-      {state.error !== null ? (
-        <Text c="red" size="xs">
-          {state.error}
+          {pipelineHint(value, suggested, suggestedLabel)}
         </Text>
       ) : null}
     </Stack>
