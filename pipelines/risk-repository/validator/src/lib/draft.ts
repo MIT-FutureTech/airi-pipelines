@@ -10,33 +10,49 @@ import {
 } from "@shared/classification";
 import type { Coding } from "@shared/coding";
 
+export interface FieldDraft {
+  value: string | null;
+  comment: string;
+}
+
 /** One reviewer's in-progress verdict on one risk, before it is saved. */
-export type Draft = Record<ReviewField, string | null>;
+export type Draft = Record<ReviewField, FieldDraft>;
+
+function emptyField(): FieldDraft {
+  return { value: null, comment: "" };
+}
 
 export function draftFromResponses(
   responses: readonly ReviewResponse[],
 ): Draft {
   const draft: Draft = {
-    validity: null,
-    entity: null,
-    intent: null,
-    timing: null,
-    subdomain: null,
+    validity: emptyField(),
+    entity: emptyField(),
+    intent: emptyField(),
+    timing: emptyField(),
+    subdomain: emptyField(),
   };
   for (const response of responses) {
-    draft[response.field] = response.value;
+    draft[response.field] = {
+      value: response.value,
+      comment: response.comment ?? "",
+    };
   }
   return draft;
 }
 
 export function draftEquals(a: Draft, b: Draft): boolean {
-  return REVIEW_FIELDS.every((field) => a[field] === b[field]);
+  return REVIEW_FIELDS.every(
+    (field) =>
+      a[field].value === b[field].value &&
+      a[field].comment === b[field].comment,
+  );
 }
 
 export function draftCodings(draft: Draft): Coding[] {
   const codings: Coding[] = [];
   for (const field of REVIEW_FIELDS) {
-    const value = draft[field];
+    const { value } = draft[field];
     if (value !== null) {
       codings.push({ field, value });
     }
@@ -44,16 +60,32 @@ export function draftCodings(draft: Draft): Coding[] {
   return codings;
 }
 
+export function withValue(
+  draft: Draft,
+  field: ReviewField,
+  value: string,
+): Draft {
+  return { ...draft, [field]: { ...draft[field], value } };
+}
+
+export function withComment(
+  draft: Draft,
+  field: ReviewField,
+  comment: string,
+): Draft {
+  return { ...draft, [field]: { ...draft[field], comment } };
+}
+
 export function withNotARisk(draft: Draft, notARisk: boolean): Draft {
   if (!notARisk) {
-    return { ...draft, validity: null };
+    return { ...draft, validity: emptyField() };
   }
   return {
-    validity: NOT_A_RISK,
-    entity: null,
-    intent: null,
-    timing: null,
-    subdomain: null,
+    validity: { value: NOT_A_RISK, comment: draft.validity.comment },
+    entity: emptyField(),
+    intent: emptyField(),
+    timing: emptyField(),
+    subdomain: emptyField(),
   };
 }
 
@@ -75,13 +107,14 @@ export function codingsRequest({
   );
   const codings: CodingWrite[] = [];
   for (const field of REVIEW_FIELDS) {
-    const value = draft[field];
+    const { value, comment } = draft[field];
     if (value !== null) {
+      const trimmed = comment.trim();
       codings.push({
         reviewId: persisted.get(field)?.id ?? null,
         field,
         value,
-        comment: null,
+        comment: trimmed === "" ? null : trimmed,
       });
     }
   }

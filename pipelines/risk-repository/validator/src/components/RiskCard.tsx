@@ -7,9 +7,11 @@ import {
   Paper,
   ScrollArea,
   Select,
+  SimpleGrid,
   Stack,
   Switch,
   Text,
+  Textarea,
 } from "@mantine/core";
 import {
   AXIS_FIELDS,
@@ -20,8 +22,14 @@ import {
   type RiskEntry,
 } from "@shared/classification";
 import { isCoded } from "@shared/coding";
-import { useMemo } from "react";
-import { type Draft, draftCodings, withNotARisk } from "@/lib/draft";
+import { type ReactNode, useMemo } from "react";
+import {
+  type Draft,
+  draftCodings,
+  withComment,
+  withNotARisk,
+  withValue,
+} from "@/lib/draft";
 import { SUBDOMAIN_GROUPS, SUBDOMAIN_LABELS } from "@/lib/subdomains";
 
 interface AxisOption {
@@ -94,7 +102,7 @@ export function RiskCard({
   onSave,
   onExpandedAncestorsChange,
 }: Props) {
-  const notARisk = draft.validity === NOT_A_RISK;
+  const notARisk = draft.validity.value === NOT_A_RISK;
   const coded = isCoded(draftCodings(draft));
 
   const suggestions = useMemo(() => {
@@ -113,15 +121,19 @@ export function RiskCard({
   );
 
   const setValue = (field: ReviewField, value: string) => {
-    onDraftChange({ ...draft, [field]: value });
+    onDraftChange(withValue(draft, field, value));
+  };
+
+  const setComment = (field: ReviewField, comment: string) => {
+    onDraftChange(withComment(draft, field, comment));
   };
 
   const acceptSuggestions = () => {
-    const next: Draft = { ...draft, validity: null };
+    let next = withNotARisk(draft, false);
     for (const field of AXIS_FIELDS) {
       const suggested = suggestions[field];
       if (suggested !== null) {
-        next[field] = suggested;
+        next = withValue(next, field, suggested);
       }
     }
     onDraftChange(next);
@@ -129,7 +141,7 @@ export function RiskCard({
 
   const remaining = notARisk
     ? 0
-    : AXIS_FIELDS.filter((field) => draft[field] === null).length;
+    : AXIS_FIELDS.filter((field) => draft[field].value === null).length;
 
   return (
     <Stack gap="md" h="100%">
@@ -177,70 +189,119 @@ export function RiskCard({
             </Button>
           </Group>
         ) : null}
-        <Switch
-          label="Not a risk"
-          checked={notARisk}
-          onChange={(event) => {
-            onDraftChange(withNotARisk(draft, event.currentTarget.checked));
-          }}
+        <FieldRow
+          control={
+            <Switch
+              label="Not a risk"
+              checked={notARisk}
+              onChange={(event) => {
+                onDraftChange(withNotARisk(draft, event.currentTarget.checked));
+              }}
+            />
+          }
+          comment={
+            <NoteField
+              value={draft.validity.comment}
+              disabled={!notARisk}
+              placeholder={
+                notARisk
+                  ? "Why is this not a risk?"
+                  : "Mark not a risk to add a note"
+              }
+              onChange={(comment) => {
+                setComment("validity", comment);
+              }}
+            />
+          }
         />
         {CAUSAL_AXES.map((axis) => (
-          <AxisButtons
+          <FieldRow
             key={axis.field}
-            label={axis.label}
-            options={axis.options}
-            value={draft[axis.field]}
-            suggested={suggestions[axis.field]}
-            disabled={notARisk}
-            onSelect={(value) => {
-              setValue(axis.field, value);
-            }}
+            control={
+              <AxisButtons
+                label={axis.label}
+                options={axis.options}
+                value={draft[axis.field].value}
+                suggested={suggestions[axis.field]}
+                disabled={notARisk}
+                onSelect={(value) => {
+                  setValue(axis.field, value);
+                }}
+              />
+            }
+            comment={
+              <NoteField
+                value={draft[axis.field].comment}
+                disabled={notARisk || draft[axis.field].value === null}
+                placeholder={notePlaceholder(
+                  axis.label,
+                  draft[axis.field].value,
+                )}
+                onChange={(comment) => {
+                  setComment(axis.field, comment);
+                }}
+              />
+            }
           />
         ))}
-        <Stack gap={4}>
-          <Text size="sm" fw={500}>
-            Subdomain
-          </Text>
-          <Select
-            placeholder="Select subdomain"
-            data={SUBDOMAIN_GROUPS.map((group) => ({
-              group: group.domain,
-              items: group.items,
-            }))}
-            value={draft.subdomain}
-            onChange={(value) => {
-              if (value !== null) {
-                setValue("subdomain", value);
-              }
-            }}
-            disabled={notARisk}
-            searchable
-          />
-          {suggestions.subdomain !== null &&
-          draft.subdomain === null &&
-          !notARisk ? (
-            <Group gap="xs">
-              <Text size="xs" c="dimmed">
-                Pipeline:{" "}
-                {SUBDOMAIN_LABELS[suggestions.subdomain] ??
-                  suggestions.subdomain}
+        <FieldRow
+          control={
+            <Stack gap={4}>
+              <Text size="sm" fw={500}>
+                Subdomain
               </Text>
-              <Anchor
-                component="button"
-                type="button"
-                size="xs"
-                onClick={() => {
-                  const suggested = suggestions.subdomain;
-                  if (suggested !== null) {
-                    setValue("subdomain", suggested);
+              <Select
+                placeholder="Select subdomain"
+                data={SUBDOMAIN_GROUPS.map((group) => ({
+                  group: group.domain,
+                  items: group.items,
+                }))}
+                value={draft.subdomain.value}
+                onChange={(value) => {
+                  if (value !== null) {
+                    setValue("subdomain", value);
                   }
                 }}
-              >
-                Use
-              </Anchor>
-            </Group>
-          ) : null}
-        </Stack>
+                disabled={notARisk}
+                searchable
+              />
+              {suggestions.subdomain !== null &&
+              draft.subdomain.value === null &&
+              !notARisk ? (
+                <Group gap="xs">
+                  <Text size="xs" c="dimmed">
+                    Pipeline:{" "}
+                    {SUBDOMAIN_LABELS[suggestions.subdomain] ??
+                      suggestions.subdomain}
+                  </Text>
+                  <Anchor
+                    component="button"
+                    type="button"
+                    size="xs"
+                    onClick={() => {
+                      const suggested = suggestions.subdomain;
+                      if (suggested !== null) {
+                        setValue("subdomain", suggested);
+                      }
+                    }}
+                  >
+                    Use
+                  </Anchor>
+                </Group>
+              ) : null}
+            </Stack>
+          }
+          comment={
+            <NoteField
+              value={draft.subdomain.comment}
+              disabled={notARisk || draft.subdomain.value === null}
+              placeholder={notePlaceholder("Subdomain", draft.subdomain.value)}
+              onChange={(comment) => {
+                setComment("subdomain", comment);
+              }}
+            />
+          }
+        />
         <Group justify="space-between" align="center">
           <SaveStatus
             dirty={dirty}
@@ -261,6 +322,49 @@ export function RiskCard({
       </Stack>
     </Stack>
   );
+}
+
+interface FieldRowProps {
+  control: ReactNode;
+  comment: ReactNode;
+}
+
+function FieldRow({ control, comment }: FieldRowProps) {
+  return (
+    <SimpleGrid cols={{ base: 1, md: 2 }} spacing="md" verticalSpacing="xs">
+      {control}
+      {comment}
+    </SimpleGrid>
+  );
+}
+
+interface NoteFieldProps {
+  value: string;
+  placeholder: string;
+  disabled: boolean;
+  onChange: (comment: string) => void;
+}
+
+function NoteField({ value, placeholder, disabled, onChange }: NoteFieldProps) {
+  return (
+    <Textarea
+      value={value}
+      placeholder={placeholder}
+      disabled={disabled}
+      onChange={(event) => {
+        onChange(event.currentTarget.value);
+      }}
+      autosize
+      minRows={2}
+      maxRows={6}
+    />
+  );
+}
+
+function notePlaceholder(label: string, value: string | null): string {
+  return value === null
+    ? "Select a value first"
+    : `Note on ${label.toLowerCase()}`;
 }
 
 interface SaveStatusProps {
