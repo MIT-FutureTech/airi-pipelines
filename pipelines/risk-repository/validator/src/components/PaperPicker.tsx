@@ -113,7 +113,7 @@ export function PaperPicker({ reviewer }: Props) {
             clearable
           />
           <Select
-            label="Status"
+            label="Your progress"
             placeholder="All statuses"
             data={[...PAPER_STATUSES]}
             value={status}
@@ -178,18 +178,23 @@ function PaperRow({ paper, onOpen }: RowProps) {
       <Stack gap={4}>
         <Group justify="space-between" wrap="nowrap" gap="sm">
           <Text fw={500}>{paper.quickRef}</Text>
-          <Group gap="xs" wrap="nowrap">
-            {paper.progress !== null ? (
-              <Badge variant="outline" color="gray">
-                {paper.progress}
-              </Badge>
-            ) : null}
-            <StatusBadge paper={paper} />
-          </Group>
+          <StatusBadge paper={paper} />
         </Group>
-        <Text size="sm" lineClamp={2}>
-          {paper.title ?? "Untitled"}
-        </Text>
+        <Group
+          justify="space-between"
+          wrap="nowrap"
+          gap="sm"
+          align="flex-start"
+        >
+          <Text size="sm" lineClamp={2} style={{ flex: 1, minWidth: 0 }}>
+            {paper.title ?? "Untitled"}
+          </Text>
+          {paper.progress !== null ? (
+            <Text size="xs" c="dimmed" style={{ flexShrink: 0 }}>
+              Airtable status: {paper.progress}
+            </Text>
+          ) : null}
+        </Group>
       </Stack>
     </UnstyledButton>
   );
@@ -202,7 +207,11 @@ function StatusBadge({ paper }: { paper: PaperEntry }) {
       ? `${paper.reviewerCodedCount} / ${paper.codableCount} coded`
       : status.toLowerCase();
   return (
-    <Badge color={STATUS_COLORS[status]} variant="light">
+    <Badge
+      color={STATUS_COLORS[status]}
+      variant="light"
+      title="Risks you have classified"
+    >
       {label}
     </Badge>
   );

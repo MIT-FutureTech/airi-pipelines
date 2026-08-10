@@ -7,6 +7,7 @@ export interface AirtableEnv {
   risksTable: string;
   reviewsTable: string;
   proposedExtractionsTable: string;
+  fullTextTable: string;
 }
 
 export function readAirtableEnv(): AirtableEnv {
@@ -20,6 +21,7 @@ export function readAirtableEnv(): AirtableEnv {
   const proposedExtractionsTable = required(
     "AIRTABLE_PROPOSED_EXTRACTIONS_TABLE",
   );
+  const fullTextTable = required("AIRTABLE_FULL_TEXT_TABLE");
   return {
     pat,
     baseId,
@@ -29,6 +31,7 @@ export function readAirtableEnv(): AirtableEnv {
     risksTable,
     reviewsTable,
     proposedExtractionsTable,
+    fullTextTable,
   };
 }
 

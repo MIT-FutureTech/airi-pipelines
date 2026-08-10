@@ -1,9 +1,10 @@
 import type {
   PapersResponse,
+  PdfLinkResponse,
   ReviewMode,
-  ReviewUpsertRequest,
-  ReviewUpsertResponse,
   RiskManifestResponse,
+  SaveCodingsRequest,
+  SaveCodingsResponse,
 } from "@shared/classification";
 import type {
   DecisionRequest,
@@ -12,6 +13,12 @@ import type {
 } from "@shared/screening";
 
 const manifestCache = new Map<string, Promise<ManifestResponse>>();
+
+function encodeQuery(params: Record<string, string>): string {
+  return Object.entries(params)
+    .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+    .join("&");
+}
 
 async function fetchJson<T>(url: string, label: string): Promise<T> {
   const response = await fetch(url);
@@ -36,7 +43,7 @@ export function getManifest(reviewer: string): Promise<ManifestResponse> {
   let promise = manifestCache.get(reviewer);
   if (promise === undefined) {
     promise = fetchJson<ManifestResponse>(
-      `/api/documents/manifest?reviewer=${encodeURIComponent(reviewer)}`,
+      `/api/documents/manifest?${encodeQuery({ reviewer })}`,
       "manifest",
     );
     manifestCache.set(reviewer, promise);
@@ -70,7 +77,7 @@ export interface RiskManifestParams {
 const papersCache = new Map<string, Promise<PapersResponse>>();
 
 function papersUrl(reviewer: string): string {
-  return `/api/papers?reviewer=${encodeURIComponent(reviewer)}`;
+  return `/api/papers?${encodeQuery({ reviewer })}`;
 }
 
 export function getPapers(reviewer: string): Promise<PapersResponse> {
@@ -86,17 +93,15 @@ export function getPapers(reviewer: string): Promise<PapersResponse> {
 const riskManifestCache = new Map<string, Promise<RiskManifestResponse>>();
 
 function riskManifestUrl(params: RiskManifestParams): string {
-  const query = new URLSearchParams({
+  const query = encodeQuery({
     quickRef: params.quickRef,
     reviewer: params.reviewer,
     mode: params.mode,
   });
-  return `/api/risks/manifest?${query.toString()}`;
+  return `/api/risks/manifest?${query}`;
 }
 
-// Cached because `use()` needs a promise whose identity is stable across
-// renders. `useMemo` cannot supply one: React may discard a memo and recompute,
-// which would suspend on a fresh promise every time.
+// Writes clear this cache, so callers must hold the promise they get in state.
 export function getRiskManifest(
   params: RiskManifestParams,
 ): Promise<RiskManifestResponse> {
@@ -123,30 +128,30 @@ function invalidateClassificationCaches(): void {
   papersCache.clear();
 }
 
-export async function submitReview(
-  body: ReviewUpsertRequest,
-): Promise<ReviewUpsertResponse> {
-  const response = await fetch("/api/reviews", {
+export async function fetchPdfLink(quickRef: string): Promise<PdfLinkResponse> {
+  const response = await fetch(`/api/pdf?${encodeQuery({ quickRef })}`);
+  if (response.status === 404) {
+    throw new Error(`No PDF is attached to ${quickRef} in Airtable`);
+  }
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`Failed to find the PDF: HTTP ${response.status} ${text}`);
+  }
+  return (await response.json()) as PdfLinkResponse;
+}
+
+export async function saveCodings(
+  body: SaveCodingsRequest,
+): Promise<SaveCodingsResponse> {
+  const response = await fetch("/api/codings", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(`Failed to submit review: HTTP ${response.status} ${text}`);
+    throw new Error(`Failed to save coding: HTTP ${response.status} ${text}`);
   }
   invalidateClassificationCaches();
-  return (await response.json()) as ReviewUpsertResponse;
-}
-
-export async function deleteReview(reviewId: string): Promise<void> {
-  const response = await fetch(
-    `/api/reviews?reviewId=${encodeURIComponent(reviewId)}`,
-    { method: "DELETE" },
-  );
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`Failed to delete review: HTTP ${response.status} ${text}`);
-  }
-  invalidateClassificationCaches();
+  return (await response.json()) as SaveCodingsResponse;
 }

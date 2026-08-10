@@ -150,21 +150,24 @@ export interface PapersResponse {
   papers: PaperEntry[];
 }
 
-export interface ReviewUpsertRequest {
-  reviewer: string;
-  riskId: string;
+export interface CodingWrite {
   reviewId: string | null;
   field: ReviewField;
   value: string;
-  mode: ReviewMode;
   comment: string | null;
 }
 
-export interface ReviewUpsertResponse {
+export interface SaveCodingsRequest {
+  reviewer: string;
   riskId: string;
-  reviewId: string;
-  field: ReviewField;
-  value: string;
+  mode: ReviewMode;
+  codings: CodingWrite[];
+  staleReviewIds: string[];
+}
+
+export interface SaveCodingsResponse {
+  riskId: string;
+  responses: ReviewResponse[];
 }
 
 export interface AirtableCollaborator {
@@ -203,4 +206,24 @@ export interface ProposedExtractionFields {
   Title?: string[];
   ClassificationReviewer?: AirtableCollaborator;
   ClassificationProgress?: ClassificationProgress;
+  "Full-Text Screening"?: string[];
+}
+
+export interface AirtableAttachment {
+  id: string;
+  url: string;
+  filename: string;
+  size: number;
+  type: string;
+}
+
+export interface FullTextScreeningFields {
+  full_text_pdf?: AirtableAttachment[];
+}
+
+export interface PdfLinkResponse {
+  quickRef: string;
+  url: string;
+  filename: string;
+  size: number;
 }

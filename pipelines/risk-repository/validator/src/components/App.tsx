@@ -35,9 +35,10 @@ export function App() {
     return <TaskLauncher reviewer={reviewer} onChangeName={onChangeName} />;
   }
 
+  const key = `${reviewer}:${routeKey(route)}`;
   return (
-    <Screen resetKey={`${reviewer}:${routeKey(route)}`}>
-      <Content reviewer={reviewer} route={route} />
+    <Screen resetKey={key}>
+      <Content key={key} reviewer={reviewer} route={route} />
     </Screen>
   );
 }

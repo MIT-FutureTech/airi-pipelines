@@ -90,23 +90,61 @@ export async function getRecord<F>(
   return (await response.json()) as AirtableRecord<F>;
 }
 
+export interface RecordUpdate<F> {
+  id: string;
+  fields: F;
+}
+
+async function writeRecords<F>(
+  pat: string,
+  baseId: string,
+  table: string,
+  method: "POST" | "PATCH",
+  records: { id?: string; fields: F }[],
+): Promise<AirtableRecord<F>[]> {
+  if (records.length === 0) {
+    return [];
+  }
+  const url = `${AIRTABLE_BASE}/${baseId}/${encodeURIComponent(table)}`;
+  const response = await fetch(url, {
+    method,
+    headers: authHeaders(pat),
+    body: JSON.stringify({ records }),
+  });
+  if (!response.ok) {
+    throw new AirtableError(response.status, await response.text());
+  }
+  const data = (await response.json()) as RecordsResponse<F>;
+  return data.records;
+}
+
+export async function createRecords<F>(
+  pat: string,
+  baseId: string,
+  table: string,
+  rows: F[],
+): Promise<AirtableRecord<F>[]> {
+  const records = rows.map((fields) => ({ fields }));
+  return await writeRecords(pat, baseId, table, "POST", records);
+}
+
+export async function updateRecords<F>(
+  pat: string,
+  baseId: string,
+  table: string,
+  records: RecordUpdate<F>[],
+): Promise<AirtableRecord<F>[]> {
+  return await writeRecords(pat, baseId, table, "PATCH", records);
+}
+
 export async function createRecord<F>(
   pat: string,
   baseId: string,
   table: string,
   fields: F,
 ): Promise<AirtableRecord<F>> {
-  const url = `${AIRTABLE_BASE}/${baseId}/${encodeURIComponent(table)}`;
-  const response = await fetch(url, {
-    method: "POST",
-    headers: authHeaders(pat),
-    body: JSON.stringify({ records: [{ fields }] }),
-  });
-  if (!response.ok) {
-    throw new AirtableError(response.status, await response.text());
-  }
-  const data = (await response.json()) as RecordsResponse<F>;
-  return data.records[0];
+  const records = await createRecords(pat, baseId, table, [fields]);
+  return records[0];
 }
 
 export async function updateRecord<F>(
@@ -116,17 +154,10 @@ export async function updateRecord<F>(
   recordId: string,
   fields: F,
 ): Promise<AirtableRecord<F>> {
-  const url = `${AIRTABLE_BASE}/${baseId}/${encodeURIComponent(table)}`;
-  const response = await fetch(url, {
-    method: "PATCH",
-    headers: authHeaders(pat),
-    body: JSON.stringify({ records: [{ id: recordId, fields }] }),
-  });
-  if (!response.ok) {
-    throw new AirtableError(response.status, await response.text());
-  }
-  const data = (await response.json()) as RecordsResponse<F>;
-  return data.records[0];
+  const records = await updateRecords(pat, baseId, table, [
+    { id: recordId, fields },
+  ]);
+  return records[0];
 }
 
 export async function deleteRecords(
