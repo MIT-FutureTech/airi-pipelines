@@ -206,4 +206,24 @@ export interface ProposedExtractionFields {
   Title?: string[];
   ClassificationReviewer?: AirtableCollaborator;
   ClassificationProgress?: ClassificationProgress;
+  "Full-Text Screening"?: string[];
+}
+
+export interface AirtableAttachment {
+  id: string;
+  url: string;
+  filename: string;
+  size: number;
+  type: string;
+}
+
+export interface FullTextScreeningFields {
+  full_text_pdf?: AirtableAttachment[];
+}
+
+export interface PdfLinkResponse {
+  quickRef: string;
+  url: string;
+  filename: string;
+  size: number;
 }

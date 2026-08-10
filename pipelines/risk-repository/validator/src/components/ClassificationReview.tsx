@@ -13,6 +13,7 @@ import { useHotkeys } from "@mantine/hooks";
 import type { ReviewMode, RiskEntry } from "@shared/classification";
 import { isCoded } from "@shared/coding";
 import { use, useEffect, useMemo, useState } from "react";
+import { PdfDownloadButton } from "@/components/PdfDownloadButton";
 import { RiskCard } from "@/components/RiskCard";
 import { RiskSidebar } from "@/components/RiskSidebar";
 import { fetchRiskManifest, getRiskManifest, saveCodings } from "@/lib/api";
@@ -210,6 +211,7 @@ export function ClassificationReview({ reviewer, quickRef, mode }: Props) {
             {initial.title ?? ""}
           </Text>
           <Group gap="sm" wrap="nowrap" style={{ flexShrink: 0 }}>
+            <PdfDownloadButton quickRef={quickRef} />
             <Text size="sm" fw={500}>
               {reviewer}
             </Text>

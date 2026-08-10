@@ -1,5 +1,6 @@
 import type {
   PapersResponse,
+  PdfLinkResponse,
   ReviewMode,
   RiskManifestResponse,
   SaveCodingsRequest,
@@ -125,6 +126,18 @@ export async function fetchRiskManifest(
 function invalidateClassificationCaches(): void {
   riskManifestCache.clear();
   papersCache.clear();
+}
+
+export async function fetchPdfLink(quickRef: string): Promise<PdfLinkResponse> {
+  const response = await fetch(`/api/pdf?${encodeQuery({ quickRef })}`);
+  if (response.status === 404) {
+    throw new Error(`No PDF is attached to ${quickRef} in Airtable`);
+  }
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`Failed to find the PDF: HTTP ${response.status} ${text}`);
+  }
+  return (await response.json()) as PdfLinkResponse;
 }
 
 export async function saveCodings(
