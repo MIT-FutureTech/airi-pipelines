@@ -23,6 +23,7 @@ import {
 } from "@shared/classification";
 import { isCoded } from "@shared/coding";
 import { type ReactNode, useMemo } from "react";
+import { PipelineCard } from "@/components/PipelineCard";
 import {
   type Draft,
   draftCodings,
@@ -30,46 +31,8 @@ import {
   withNotARisk,
   withValue,
 } from "@/lib/draft";
-import { SUBDOMAIN_GROUPS, SUBDOMAIN_LABELS } from "@/lib/subdomains";
-
-interface AxisOption {
-  value: string;
-  label: string;
-}
-
-const CAUSAL_AXES: {
-  field: ReviewField;
-  label: string;
-  options: AxisOption[];
-}[] = [
-  {
-    field: "entity",
-    label: "Entity",
-    options: [
-      { value: "human", label: "Human" },
-      { value: "ai", label: "AI" },
-      { value: "other", label: "Other" },
-    ],
-  },
-  {
-    field: "intent",
-    label: "Intent",
-    options: [
-      { value: "intentional", label: "Intentional" },
-      { value: "unintentional", label: "Unintentional" },
-      { value: "other", label: "Other" },
-    ],
-  },
-  {
-    field: "timing",
-    label: "Timing",
-    options: [
-      { value: "pre-deployment", label: "Pre-deployment" },
-      { value: "post-deployment", label: "Post-deployment" },
-      { value: "other", label: "Other" },
-    ],
-  },
-];
+import { type AxisOption, CAUSAL_AXES, valueLabel } from "@/lib/fields";
+import { SUBDOMAIN_GROUPS } from "@/lib/subdomains";
 
 interface Props {
   entry: RiskEntry;
@@ -119,6 +82,7 @@ export function RiskCard({
   const hasSuggestions = AXIS_FIELDS.some(
     (field) => suggestions[field] !== null,
   );
+  const suggestedSubdomain = suggestions.subdomain;
 
   const setValue = (field: ReviewField, value: string) => {
     onDraftChange(withValue(draft, field, value));
@@ -173,19 +137,21 @@ export function RiskCard({
             {entry.name}
           </Text>
           <RiskDetails risk={entry} />
+          {hasSuggestions ? (
+            <PipelineCard responses={entry.pipelineResponses} />
+          ) : null}
         </Stack>
       </ScrollArea>
 
       <Stack gap="sm">
         {hasSuggestions ? (
-          <Group justify="space-between">
-            <Text c="dimmed">Pipeline classification shown below</Text>
+          <Group justify="end">
             <Button
               variant="light"
               onClick={acceptSuggestions}
               disabled={notARisk}
             >
-              Accept suggestions
+              Accept pipeline suggestions
             </Button>
           </Group>
         ) : null}
@@ -251,7 +217,11 @@ export function RiskCard({
                 Subdomain
               </Text>
               <Select
-                placeholder="Select subdomain"
+                placeholder={
+                  suggestedSubdomain
+                    ? valueLabel("subdomain", suggestedSubdomain)
+                    : "Select subdomain"
+                }
                 data={SUBDOMAIN_GROUPS.map((group) => ({
                   group: group.domain,
                   items: group.items,
@@ -265,28 +235,27 @@ export function RiskCard({
                 disabled={notARisk}
                 searchable
               />
-              {suggestions.subdomain !== null &&
-              draft.subdomain.value === null &&
-              !notARisk ? (
+              {suggestedSubdomain !== null && !notARisk ? (
                 <Group gap="xs">
                   <Text size="xs" c="dimmed">
-                    Pipeline:{" "}
-                    {SUBDOMAIN_LABELS[suggestions.subdomain] ??
-                      suggestions.subdomain}
+                    {pipelineHint(
+                      draft.subdomain.value,
+                      suggestedSubdomain,
+                      valueLabel("subdomain", suggestedSubdomain),
+                    )}
                   </Text>
-                  <Anchor
-                    component="button"
-                    type="button"
-                    size="xs"
-                    onClick={() => {
-                      const suggested = suggestions.subdomain;
-                      if (suggested !== null) {
-                        setValue("subdomain", suggested);
-                      }
-                    }}
-                  >
-                    Use
-                  </Anchor>
+                  {draft.subdomain.value === suggestedSubdomain ? null : (
+                    <Anchor
+                      component="button"
+                      type="button"
+                      size="xs"
+                      onClick={() => {
+                        setValue("subdomain", suggestedSubdomain);
+                      }}
+                    >
+                      Use
+                    </Anchor>
+                  )}
                 </Group>
               ) : null}
             </Stack>
@@ -322,6 +291,19 @@ export function RiskCard({
       </Stack>
     </Stack>
   );
+}
+
+function pipelineHint(
+  value: string | null,
+  suggested: string,
+  suggestedLabel: string,
+): string {
+  if (value === null) {
+    return `Pipeline: ${suggestedLabel}`;
+  }
+  return value === suggested
+    ? "Matches pipeline"
+    : `Differs from pipeline: ${suggestedLabel}`;
 }
 
 interface FieldRowProps {
@@ -597,9 +579,9 @@ function AxisButtons({
           </Button>
         ))}
       </Group>
-      {suggestedLabel !== null && value === null && !disabled ? (
+      {suggested !== null && suggestedLabel !== null && !disabled ? (
         <Text size="xs" c="dimmed">
-          Pipeline: {suggestedLabel}
+          {pipelineHint(value, suggested, suggestedLabel)}
         </Text>
       ) : null}
     </Stack>
