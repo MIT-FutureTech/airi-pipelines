@@ -3,36 +3,27 @@ import { Suspense, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { ClassificationReview } from "@/components/ClassificationReview";
 import { ErrorScreen } from "@/components/ErrorScreen";
-import { NamePrompt } from "@/components/NamePrompt";
+import { Home } from "@/components/Home";
 import { PaperPicker } from "@/components/PaperPicker";
-import { TaskLauncher } from "@/components/TaskLauncher";
 import { Validator } from "@/components/Validator";
-import { navigate, type Route, routeKey, useRoute } from "@/lib/route";
-import { clearReviewer, loadReviewer, saveReviewer } from "@/lib/storage";
+import { type Route, routeKey, useRoute } from "@/lib/route";
+import { loadReviewer, saveReviewer } from "@/lib/storage";
 
 export function App() {
   const [reviewer, setReviewer] = useState<string | null>(loadReviewer);
   const route = useRoute();
 
-  if (reviewer === null) {
+  if (reviewer === null || route.name === "tasks") {
     return (
-      <NamePrompt
+      <Home
+        reviewer={reviewer}
+        resuming={route.name !== "tasks"}
         onSubmit={(name) => {
           saveReviewer(name);
           setReviewer(name);
         }}
       />
     );
-  }
-
-  const onChangeName = () => {
-    clearReviewer();
-    setReviewer(null);
-    navigate({ name: "tasks" });
-  };
-
-  if (route.name === "tasks") {
-    return <TaskLauncher reviewer={reviewer} onChangeName={onChangeName} />;
   }
 
   const key = `${reviewer}:${routeKey(route)}`;
