@@ -30,8 +30,8 @@ export function Home({ reviewer, resuming, onSubmit }: Props) {
       <Stack gap="md">
         <Title order={2}>Risk Repository Validator</Title>
         <Text c="dimmed">
-          Enter your name to begin abstract screening. Your name identifies your
-          decisions in Airtable. Please always use the exact same name.
+          Enter your name to begin. Your name identifies your decisions in
+          Airtable. Please always use the exact same name.
         </Text>
         <TextInput
           label="Your name"
