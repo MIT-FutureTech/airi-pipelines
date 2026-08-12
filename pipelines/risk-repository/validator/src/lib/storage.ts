@@ -42,7 +42,7 @@ export interface PaperPickerPrefs {
 export function loadPaperPickerPrefs(): PaperPickerPrefs {
   const value = window.localStorage.getItem(PAPER_PICKER_KEY);
   if (value === null) {
-    return { mode: "blind", assignee: null, status: null };
+    return { mode: "anchored", assignee: null, status: null };
   }
   return JSON.parse(value) as PaperPickerPrefs;
 }
