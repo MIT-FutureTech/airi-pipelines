@@ -95,6 +95,7 @@ export function PaperPicker({ reviewer }: Props) {
               { value: "blind", label: "Blind" },
               { value: "anchored", label: "Anchored" },
             ]}
+            color="blue"
           />
           <Text size="xs" c="dimmed">
             {mode === "blind"
