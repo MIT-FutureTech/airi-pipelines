@@ -1,7 +1,7 @@
 import logging
 from collections.abc import Collection, Iterable
 
-from pydantic import BaseModel, Field, TypeAdapter
+from pydantic import BaseModel, Field, TypeAdapter, ValidationError
 
 from risk_repository.classify import (
     DocumentRisks,
@@ -51,7 +51,10 @@ _EVIDENCE_ADAPTER = TypeAdapter(list[_EvidenceUnit])
 def _parse_evidence(raw: str) -> tuple[Evidence, ...]:
     if not raw.strip():
         return ()
-    units = _EVIDENCE_ADAPTER.validate_json(raw)
+    try:
+        units = _EVIDENCE_ADAPTER.validate_json(raw)
+    except ValidationError:
+        units = [Evidence(text=raw, quote="")]
     return tuple(
         Evidence(text=unit.text, quote=unit.quote)
         for unit in units
