@@ -567,8 +567,8 @@ function AxisButtons({
               value === option.value
                 ? "filled"
                 : option.value === suggested
-                  ? "outline"
-                  : "light"
+                  ? "light"
+                  : "outline"
             }
             onClick={() => {
               onSelect(option.value);
