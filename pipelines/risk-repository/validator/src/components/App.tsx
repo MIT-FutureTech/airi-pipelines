@@ -9,6 +9,7 @@ import { Validator } from "@/components/Validator";
 import { type Route, routeKey, useRoute } from "@/lib/route";
 import { airtableSource } from "@/lib/source";
 import { loadReviewer, saveReviewer } from "@/lib/storage";
+import { TourScreen } from "@/tour/TourScreen";
 
 export function App() {
   const [reviewer, setReviewer] = useState<string | null>(loadReviewer);
@@ -41,6 +42,8 @@ function Content({ reviewer, route }: { reviewer: string; route: Route }) {
       return <Validator reviewer={reviewer} />;
     case "papers":
       return <PaperPicker reviewer={reviewer} />;
+    case "tour":
+      return <TourScreen reviewer={reviewer} />;
     case "classification":
       return (
         <ClassificationReview
