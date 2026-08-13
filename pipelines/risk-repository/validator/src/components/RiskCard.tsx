@@ -92,7 +92,7 @@ export function RiskCard({
     onDraftChange(withComment(draft, field, comment));
   };
 
-  const acceptSuggestions = () => {
+  const fillFromPipeline = () => {
     let next = withNotARisk(draft, false);
     for (const field of AXIS_FIELDS) {
       const suggested = suggestions[field];
@@ -148,10 +148,10 @@ export function RiskCard({
           <Group justify="end">
             <Button
               variant="light"
-              onClick={acceptSuggestions}
+              onClick={fillFromPipeline}
               disabled={notARisk}
             >
-              Accept pipeline suggestions
+              Fill from pipeline
             </Button>
           </Group>
         ) : null}
