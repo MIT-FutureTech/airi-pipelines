@@ -84,7 +84,7 @@ export function PaperPicker({ reviewer }: Props) {
           </Stack>
         </Group>
 
-        <Stack gap={4}>
+        <Stack gap={4} data-tour="mode">
           <Text size="sm" fw={500}>
             Mode
           </Text>
@@ -104,7 +104,7 @@ export function PaperPicker({ reviewer }: Props) {
           </Text>
         </Stack>
 
-        <Group grow align="flex-end">
+        <Group grow align="flex-end" data-tour="filters">
           <Select
             label="Assignee"
             placeholder="All assignees"
@@ -196,6 +196,7 @@ function PaperRow({ paper, onOpen }: RowProps) {
               c="dimmed"
               style={{ flexShrink: 0 }}
               title="Pulled from Airtable"
+              data-tour="paper-airtable-status"
             >
               Airtable: {paper.progress}
             </Text>
@@ -217,6 +218,7 @@ function StatusBadge({ paper }: { paper: PaperEntry }) {
       color={STATUS_COLORS[status]}
       variant="light"
       title="Your classification progress"
+      data-tour="paper-progress"
     >
       {label}
     </Badge>
