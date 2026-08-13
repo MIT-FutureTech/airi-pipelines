@@ -51,6 +51,7 @@ export function Tour({ steps, doneText, onClose }: Props) {
       showProgress: true,
       allowClose: true,
       overlayClickBehavior: () => {},
+      disableActiveInteraction: true,
       overlayColor: "rgba(0, 0, 0, 0.55)",
       stagePadding: 6,
       stageRadius: 8,
