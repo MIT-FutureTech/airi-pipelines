@@ -6,12 +6,14 @@ import type { TourStep } from "@/tour/steps";
 
 interface Props {
   steps: TourStep[];
-  onDone: () => void;
+  doneText: string;
+  /** `reachedEnd` is false when the reviewer closed the tour part-way. */
+  onClose: (reachedEnd: boolean) => void;
 }
 
-export function Tour({ steps, onDone }: Props) {
-  const onDoneRef = useRef(onDone);
-  onDoneRef.current = onDone;
+export function Tour({ steps, doneText, onClose }: Props) {
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   useEffect(() => {
     if (import.meta.env.DEV) {
@@ -53,11 +55,12 @@ export function Tour({ steps, onDone }: Props) {
       stageRadius: 8,
       nextBtnText: "Next →",
       prevBtnText: "← Back",
-      doneBtnText: "Done",
+      doneBtnText: doneText,
       progressText: "{{current}} of {{total}}",
       onDestroyStarted: () => {
+        const reachedEnd = instance?.isLastStep() ?? false;
         instance?.destroy();
-        onDoneRef.current();
+        onCloseRef.current(reachedEnd);
       },
     });
     instance.drive();
@@ -66,7 +69,7 @@ export function Tour({ steps, onDone }: Props) {
       instance?.destroy();
       instance = null;
     };
-  }, [steps]);
+  }, [steps, doneText]);
 
   return null;
 }
