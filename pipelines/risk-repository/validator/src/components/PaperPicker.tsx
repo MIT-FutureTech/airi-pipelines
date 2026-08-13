@@ -191,8 +191,13 @@ function PaperRow({ paper, onOpen }: RowProps) {
             {paper.title ?? "Untitled"}
           </Text>
           {paper.progress !== null ? (
-            <Text size="xs" c="dimmed" style={{ flexShrink: 0 }}>
-              Airtable status: {paper.progress}
+            <Text
+              size="xs"
+              c="dimmed"
+              style={{ flexShrink: 0 }}
+              title="Pulled from Airtable"
+            >
+              Airtable: {paper.progress}
             </Text>
           ) : null}
         </Group>
@@ -205,13 +210,13 @@ function StatusBadge({ paper }: { paper: PaperEntry }) {
   const status = paperStatus(paper);
   const label =
     paper.state === "ready"
-      ? `${paper.reviewerCodedCount} / ${paper.codableCount} coded`
-      : status.toLowerCase();
+      ? `You: ${paper.reviewerCodedCount} / ${paper.codableCount}`
+      : status;
   return (
     <Badge
       color={STATUS_COLORS[status]}
       variant="light"
-      title="Risks you have classified"
+      title="Your classification progress"
     >
       {label}
     </Badge>
