@@ -50,6 +50,7 @@ export function Tour({ steps, doneText, onClose }: Props) {
       steps: driveSteps,
       showProgress: true,
       allowClose: true,
+      overlayClickBehavior: () => {},
       overlayColor: "rgba(0, 0, 0, 0.55)",
       stagePadding: 6,
       stageRadius: 8,
