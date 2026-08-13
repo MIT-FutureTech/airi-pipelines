@@ -1,5 +1,6 @@
 import {
   Badge,
+  Button,
   Container,
   Group,
   SegmentedControl,
@@ -18,6 +19,8 @@ import {
   type PaperPickerPrefs,
   savePaperPickerPrefs,
 } from "@/lib/storage";
+import { CHAPTER_ONE } from "@/tour/steps";
+import { Tour } from "@/tour/Tour";
 
 interface Props {
   reviewer: string;
@@ -45,6 +48,7 @@ const STATUS_COLORS: Record<PaperStatus, string> = {
 export function PaperPicker({ reviewer }: Props) {
   const { papers } = use(getPapers(reviewer));
   const [prefs, setPrefs] = useState<PaperPickerPrefs>(loadPaperPickerPrefs);
+  const [tourActive, setTourActive] = useState(false);
 
   const assignees = useMemo(() => assigneeOptions(papers), [papers]);
 
@@ -82,6 +86,14 @@ export function PaperPicker({ reviewer }: Props) {
               Reviewing as {reviewer}
             </Text>
           </Stack>
+          <Button
+            variant="default"
+            onClick={() => {
+              setTourActive(true);
+            }}
+          >
+            Tour
+          </Button>
         </Group>
 
         <Stack gap={4} data-tour="mode">
@@ -152,6 +164,18 @@ export function PaperPicker({ reviewer }: Props) {
           ))
         )}
       </Stack>
+      {tourActive ? (
+        <Tour
+          steps={CHAPTER_ONE}
+          doneText="Show me a paper →"
+          onClose={(reachedEnd) => {
+            setTourActive(false);
+            if (reachedEnd) {
+              navigate({ name: "tour" });
+            }
+          }}
+        />
+      ) : null}
     </Container>
   );
 }

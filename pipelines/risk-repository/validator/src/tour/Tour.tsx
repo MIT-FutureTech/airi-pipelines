@@ -53,6 +53,7 @@ export function Tour({ steps, doneText, onClose }: Props) {
       overlayColor: "rgba(0, 0, 0, 0.55)",
       stagePadding: 6,
       stageRadius: 8,
+      // Mantine Kbd
       nextBtnText: "Next →",
       prevBtnText: "← Back",
       doneBtnText: doneText,

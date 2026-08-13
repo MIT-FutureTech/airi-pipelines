@@ -139,7 +139,7 @@ export const CHAPTER_TWO: TourStep[] = [
     title: "That's the loop",
     body:
       "Read the risk, check the pipeline's answer, correct it and say why, save. " +
-      "Nothing you just did was saved: this was a frozen demo paper, and it resets every time. " +
-      "Next stop, your own papers.",
+      "Nothing you just did was saved: this was a just a demo.<br><br>" +
+      "Click the <strong>Tour</strong> button on the papers screen to replay this at any time.",
   },
 ];
