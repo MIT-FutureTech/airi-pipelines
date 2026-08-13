@@ -126,7 +126,7 @@ export function RiskCard({
         ) : null}
       </Group>
 
-      <ScrollArea style={{ flex: 1, minHeight: 0 }}>
+      <ScrollArea style={{ flex: 1, minHeight: 0 }} data-tour="risk-detail">
         <Stack gap="md">
           {ancestors.length > 0 ? (
             <AncestorTrail
@@ -152,6 +152,7 @@ export function RiskCard({
               variant="light"
               onClick={fillFromPipeline}
               disabled={notARisk}
+              data-tour="fill-from-pipeline"
             >
               Fill from pipeline
             </Button>
@@ -169,6 +170,7 @@ export function RiskCard({
           }
           comment={
             <NoteField
+              anchor="note-validity"
               value={draft.validity.comment}
               disabled={!notARisk}
               placeholder={
@@ -187,6 +189,7 @@ export function RiskCard({
             key={axis.field}
             control={
               <AxisButtons
+                anchor={`axis-${axis.field}`}
                 label={axis.label}
                 options={axis.options}
                 value={draft[axis.field].value}
@@ -199,6 +202,7 @@ export function RiskCard({
             }
             comment={
               <NoteField
+                anchor={`note-${axis.field}`}
                 value={draft[axis.field].comment}
                 disabled={notARisk || draft[axis.field].value === null}
                 placeholder={notePlaceholder(
@@ -264,6 +268,7 @@ export function RiskCard({
           }
           comment={
             <NoteField
+              anchor="note-subdomain"
               value={draft.subdomain.comment}
               disabled={notARisk || draft.subdomain.value === null}
               placeholder={notePlaceholder("Subdomain", draft.subdomain.value)}
@@ -290,6 +295,7 @@ export function RiskCard({
                 variant={remaining ? "light" : "filled"}
                 disabled={!dirty}
                 loading={saving}
+                data-tour="save"
               >
                 Save
               </Button>
@@ -339,15 +345,23 @@ function FieldRow({ control, comment }: FieldRowProps) {
 }
 
 interface NoteFieldProps {
+  anchor: string;
   value: string;
   placeholder: string;
   disabled: boolean;
   onChange: (comment: string) => void;
 }
 
-function NoteField({ value, placeholder, disabled, onChange }: NoteFieldProps) {
+function NoteField({
+  anchor,
+  value,
+  placeholder,
+  disabled,
+  onChange,
+}: NoteFieldProps) {
   return (
     <Textarea
+      data-tour={anchor}
       value={value}
       placeholder={placeholder}
       disabled={disabled}
@@ -550,6 +564,7 @@ function EvidenceCard({ item }: { item: EvidenceItem }) {
 }
 
 interface AxisButtonsProps {
+  anchor: string;
   label: string;
   options: AxisOption[];
   value: string | null;
@@ -559,6 +574,7 @@ interface AxisButtonsProps {
 }
 
 function AxisButtons({
+  anchor,
   label,
   options,
   value,
@@ -572,7 +588,7 @@ function AxisButtons({
       : (options.find((option) => option.value === suggested)?.label ??
         suggested);
   return (
-    <Stack gap={4}>
+    <Stack gap={4} data-tour={anchor}>
       <Text size="sm" fw={500}>
         {label}
       </Text>
@@ -580,6 +596,7 @@ function AxisButtons({
         {options.map((option) => (
           <Button
             key={option.value}
+            data-value={option.value}
             size="xs"
             variant={
               value === option.value
