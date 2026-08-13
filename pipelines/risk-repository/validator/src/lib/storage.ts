@@ -4,6 +4,7 @@ import type { HighlightGroup } from "./highlight";
 const REVIEWER_KEY = "validator.reviewer";
 const HIGHLIGHT_GROUPS_KEY = "validator.highlightGroups";
 const PAPER_PICKER_KEY = "validator.paperPicker";
+const TOUR_SEEN_KEY = "validator.tourSeen";
 
 export function loadReviewer(): string | null {
   const value = window.localStorage.getItem(REVIEWER_KEY);
@@ -19,6 +20,14 @@ export function saveReviewer(name: string): void {
 
 export function clearReviewer(): void {
   window.localStorage.removeItem(REVIEWER_KEY);
+}
+
+export function hasSeenTour(): boolean {
+  return window.localStorage.getItem(TOUR_SEEN_KEY) !== null;
+}
+
+export function markTourSeen(): void {
+  window.localStorage.setItem(TOUR_SEEN_KEY, "true");
 }
 
 export function loadHighlightGroups(): HighlightGroup[] {
