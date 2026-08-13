@@ -249,10 +249,15 @@ export function ClassificationReview({
           />
         ) : activeEntry === null || activeDraft === null ? (
           <Center h="100%" p="md">
-            <Stack gap="sm" align="center">
+            <Stack gap="sm" align="center" maw={440}>
               <Title order={2}>All coded</Title>
-              <Text c="dimmed">Every risk in this paper has been coded.</Text>
-              <Text c="dimmed" size="sm">
+              <Text c="dimmed" ta="center">
+                You have coded every risk in this paper.
+              </Text>
+              <Text ta="center">
+                Don't forget to set it to <strong>Complete</strong> in Airtable.
+              </Text>
+              <Text c="dimmed" size="sm" ta="center">
                 Revisit any risk from the sidebar to revise it.
               </Text>
             </Stack>
