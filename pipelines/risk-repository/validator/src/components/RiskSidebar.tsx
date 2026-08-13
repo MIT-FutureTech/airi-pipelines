@@ -20,7 +20,7 @@ export function RiskSidebar({ risks, activeId, dirtyIds, onSelect }: Props) {
   const codedCount = codable.filter((risk) => isCoded(risk.responses)).length;
 
   return (
-    <Stack gap="sm" h="100%">
+    <Stack gap="sm" h="100%" data-tour="risk-list">
       <Text size="sm" c="dimmed">
         {codedCount} / {codable.length} coded
       </Text>
