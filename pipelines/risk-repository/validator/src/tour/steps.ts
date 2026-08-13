@@ -11,6 +11,54 @@ export interface TourStep {
   act?: () => void;
 }
 
+export const CHAPTER_ONE: TourStep[] = [
+  {
+    title: "Classification review",
+    body:
+      "Your job is to check classify each paper's risks.<br><br>" +
+      "You work independently: you see your own codings and the pipeline's, never another reviewer's.",
+  },
+  {
+    anchor: "mode",
+    side: "bottom",
+    align: "start",
+    title: "Mode",
+    body:
+      "<strong>Anchored</strong> shows you the pipeline's answer so you can correct it." +
+      "<strong>Blind</strong> hides it and asks you to code from scratch.<br><br>" +
+      "Use <strong>anchored</strong> mode by default.",
+  },
+  {
+    anchor: "filters",
+    side: "top",
+    align: "start",
+    title: "Find your papers",
+    body:
+      "Assignees come from Airtable, and the list below is grouped by them. Select your name to view only your papers.<br><br>" +
+      "The statuses <strong>Not started</strong>, <strong>In progress</strong> and <strong>Complete</strong> refer to your own progress, not the team's.",
+  },
+  {
+    anchor: "paper-progress",
+    side: "left",
+    align: "start",
+    title: "Your progress",
+    body: "Similarly, <strong>You: 3 / 12</strong> counts the risks <em>you</em> have coded.",
+  },
+  {
+    anchor: "paper-airtable-status",
+    side: "left",
+    align: "start",
+    title: "The paper's status",
+    body:
+      "This one describes the paper for the whole team and lives in Airtable. This app only reads it. " +
+      "When you finish a paper, set it to <strong>Complete</strong> in Airtable yourself.",
+  },
+  {
+    title: "Now a paper",
+    body: "The rest of the tour runs inside a demo paper: a frozen copy, so nothing you do there is saved.",
+  },
+];
+
 export const CHAPTER_TWO: TourStep[] = [
   {
     anchor: "risk-list",
