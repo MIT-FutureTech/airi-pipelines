@@ -7,6 +7,7 @@ import { Home } from "@/components/Home";
 import { PaperPicker } from "@/components/PaperPicker";
 import { Validator } from "@/components/Validator";
 import { type Route, routeKey, useRoute } from "@/lib/route";
+import { airtableSource } from "@/lib/source";
 import { loadReviewer, saveReviewer } from "@/lib/storage";
 
 export function App() {
@@ -46,6 +47,11 @@ function Content({ reviewer, route }: { reviewer: string; route: Route }) {
           reviewer={reviewer}
           quickRef={route.quickRef}
           mode={route.mode}
+          source={airtableSource({
+            quickRef: route.quickRef,
+            reviewer,
+            mode: route.mode,
+          })}
         />
       );
     case "tasks":
