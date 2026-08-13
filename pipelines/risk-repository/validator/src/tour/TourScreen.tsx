@@ -23,7 +23,8 @@ export function TourScreen({ reviewer }: Props) {
       />
       <Tour
         steps={CHAPTER_TWO}
-        onDone={() => {
+        doneText="Back to papers"
+        onClose={() => {
           navigate({ name: "papers" });
         }}
       />
