@@ -2,6 +2,7 @@ import {
   Accordion,
   Anchor,
   Badge,
+  Box,
   Button,
   Group,
   Paper,
@@ -12,6 +13,7 @@ import {
   Switch,
   Text,
   Textarea,
+  Tooltip,
 } from "@mantine/core";
 import {
   AXIS_FIELDS,
@@ -279,18 +281,34 @@ export function RiskCard({
             error={error}
             remaining={remaining}
           />
-          <Button
-            onClick={onSave}
-            variant={remaining ? "light" : "filled"}
-            disabled={!dirty}
-            loading={saving}
-          >
-            Save
-          </Button>
+          <Tooltip label={saveHint(dirty, remaining)}>
+            {/* A disabled button emits no pointer events, so the tooltip
+                listens on a wrapper instead. */}
+            <Box>
+              <Button
+                onClick={onSave}
+                variant={remaining ? "light" : "filled"}
+                disabled={!dirty}
+                loading={saving}
+              >
+                Save
+              </Button>
+            </Box>
+          </Tooltip>
         </Group>
       </Stack>
     </Stack>
   );
+}
+
+function saveHint(dirty: boolean, remaining: number): string {
+  if (!dirty) {
+    return "No unsaved changes";
+  }
+  if (remaining > 0) {
+    return "Not all axes coded · ⌘/Ctrl+Enter";
+  }
+  return "Save this risk · ⌘/Ctrl+Enter";
 }
 
 function pipelineHint(

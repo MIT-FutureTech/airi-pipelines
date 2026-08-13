@@ -88,13 +88,23 @@ function CodableRow({
           variant={dirty ? "filled" : "light"}
           color={dirty ? "orange" : coded && !notARisk ? "green" : "gray"}
           w={MARKER_WIDTH}
-          title={dirty ? "Unsaved changes" : undefined}
+          title={markerHint(dirty, coded, notARisk)}
         >
           {notARisk ? "NR" : coded ? "✓" : "—"}
         </Badge>
       }
     />
   );
+}
+
+function markerHint(dirty: boolean, coded: boolean, notARisk: boolean): string {
+  if (dirty) {
+    return "Unsaved changes";
+  }
+  if (notARisk) {
+    return "Marked not a risk";
+  }
+  return coded ? "Coded" : "Not coded yet";
 }
 
 function GroupingRow({ entry, indent }: { entry: RiskEntry; indent: number }) {
