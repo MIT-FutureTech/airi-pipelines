@@ -15,7 +15,9 @@ import { use, useMemo, useState } from "react";
 import { getPapers } from "@/lib/api";
 import { navigate } from "@/lib/route";
 import {
+  hasSeenTour,
   loadPaperPickerPrefs,
+  markTourSeen,
   type PaperPickerPrefs,
   savePaperPickerPrefs,
 } from "@/lib/storage";
@@ -48,7 +50,7 @@ const STATUS_COLORS: Record<PaperStatus, string> = {
 export function PaperPicker({ reviewer }: Props) {
   const { papers } = use(getPapers(reviewer));
   const [prefs, setPrefs] = useState<PaperPickerPrefs>(loadPaperPickerPrefs);
-  const [tourActive, setTourActive] = useState(false);
+  const [tourActive, setTourActive] = useState(() => !hasSeenTour());
 
   const assignees = useMemo(() => assigneeOptions(papers), [papers]);
 
@@ -169,6 +171,7 @@ export function PaperPicker({ reviewer }: Props) {
           steps={CHAPTER_ONE}
           doneText="Show me a paper →"
           onClose={(reachedEnd) => {
+            markTourSeen();
             setTourActive(false);
             if (reachedEnd) {
               navigate({ name: "tour" });
