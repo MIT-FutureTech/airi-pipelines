@@ -2,6 +2,7 @@ import {
   Accordion,
   Anchor,
   Badge,
+  Box,
   Button,
   Group,
   Paper,
@@ -12,6 +13,7 @@ import {
   Switch,
   Text,
   Textarea,
+  Tooltip,
 } from "@mantine/core";
 import {
   AXIS_FIELDS,
@@ -92,7 +94,7 @@ export function RiskCard({
     onDraftChange(withComment(draft, field, comment));
   };
 
-  const acceptSuggestions = () => {
+  const fillFromPipeline = () => {
     let next = withNotARisk(draft, false);
     for (const field of AXIS_FIELDS) {
       const suggested = suggestions[field];
@@ -124,7 +126,7 @@ export function RiskCard({
         ) : null}
       </Group>
 
-      <ScrollArea style={{ flex: 1, minHeight: 0 }}>
+      <ScrollArea style={{ flex: 1, minHeight: 0 }} data-tour="risk-detail">
         <Stack gap="md">
           {ancestors.length > 0 ? (
             <AncestorTrail
@@ -148,10 +150,11 @@ export function RiskCard({
           <Group justify="end">
             <Button
               variant="light"
-              onClick={acceptSuggestions}
+              onClick={fillFromPipeline}
               disabled={notARisk}
+              data-tour="fill-from-pipeline"
             >
-              Accept pipeline suggestions
+              Fill from pipeline
             </Button>
           </Group>
         ) : null}
@@ -167,6 +170,7 @@ export function RiskCard({
           }
           comment={
             <NoteField
+              anchor="note-validity"
               value={draft.validity.comment}
               disabled={!notARisk}
               placeholder={
@@ -185,6 +189,7 @@ export function RiskCard({
             key={axis.field}
             control={
               <AxisButtons
+                anchor={`axis-${axis.field}`}
                 label={axis.label}
                 options={axis.options}
                 value={draft[axis.field].value}
@@ -197,6 +202,7 @@ export function RiskCard({
             }
             comment={
               <NoteField
+                anchor={`note-${axis.field}`}
                 value={draft[axis.field].comment}
                 disabled={notARisk || draft[axis.field].value === null}
                 placeholder={notePlaceholder(
@@ -262,6 +268,7 @@ export function RiskCard({
           }
           comment={
             <NoteField
+              anchor="note-subdomain"
               value={draft.subdomain.comment}
               disabled={notARisk || draft.subdomain.value === null}
               placeholder={notePlaceholder("Subdomain", draft.subdomain.value)}
@@ -279,18 +286,36 @@ export function RiskCard({
             error={error}
             remaining={remaining}
           />
-          <Button
-            onClick={onSave}
-            variant={remaining ? "light" : "filled"}
-            disabled={!dirty}
-            loading={saving}
-          >
-            Save
-          </Button>
+          <Tooltip label={saveHint(dirty, remaining)}>
+            {/* A disabled button emits no pointer events, so the tooltip
+                listens on a wrapper instead. */}
+            <Box>
+              <Button
+                onClick={onSave}
+                variant={remaining ? "light" : "filled"}
+                disabled={!dirty}
+                loading={saving}
+                data-tour="save"
+              >
+                Save
+              </Button>
+            </Box>
+          </Tooltip>
         </Group>
       </Stack>
     </Stack>
   );
+}
+
+function saveHint(dirty: boolean, remaining: number): string {
+  if (!dirty) {
+    return "No unsaved changes";
+  }
+  if (remaining > 0) {
+    // Mantine Kbd
+    return "Not all axes coded · ⌘/Ctrl+Enter";
+  }
+  return "Save this risk · ⌘/Ctrl+Enter";
 }
 
 function pipelineHint(
@@ -321,15 +346,23 @@ function FieldRow({ control, comment }: FieldRowProps) {
 }
 
 interface NoteFieldProps {
+  anchor: string;
   value: string;
   placeholder: string;
   disabled: boolean;
   onChange: (comment: string) => void;
 }
 
-function NoteField({ value, placeholder, disabled, onChange }: NoteFieldProps) {
+function NoteField({
+  anchor,
+  value,
+  placeholder,
+  disabled,
+  onChange,
+}: NoteFieldProps) {
   return (
     <Textarea
+      data-tour={anchor}
       value={value}
       placeholder={placeholder}
       disabled={disabled}
@@ -532,6 +565,7 @@ function EvidenceCard({ item }: { item: EvidenceItem }) {
 }
 
 interface AxisButtonsProps {
+  anchor: string;
   label: string;
   options: AxisOption[];
   value: string | null;
@@ -541,6 +575,7 @@ interface AxisButtonsProps {
 }
 
 function AxisButtons({
+  anchor,
   label,
   options,
   value,
@@ -554,7 +589,7 @@ function AxisButtons({
       : (options.find((option) => option.value === suggested)?.label ??
         suggested);
   return (
-    <Stack gap={4}>
+    <Stack gap={4} data-tour={anchor}>
       <Text size="sm" fw={500}>
         {label}
       </Text>
@@ -562,13 +597,14 @@ function AxisButtons({
         {options.map((option) => (
           <Button
             key={option.value}
+            data-value={option.value}
             size="xs"
             variant={
               value === option.value
                 ? "filled"
                 : option.value === suggested
-                  ? "outline"
-                  : "light"
+                  ? "light"
+                  : "outline"
             }
             onClick={() => {
               onSelect(option.value);

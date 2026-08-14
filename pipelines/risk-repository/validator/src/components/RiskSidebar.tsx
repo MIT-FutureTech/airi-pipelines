@@ -20,7 +20,7 @@ export function RiskSidebar({ risks, activeId, dirtyIds, onSelect }: Props) {
   const codedCount = codable.filter((risk) => isCoded(risk.responses)).length;
 
   return (
-    <Stack gap="sm" h="100%">
+    <Stack gap="sm" h="100%" data-tour="risk-list">
       <Text size="sm" c="dimmed">
         {codedCount} / {codable.length} coded
       </Text>
@@ -88,13 +88,23 @@ function CodableRow({
           variant={dirty ? "filled" : "light"}
           color={dirty ? "orange" : coded && !notARisk ? "green" : "gray"}
           w={MARKER_WIDTH}
-          title={dirty ? "Unsaved changes" : undefined}
+          title={markerHint(dirty, coded, notARisk)}
         >
           {notARisk ? "NR" : coded ? "✓" : "—"}
         </Badge>
       }
     />
   );
+}
+
+function markerHint(dirty: boolean, coded: boolean, notARisk: boolean): string {
+  if (dirty) {
+    return "Unsaved changes";
+  }
+  if (notARisk) {
+    return "Marked not a risk";
+  }
+  return coded ? "Coded" : "Not coded yet";
 }
 
 function GroupingRow({ entry, indent }: { entry: RiskEntry; indent: number }) {

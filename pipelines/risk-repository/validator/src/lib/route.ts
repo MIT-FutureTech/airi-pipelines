@@ -5,6 +5,7 @@ export type Route =
   | { name: "tasks" }
   | { name: "screening" }
   | { name: "papers" }
+  | { name: "tour" }
   | { name: "classification"; quickRef: string; mode: ReviewMode };
 
 export function routeKey(route: Route): string {
@@ -45,6 +46,9 @@ function parseRoute(href: string): Route {
   if (segments[0] === "screening") {
     return { name: "screening" };
   }
+  if (segments[0] === "tour") {
+    return { name: "tour" };
+  }
   if (segments[0] === "papers") {
     if (segments.length === 1) {
       return { name: "papers" };
@@ -66,6 +70,8 @@ function formatRoute(route: Route): string {
       return "/screening";
     case "papers":
       return "/papers";
+    case "tour":
+      return "/tour";
     case "classification":
       return `/papers/${encodeURIComponent(route.quickRef)}?mode=${route.mode}`;
   }

@@ -1,5 +1,6 @@
 import {
   Badge,
+  Button,
   Container,
   Group,
   SegmentedControl,
@@ -14,10 +15,14 @@ import { use, useMemo, useState } from "react";
 import { getPapers } from "@/lib/api";
 import { navigate } from "@/lib/route";
 import {
+  hasSeenTour,
   loadPaperPickerPrefs,
+  markTourSeen,
   type PaperPickerPrefs,
   savePaperPickerPrefs,
 } from "@/lib/storage";
+import { CHAPTER_ONE } from "@/tour/steps";
+import { Tour } from "@/tour/Tour";
 
 interface Props {
   reviewer: string;
@@ -45,6 +50,7 @@ const STATUS_COLORS: Record<PaperStatus, string> = {
 export function PaperPicker({ reviewer }: Props) {
   const { papers } = use(getPapers(reviewer));
   const [prefs, setPrefs] = useState<PaperPickerPrefs>(loadPaperPickerPrefs);
+  const [tourActive, setTourActive] = useState(() => !hasSeenTour());
 
   const assignees = useMemo(() => assigneeOptions(papers), [papers]);
 
@@ -82,9 +88,17 @@ export function PaperPicker({ reviewer }: Props) {
               Reviewing as {reviewer}
             </Text>
           </Stack>
+          <Button
+            variant="default"
+            onClick={() => {
+              setTourActive(true);
+            }}
+          >
+            Tour
+          </Button>
         </Group>
 
-        <Stack gap={4}>
+        <Stack gap={4} data-tour="mode">
           <Text size="sm" fw={500}>
             Mode
           </Text>
@@ -104,7 +118,7 @@ export function PaperPicker({ reviewer }: Props) {
           </Text>
         </Stack>
 
-        <Group grow align="flex-end">
+        <Group grow align="flex-end" data-tour="filters">
           <Select
             label="Assignee"
             placeholder="All assignees"
@@ -152,6 +166,19 @@ export function PaperPicker({ reviewer }: Props) {
           ))
         )}
       </Stack>
+      {tourActive ? (
+        <Tour
+          steps={CHAPTER_ONE}
+          doneText="Show me a paper →"
+          onClose={(reachedEnd) => {
+            markTourSeen();
+            setTourActive(false);
+            if (reachedEnd) {
+              navigate({ name: "tour" });
+            }
+          }}
+        />
+      ) : null}
     </Container>
   );
 }
@@ -191,8 +218,14 @@ function PaperRow({ paper, onOpen }: RowProps) {
             {paper.title ?? "Untitled"}
           </Text>
           {paper.progress !== null ? (
-            <Text size="xs" c="dimmed" style={{ flexShrink: 0 }}>
-              Airtable status: {paper.progress}
+            <Text
+              size="xs"
+              c="dimmed"
+              style={{ flexShrink: 0 }}
+              title="Pulled from Airtable"
+              data-tour="paper-airtable-status"
+            >
+              Airtable: {paper.progress}
             </Text>
           ) : null}
         </Group>
@@ -205,13 +238,14 @@ function StatusBadge({ paper }: { paper: PaperEntry }) {
   const status = paperStatus(paper);
   const label =
     paper.state === "ready"
-      ? `${paper.reviewerCodedCount} / ${paper.codableCount} coded`
-      : status.toLowerCase();
+      ? `You: ${paper.reviewerCodedCount} / ${paper.codableCount}`
+      : status;
   return (
     <Badge
       color={STATUS_COLORS[status]}
       variant="light"
-      title="Risks you have classified"
+      title="Your classification progress"
+      data-tour="paper-progress"
     >
       {label}
     </Badge>

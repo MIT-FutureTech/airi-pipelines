@@ -16,7 +16,6 @@ import { use, useEffect, useMemo, useState } from "react";
 import { PdfDownloadButton } from "@/components/PdfDownloadButton";
 import { RiskCard } from "@/components/RiskCard";
 import { RiskSidebar } from "@/components/RiskSidebar";
-import { fetchRiskManifest, getRiskManifest, saveCodings } from "@/lib/api";
 import {
   codingsRequest,
   type Draft,
@@ -25,12 +24,15 @@ import {
 } from "@/lib/draft";
 import { codableRisks, pipelineIsReady } from "@/lib/risks";
 import { navigate } from "@/lib/route";
+import type { ClassificationSource } from "@/lib/source";
 import { ancestorsOf, indexRisks } from "@/lib/tree";
 
 interface Props {
   reviewer: string;
   quickRef: string;
   mode: ReviewMode;
+  source: ClassificationSource;
+  hotkeysEnabled: boolean;
 }
 
 type SaveState =
@@ -39,10 +41,14 @@ type SaveState =
   | { status: "saved"; riskId: string }
   | { status: "failed"; riskId: string; message: string };
 
-export function ClassificationReview({ reviewer, quickRef, mode }: Props) {
-  const [manifest] = useState(() =>
-    getRiskManifest({ quickRef, reviewer, mode }),
-  );
+export function ClassificationReview({
+  reviewer,
+  quickRef,
+  mode,
+  source,
+  hotkeysEnabled,
+}: Props) {
+  const [manifest] = useState(() => source.load());
   const initial = use(manifest);
   const [risks, setRisks] = useState<RiskEntry[]>(initial.risks);
   const [drafts, setDrafts] = useState<Record<string, Draft>>({});
@@ -89,7 +95,7 @@ export function ClassificationReview({ reviewer, quickRef, mode }: Props) {
     setChecking(true);
     setCheckError(null);
     try {
-      const fresh = await fetchRiskManifest({ quickRef, reviewer, mode });
+      const fresh = await source.refresh();
       setRisks(fresh.risks);
     } catch (err) {
       setCheckError(err instanceof Error ? err.message : String(err));
@@ -150,7 +156,7 @@ export function ClassificationReview({ reviewer, quickRef, mode }: Props) {
     const draft = activeDraft;
     setSave({ status: "saving", riskId: entry.id });
     try {
-      const saved = await saveCodings(
+      const saved = await source.save(
         codingsRequest({ reviewer, mode, entry, draft }),
       );
       setRisks((prev) =>
@@ -175,7 +181,8 @@ export function ClassificationReview({ reviewer, quickRef, mode }: Props) {
       });
       // A save can fail after part of it landed, so rebase on what Airtable
       // actually holds; otherwise a retry duplicates the rows that succeeded.
-      fetchRiskManifest({ quickRef, reviewer, mode })
+      source
+        .refresh()
         .then((fresh) => {
           setRisks(fresh.risks);
         })
@@ -185,11 +192,18 @@ export function ClassificationReview({ reviewer, quickRef, mode }: Props) {
     }
   };
 
-  useHotkeys([
-    ["ArrowLeft", () => step(-1)],
-    ["ArrowRight", () => step(1)],
-  ]);
-  useHotkeys([["mod+Enter", () => void saveActive()]], []);
+  useHotkeys(
+    hotkeysEnabled
+      ? [
+          ["ArrowLeft", () => step(-1)],
+          ["ArrowRight", () => step(1)],
+        ]
+      : [],
+  );
+  useHotkeys(
+    hotkeysEnabled ? [["mod+Enter", () => void saveActive()]] : [],
+    [],
+  );
 
   return (
     <AppShell
@@ -244,10 +258,15 @@ export function ClassificationReview({ reviewer, quickRef, mode }: Props) {
           />
         ) : activeEntry === null || activeDraft === null ? (
           <Center h="100%" p="md">
-            <Stack gap="sm" align="center">
+            <Stack gap="sm" align="center" maw={440}>
               <Title order={2}>All coded</Title>
-              <Text c="dimmed">Every risk in this paper has been coded.</Text>
-              <Text c="dimmed" size="sm">
+              <Text c="dimmed" ta="center">
+                You have coded every risk in this paper.
+              </Text>
+              <Text ta="center">
+                Don't forget to set it to <strong>Complete</strong> in Airtable.
+              </Text>
+              <Text c="dimmed" size="sm" ta="center">
                 Revisit any risk from the sidebar to revise it.
               </Text>
             </Stack>

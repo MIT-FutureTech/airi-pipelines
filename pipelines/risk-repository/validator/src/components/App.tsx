@@ -7,7 +7,9 @@ import { Home } from "@/components/Home";
 import { PaperPicker } from "@/components/PaperPicker";
 import { Validator } from "@/components/Validator";
 import { type Route, routeKey, useRoute } from "@/lib/route";
+import { airtableSource } from "@/lib/source";
 import { loadReviewer, saveReviewer } from "@/lib/storage";
+import { TourScreen } from "@/tour/TourScreen";
 
 export function App() {
   const [reviewer, setReviewer] = useState<string | null>(loadReviewer);
@@ -40,12 +42,20 @@ function Content({ reviewer, route }: { reviewer: string; route: Route }) {
       return <Validator reviewer={reviewer} />;
     case "papers":
       return <PaperPicker reviewer={reviewer} />;
+    case "tour":
+      return <TourScreen reviewer={reviewer} />;
     case "classification":
       return (
         <ClassificationReview
           reviewer={reviewer}
           quickRef={route.quickRef}
           mode={route.mode}
+          source={airtableSource({
+            quickRef: route.quickRef,
+            reviewer,
+            mode: route.mode,
+          })}
+          hotkeysEnabled
         />
       );
     case "tasks":
