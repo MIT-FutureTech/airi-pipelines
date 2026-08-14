@@ -20,6 +20,7 @@ export function TourScreen({ reviewer }: Props) {
         quickRef={DEMO_PAPER.quickRef}
         mode="anchored"
         source={source}
+        hotkeysEnabled={false}
       />
       <Tour
         steps={CHAPTER_TWO}

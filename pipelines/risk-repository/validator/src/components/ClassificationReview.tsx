@@ -32,6 +32,7 @@ interface Props {
   quickRef: string;
   mode: ReviewMode;
   source: ClassificationSource;
+  hotkeysEnabled: boolean;
 }
 
 type SaveState =
@@ -45,6 +46,7 @@ export function ClassificationReview({
   quickRef,
   mode,
   source,
+  hotkeysEnabled,
 }: Props) {
   const [manifest] = useState(() => source.load());
   const initial = use(manifest);
@@ -190,11 +192,18 @@ export function ClassificationReview({
     }
   };
 
-  useHotkeys([
-    ["ArrowLeft", () => step(-1)],
-    ["ArrowRight", () => step(1)],
-  ]);
-  useHotkeys([["mod+Enter", () => void saveActive()]], []);
+  useHotkeys(
+    hotkeysEnabled
+      ? [
+          ["ArrowLeft", () => step(-1)],
+          ["ArrowRight", () => step(1)],
+        ]
+      : [],
+  );
+  useHotkeys(
+    hotkeysEnabled ? [["mod+Enter", () => void saveActive()]] : [],
+    [],
+  );
 
   return (
     <AppShell

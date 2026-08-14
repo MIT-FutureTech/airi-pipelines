@@ -55,6 +55,7 @@ function Content({ reviewer, route }: { reviewer: string; route: Route }) {
             reviewer,
             mode: route.mode,
           })}
+          hotkeysEnabled
         />
       );
     case "tasks":
