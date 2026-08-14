@@ -16,7 +16,7 @@ export function PipelineCard({ responses }: Props) {
   );
 
   return (
-    <Paper withBorder radius="md" p="md">
+    <Paper withBorder radius="md" p="md" data-tour="pipeline-card">
       <Stack gap="md">
         <Text size="xs" c="dimmed" tt="uppercase" fw={600}>
           Pipeline classification
