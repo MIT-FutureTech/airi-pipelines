@@ -594,26 +594,27 @@ function AxisButtons({
         {label}
       </Text>
       <Group gap="xs">
-        {options.map((option) => (
-          <Button
-            key={option.value}
-            data-value={option.value}
-            size="xs"
-            variant={
-              value === option.value
-                ? "filled"
-                : option.value === suggested
-                  ? "light"
-                  : "outline"
-            }
-            onClick={() => {
-              onSelect(option.value);
-            }}
-            disabled={disabled}
-          >
-            {option.label}
-          </Button>
-        ))}
+        {options.map((option) => {
+          const chosen = value === option.value;
+          const proposed = !chosen && option.value === suggested;
+          return (
+            <Button
+              key={option.value}
+              data-value={option.value}
+              size="xs"
+              variant={chosen ? "filled" : proposed ? "outline" : "default"}
+              styles={
+                proposed ? { root: { borderStyle: "dashed" } } : undefined
+              }
+              onClick={() => {
+                onSelect(option.value);
+              }}
+              disabled={disabled}
+            >
+              {option.label}
+            </Button>
+          );
+        })}
       </Group>
       {suggested !== null && suggestedLabel !== null && !disabled ? (
         <Text size="xs" c="dimmed">
