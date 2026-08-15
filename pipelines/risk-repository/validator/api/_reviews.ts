@@ -8,6 +8,8 @@ import {
   type AirtableRecord,
   escapeFormulaString,
   listAllRecords,
+  listAllRecordsSharded,
+  type ShardKey,
 } from "./_airtable.js";
 import type { AirtableEnv } from "./_env.js";
 
@@ -21,6 +23,8 @@ const REVIEW_FETCH_FIELDS = [
 ];
 
 const RISK_READABLE_ID_LOOKUP = "ReadableId (from Risk)";
+
+const ALL_PAPERS_SHARD: ShardKey = { field: "RiskReviewId", count: 4 };
 
 export function isPipelineReviewer(reviewer: string): boolean {
   return reviewer.startsWith(PIPELINE_REVIEWER_PREFIX);
@@ -41,7 +45,7 @@ export async function fetchVisibleReviews(
   env: AirtableEnv,
   reviewer: string,
 ): Promise<AirtableRecord<ReviewFields>[]> {
-  return await listAllRecords<ReviewFields>(
+  return await listAllRecordsSharded<ReviewFields>(
     env.pat,
     env.baseId,
     env.reviewsTable,
@@ -49,6 +53,7 @@ export async function fetchVisibleReviews(
       filterByFormula: ownAndPipeline(reviewer),
       fields: REVIEW_FETCH_FIELDS,
     },
+    ALL_PAPERS_SHARD,
   );
 }
 
