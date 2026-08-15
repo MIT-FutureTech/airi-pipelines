@@ -21,18 +21,13 @@ import {
   NOT_A_RISK,
   REVIEW_FIELDS,
   type ReviewField,
+  type ReviewResponse,
   type RiskEntry,
 } from "@shared/classification";
-import { isCoded } from "@shared/coding";
+import { isCoded, isNotARisk } from "@shared/coding";
 import { type ReactNode, useMemo } from "react";
 import { PipelineCard } from "@/components/PipelineCard";
-import {
-  type Draft,
-  draftCodings,
-  withComment,
-  withNotARisk,
-  withValue,
-} from "@/lib/draft";
+import { type Draft, withComment, withNotARisk, withValue } from "@/lib/draft";
 import { type AxisOption, CAUSAL_AXES, valueLabel } from "@/lib/fields";
 import { SUBDOMAIN_GROUPS } from "@/lib/subdomains";
 
@@ -68,7 +63,7 @@ export function RiskCard({
   onExpandedAncestorsChange,
 }: Props) {
   const notARisk = draft.validity.value === NOT_A_RISK;
-  const coded = isCoded(draftCodings(draft));
+  const status = codingStatus(entry.responses, dirty);
 
   const suggestions = useMemo(() => {
     const map = {} as Record<ReviewField, string | null>;
@@ -115,15 +110,9 @@ export function RiskCard({
         <Text size="sm" c="dimmed">
           {position} / {total} · {entry.readableId}
         </Text>
-        {notARisk ? (
-          <Badge color="gray" variant="light">
-            not a risk
-          </Badge>
-        ) : coded ? (
-          <Badge color="green" variant="light">
-            coded
-          </Badge>
-        ) : null}
+        <Badge color={status.color} variant={dirty ? "filled" : "light"}>
+          {status.label}
+        </Badge>
       </Group>
 
       <ScrollArea style={{ flex: 1, minHeight: 0 }} data-tour="risk-detail">
@@ -305,6 +294,30 @@ export function RiskCard({
       </Stack>
     </Stack>
   );
+}
+
+interface CodingStatus {
+  label: string;
+  color: string;
+}
+
+function codingStatus(
+  responses: readonly ReviewResponse[],
+  dirty: boolean,
+): CodingStatus {
+  if (dirty) {
+    return { label: "Unsaved", color: "orange" };
+  }
+  if (isNotARisk(responses)) {
+    return { label: "Not a risk", color: "red" };
+  }
+  if (isCoded(responses)) {
+    return { label: "Coded", color: "green" };
+  }
+  if (responses.length > 0) {
+    return { label: "Partly coded", color: "gray" };
+  }
+  return { label: "Not coded", color: "gray" };
 }
 
 function saveHint(dirty: boolean, remaining: number): string {
