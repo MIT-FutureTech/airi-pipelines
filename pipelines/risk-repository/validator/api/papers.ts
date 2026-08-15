@@ -15,6 +15,8 @@ import {
   fetchVisibleReviews,
   indexReviewsByRisk,
   isPipelineReviewer,
+  type ReviewRow,
+  toReviewRow,
 } from "./_reviews.js";
 import { codableIds } from "./_tree.js";
 
@@ -97,7 +99,7 @@ export function buildEntry(
   let reviewerCodedCount = 0;
   let pipelineCodedCount = 0;
   for (const risk of codableRisks) {
-    const rows = reviewsByRisk.get(risk.id) ?? [];
+    const rows = (reviewsByRisk.get(risk.id) ?? []).map(toReviewRow);
     if (isCoded(codingsBy(rows, (name) => name === reviewer))) {
       reviewerCodedCount += 1;
     }
@@ -130,20 +132,12 @@ export function paperState(
 }
 
 function codingsBy(
-  rows: AirtableRecord<ReviewFields>[],
+  rows: ReviewRow[],
   matches: (reviewer: string) => boolean,
 ): Coding[] {
-  const codings: Coding[] = [];
-  for (const row of rows) {
-    const { Reviewer, Field, Value } = row.fields;
-    if (Reviewer === undefined || Field === undefined || Value === undefined) {
-      continue;
-    }
-    if (matches(Reviewer)) {
-      codings.push({ field: Field, value: Value });
-    }
-  }
-  return codings;
+  return rows
+    .filter((row) => matches(row.reviewer))
+    .map((row) => ({ field: row.field, value: row.value }));
 }
 
 export function requiredQuickRef(

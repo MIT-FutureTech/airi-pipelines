@@ -116,6 +116,28 @@ describe("buildEntry reviewer isolation", () => {
     }
   });
 
+  it("refuses a review row that names no reviewer", () => {
+    const anonymous: AirtableRecord<ReviewFields> = {
+      id: "recAnon",
+      createdTime: "2026-01-01T00:00:00.000Z",
+      fields: {
+        Risk: [RISK_ID],
+        Field: "entity",
+        Value: "human",
+        Mode: "anchored",
+      },
+    };
+    expect(() =>
+      buildEntry(
+        risk({}),
+        new Set([RISK_ID]),
+        new Map([[RISK_ID, [anonymous]]]),
+        "alice",
+        "anchored",
+      ),
+    ).toThrow("recAnon");
+  });
+
   it("returns nothing when the risk has no reviews at all", () => {
     const entry = buildEntry(
       risk({}),
