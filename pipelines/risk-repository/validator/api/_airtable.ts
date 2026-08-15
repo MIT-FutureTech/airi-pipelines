@@ -22,11 +22,46 @@ interface ListOptions {
 
 const AIRTABLE_BASE = "https://api.airtable.com/v0";
 
+const RATE_LIMITED = 429;
+const MAX_RATE_LIMIT_RETRIES = 3;
+const BASE_RETRY_DELAY_MS = 250;
+const MAX_RETRY_DELAY_MS = 2000;
+
 function authHeaders(pat: string): HeadersInit {
   return {
     Authorization: `Bearer ${pat}`,
     "Content-Type": "application/json",
   };
+}
+
+function retryDelayMs(response: Response, retry: number): number {
+  const retryAfter = Number(response.headers.get("retry-after"));
+  if (Number.isFinite(retryAfter) && retryAfter > 0) {
+    return Math.min(retryAfter * 1000, MAX_RETRY_DELAY_MS);
+  }
+  return Math.min(BASE_RETRY_DELAY_MS * 2 ** retry, MAX_RETRY_DELAY_MS);
+}
+
+async function sleep(ms: number): Promise<void> {
+  await new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function airtableFetch(
+  url: string,
+  init: RequestInit,
+): Promise<Response> {
+  let response = await fetch(url, init);
+  for (
+    let retry = 0;
+    response.status === RATE_LIMITED && retry < MAX_RATE_LIMIT_RETRIES;
+    retry += 1
+  ) {
+    const delay = retryDelayMs(response, retry);
+    console.warn(`Airtable rate limited ${url}; retrying in ${delay}ms`);
+    await sleep(delay);
+    response = await fetch(url, init);
+  }
+  return response;
 }
 
 function buildListUrl(
@@ -65,7 +100,7 @@ export async function listAllRecords<F>(
   let offset: string | undefined;
   do {
     const url = buildListUrl(baseId, table, options, offset);
-    const response = await fetch(url, { headers: authHeaders(pat) });
+    const response = await airtableFetch(url, { headers: authHeaders(pat) });
     if (!response.ok) {
       throw new AirtableError(response.status, await response.text());
     }
@@ -112,7 +147,7 @@ export async function getRecord<F>(
   recordId: string,
 ): Promise<AirtableRecord<F>> {
   const url = `${AIRTABLE_BASE}/${baseId}/${encodeURIComponent(table)}/${recordId}`;
-  const response = await fetch(url, { headers: authHeaders(pat) });
+  const response = await airtableFetch(url, { headers: authHeaders(pat) });
   if (!response.ok) {
     throw new AirtableError(response.status, await response.text());
   }
@@ -135,7 +170,7 @@ async function writeRecords<F>(
     return [];
   }
   const url = `${AIRTABLE_BASE}/${baseId}/${encodeURIComponent(table)}`;
-  const response = await fetch(url, {
+  const response = await airtableFetch(url, {
     method,
     headers: authHeaders(pat),
     body: JSON.stringify({ records }),
@@ -203,7 +238,7 @@ export async function deleteRecords(
     params.append("records[]", id);
   }
   const url = `${AIRTABLE_BASE}/${baseId}/${encodeURIComponent(table)}?${params.toString()}`;
-  const response = await fetch(url, {
+  const response = await airtableFetch(url, {
     method: "DELETE",
     headers: authHeaders(pat),
   });
