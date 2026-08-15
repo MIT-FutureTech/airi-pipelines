@@ -1,12 +1,15 @@
 import {
   PIPELINE_REVIEWER_PREFIX,
   type ReviewFields,
+  type ReviewMode,
   type ReviewResponse,
 } from "../shared/classification.js";
 import {
   type AirtableRecord,
   escapeFormulaString,
   listAllRecords,
+  listAllRecordsSharded,
+  type ShardKey,
 } from "./_airtable.js";
 import type { AirtableEnv } from "./_env.js";
 
@@ -19,22 +22,60 @@ const REVIEW_FETCH_FIELDS = [
   "Comment",
 ];
 
+const RISK_READABLE_ID_LOOKUP = "ReadableId (from Risk)";
+
+const ALL_PAPERS_SHARD: ShardKey = { field: "RiskReviewId", count: 4 };
+
 export function isPipelineReviewer(reviewer: string): boolean {
   return reviewer.startsWith(PIPELINE_REVIEWER_PREFIX);
 }
 
-// One human's rows plus the pipeline's
+const PIPELINE_REVIEWER = `LEFT({Reviewer}, ${PIPELINE_REVIEWER_PREFIX.length})="${PIPELINE_REVIEWER_PREFIX}"`;
+
+function ownReviewer(reviewer: string): string {
+  return `{Reviewer}="${escapeFormulaString(reviewer)}"`;
+}
+
+function ownAndPipeline(reviewer: string): string {
+  return `OR(${ownReviewer(reviewer)}, ${PIPELINE_REVIEWER})`;
+}
+
+// One human's rows plus the pipeline's, across every paper
 export async function fetchVisibleReviews(
   env: AirtableEnv,
   reviewer: string,
 ): Promise<AirtableRecord<ReviewFields>[]> {
-  const pipelinePrefix = `LEFT({Reviewer}, ${PIPELINE_REVIEWER_PREFIX.length})="${PIPELINE_REVIEWER_PREFIX}"`;
+  return await listAllRecordsSharded<ReviewFields>(
+    env.pat,
+    env.baseId,
+    env.reviewsTable,
+    {
+      filterByFormula: ownAndPipeline(reviewer),
+      fields: REVIEW_FETCH_FIELDS,
+    },
+    ALL_PAPERS_SHARD,
+  );
+}
+
+export async function fetchVisibleReviewsForPaper(
+  env: AirtableEnv,
+  reviewer: string,
+  quickRef: string,
+  mode: ReviewMode,
+): Promise<AirtableRecord<ReviewFields>[]> {
+  // A risk's ReadableId is `{QuickRef}.NN.NN...`, so the paper's rows are the ones
+  // whose linked risk carries that prefix. The trailing dot is load-bearing: some
+  // QuickRefs are prefixes of others, and without it Lee2025 would match Lee2025a.
+  const prefix = `${quickRef}.`;
+  const paperScope = `LEFT(ARRAYJOIN({${RISK_READABLE_ID_LOOKUP}}), ${prefix.length})="${escapeFormulaString(prefix)}"`;
+  const reviewers =
+    mode === "blind" ? ownReviewer(reviewer) : ownAndPipeline(reviewer);
   return await listAllRecords<ReviewFields>(
     env.pat,
     env.baseId,
     env.reviewsTable,
     {
-      filterByFormula: `OR({Reviewer}="${escapeFormulaString(reviewer)}", ${pipelinePrefix})`,
+      filterByFormula: `AND(${paperScope}, ${reviewers})`,
       fields: REVIEW_FETCH_FIELDS,
     },
   );

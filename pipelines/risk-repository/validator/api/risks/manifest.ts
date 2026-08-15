@@ -18,7 +18,7 @@ import { readAirtableEnv } from "../_env.js";
 import { parseEvidence } from "../_evidence.js";
 import { handleError, queryString } from "../_http.js";
 import {
-  fetchVisibleReviews,
+  fetchVisibleReviewsForPaper,
   indexReviewsByRisk,
   isPipelineReviewer,
   toReviewResponse,
@@ -72,7 +72,7 @@ export default async function handler(
         filterByFormula: `{QuickRef}="${escapeFormulaString(quickRef)}"`,
         fields: RISK_FETCH_FIELDS,
       }),
-      fetchVisibleReviews(env, reviewer),
+      fetchVisibleReviewsForPaper(env, reviewer, quickRef, mode),
       listAllRecords<ProposedExtractionFields>(
         env.pat,
         env.baseId,
