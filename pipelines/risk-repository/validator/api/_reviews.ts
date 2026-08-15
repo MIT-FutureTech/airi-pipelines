@@ -1,5 +1,6 @@
 import {
   PIPELINE_REVIEWER_PREFIX,
+  type ReviewField,
   type ReviewFields,
   type ReviewMode,
   type ReviewResponse,
@@ -115,18 +116,43 @@ export function indexReviewsByRisk(
   return result;
 }
 
-export function toReviewResponse(
-  record: AirtableRecord<ReviewFields>,
-): ReviewResponse {
-  const { Field, Value, Mode } = record.fields;
-  if (Field === undefined || Value === undefined || Mode === undefined) {
-    throw new Error(`Review ${record.id} is missing Field, Value, or Mode`);
+export interface ReviewRow {
+  id: string;
+  reviewer: string;
+  field: ReviewField;
+  value: string;
+  mode: ReviewMode;
+  comment: string | null;
+}
+
+export function toReviewRow(record: AirtableRecord<ReviewFields>): ReviewRow {
+  const { Reviewer, Field, Value, Mode } = record.fields;
+  if (
+    Reviewer === undefined ||
+    Field === undefined ||
+    Value === undefined ||
+    Mode === undefined
+  ) {
+    throw new Error(
+      `Review ${record.id} is missing Reviewer, Field, Value, or Mode`,
+    );
   }
   return {
     id: record.id,
+    reviewer: Reviewer,
     field: Field,
     value: Value,
     mode: Mode,
     comment: record.fields.Comment ?? null,
+  };
+}
+
+export function toReviewResponse(row: ReviewRow): ReviewResponse {
+  return {
+    id: row.id,
+    field: row.field,
+    value: row.value,
+    mode: row.mode,
+    comment: row.comment,
   };
 }

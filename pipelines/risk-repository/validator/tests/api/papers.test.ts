@@ -143,18 +143,19 @@ describe("buildEntry counts", () => {
     expect(entry.pipelineCodedCount).toBe(0);
   });
 
-  it("skips review rows that are missing part of the coding", () => {
+  it("refuses a review row that is missing part of the coding", () => {
     const incomplete: AirtableRecord<ReviewFields> = {
       id: "broken",
       createdTime: "2026-01-01T00:00:00.000Z",
       fields: { Reviewer: "alice", Field: "entity" },
     };
-    const entry = entryFor(
-      [risk("r1")],
-      new Set(["r1"]),
-      new Map([["r1", [...fullCoding("alice"), incomplete]]]),
-    );
-    expect(entry.reviewerCodedCount).toBe(1);
+    expect(() =>
+      entryFor(
+        [risk("r1")],
+        new Set(["r1"]),
+        new Map([["r1", [...fullCoding("alice"), incomplete]]]),
+      ),
+    ).toThrow("broken");
   });
 
   it("counts nothing for a paper with no risks", () => {

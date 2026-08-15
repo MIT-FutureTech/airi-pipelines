@@ -19,7 +19,11 @@ import {
 } from "./_airtable.js";
 import { readAirtableEnv } from "./_env.js";
 import { handleError } from "./_http.js";
-import { isPipelineReviewer, toReviewResponse } from "./_reviews.js";
+import {
+  isPipelineReviewer,
+  toReviewResponse,
+  toReviewRow,
+} from "./_reviews.js";
 
 export default async function handler(
   req: VercelRequest,
@@ -73,7 +77,9 @@ export default async function handler(
       updateRecords(env.pat, env.baseId, env.reviewsTable, updates),
     ]);
 
-    const responses = [...created, ...updated].map(toReviewResponse);
+    const responses = [...created, ...updated]
+      .map(toReviewRow)
+      .map(toReviewResponse);
     responses.sort(
       (a, b) => REVIEW_FIELDS.indexOf(a.field) - REVIEW_FIELDS.indexOf(b.field),
     );

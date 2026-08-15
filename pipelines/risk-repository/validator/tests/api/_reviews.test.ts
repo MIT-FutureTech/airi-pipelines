@@ -9,6 +9,7 @@ import {
   requiredRiskId,
   reviewerScopeFormula,
   toReviewResponse,
+  toReviewRow,
 } from "@api/_reviews";
 import type { ReviewFields } from "@shared/classification";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -191,14 +192,44 @@ describe("requiredRiskId", () => {
   });
 });
 
-describe("toReviewResponse", () => {
-  it("carries the coding across", () => {
-    const row = review("rec1", {
-      Field: "entity",
-      Value: "human",
-      Mode: "blind",
-      Comment: "because",
+const COMPLETE: ReviewFields = {
+  Reviewer: "alice",
+  Field: "entity",
+  Value: "human",
+  Mode: "blind",
+};
+
+describe("toReviewRow", () => {
+  it("carries the whole row across", () => {
+    const record = review("rec1", { ...COMPLETE, Comment: "because" });
+    expect(toReviewRow(record)).toEqual({
+      id: "rec1",
+      reviewer: "alice",
+      field: "entity",
+      value: "human",
+      mode: "blind",
+      comment: "because",
     });
+  });
+
+  it("reports a missing comment as null", () => {
+    expect(toReviewRow(review("rec1", COMPLETE)).comment).toBeNull();
+  });
+
+  it("refuses a row that is missing any part of the coding", () => {
+    for (const missing of ["Reviewer", "Field", "Value", "Mode"] as const) {
+      const fields = { ...COMPLETE };
+      delete fields[missing];
+      expect(() => toReviewRow(review("recBad", fields))).toThrow("recBad");
+    }
+  });
+});
+
+describe("toReviewResponse", () => {
+  it("keeps the coding", () => {
+    const row = toReviewRow(
+      review("rec1", { ...COMPLETE, Comment: "because" }),
+    );
     expect(toReviewResponse(row)).toEqual({
       id: "rec1",
       field: "entity",
@@ -208,24 +239,8 @@ describe("toReviewResponse", () => {
     });
   });
 
-  it("reports a missing comment as null", () => {
-    const row = review("rec1", {
-      Field: "entity",
-      Value: "human",
-      Mode: "blind",
-    });
-    expect(toReviewResponse(row).comment).toBeNull();
-  });
-
-  it("refuses a row that is missing part of the coding", () => {
-    expect(() =>
-      toReviewResponse(review("rec1", { Value: "human", Mode: "blind" })),
-    ).toThrow("rec1");
-    expect(() =>
-      toReviewResponse(review("rec1", { Field: "entity", Mode: "blind" })),
-    ).toThrow("rec1");
-    expect(() =>
-      toReviewResponse(review("rec1", { Field: "entity", Value: "human" })),
-    ).toThrow("rec1");
+  it("drops the reviewer's name", () => {
+    const row = toReviewRow(review("rec1", COMPLETE));
+    expect(toReviewResponse(row)).not.toHaveProperty("reviewer");
   });
 });
