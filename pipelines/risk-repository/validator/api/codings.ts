@@ -1,6 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import {
-  AXIS_FIELDS,
   type CodingWrite,
   REVIEW_FIELD_VALUES,
   REVIEW_FIELDS,
@@ -11,6 +10,7 @@ import {
   type SaveCodingsRequest,
   type SaveCodingsResponse,
 } from "../shared/classification.js";
+import { conflictsWithNotARisk } from "../shared/coding.js";
 import {
   createRecords,
   deleteRecords,
@@ -19,7 +19,11 @@ import {
 } from "./_airtable.js";
 import { readAirtableEnv } from "./_env.js";
 import { handleError } from "./_http.js";
-import { isPipelineReviewer, toReviewResponse } from "./_reviews.js";
+import {
+  isPipelineReviewer,
+  toReviewResponse,
+  toReviewRow,
+} from "./_reviews.js";
 
 export default async function handler(
   req: VercelRequest,
@@ -73,7 +77,9 @@ export default async function handler(
       updateRecords(env.pat, env.baseId, env.reviewsTable, updates),
     ]);
 
-    const responses = [...created, ...updated].map(toReviewResponse);
+    const responses = [...created, ...updated]
+      .map(toReviewRow)
+      .map(toReviewResponse);
     responses.sort(
       (a, b) => REVIEW_FIELDS.indexOf(a.field) - REVIEW_FIELDS.indexOf(b.field),
     );
@@ -84,7 +90,7 @@ export default async function handler(
   }
 }
 
-function parseBody(body: unknown): SaveCodingsRequest | null {
+export function parseBody(body: unknown): SaveCodingsRequest | null {
   if (typeof body !== "object" || body === null) {
     return null;
   }
@@ -126,8 +132,7 @@ function parseCodings(value: unknown): CodingWrite[] | null {
     fields.add(coding.field);
     codings.push(coding);
   }
-  // "Not a risk" replaces the causal taxonomy rather than sitting alongside it.
-  if (fields.has("validity") && AXIS_FIELDS.some((axis) => fields.has(axis))) {
+  if (conflictsWithNotARisk(codings)) {
     return null;
   }
   return codings;

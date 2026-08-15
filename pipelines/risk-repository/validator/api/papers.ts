@@ -15,6 +15,8 @@ import {
   fetchVisibleReviews,
   indexReviewsByRisk,
   isPipelineReviewer,
+  type ReviewRow,
+  toReviewRow,
 } from "./_reviews.js";
 import { codableIds } from "./_tree.js";
 
@@ -63,10 +65,7 @@ export default async function handler(
 
     const entries: PaperEntry[] = [];
     for (const paper of papers) {
-      const quickRef = paper.fields.QuickRef;
-      if (quickRef === undefined) {
-        continue;
-      }
+      const quickRef = requiredQuickRef(paper);
       entries.push(
         buildEntry(
           quickRef,
@@ -87,7 +86,7 @@ export default async function handler(
   }
 }
 
-function buildEntry(
+export function buildEntry(
   quickRef: string,
   fields: ProposedExtractionFields,
   risks: AirtableRecord<RiskFields>[],
@@ -100,7 +99,7 @@ function buildEntry(
   let reviewerCodedCount = 0;
   let pipelineCodedCount = 0;
   for (const risk of codableRisks) {
-    const rows = reviewsByRisk.get(risk.id) ?? [];
+    const rows = (reviewsByRisk.get(risk.id) ?? []).map(toReviewRow);
     if (isCoded(codingsBy(rows, (name) => name === reviewer))) {
       reviewerCodedCount += 1;
     }
@@ -121,7 +120,7 @@ function buildEntry(
   };
 }
 
-function paperState(
+export function paperState(
   riskCount: number,
   codableCount: number,
   pipelineCodedCount: number,
@@ -133,31 +132,30 @@ function paperState(
 }
 
 function codingsBy(
-  rows: AirtableRecord<ReviewFields>[],
+  rows: ReviewRow[],
   matches: (reviewer: string) => boolean,
 ): Coding[] {
-  const codings: Coding[] = [];
-  for (const row of rows) {
-    const { Reviewer, Field, Value } = row.fields;
-    if (Reviewer === undefined || Field === undefined || Value === undefined) {
-      continue;
-    }
-    if (matches(Reviewer)) {
-      codings.push({ field: Field, value: Value });
-    }
-  }
-  return codings;
+  return rows
+    .filter((row) => matches(row.reviewer))
+    .map((row) => ({ field: row.field, value: row.value }));
 }
 
-function groupRisksByPaper(
+export function requiredQuickRef(
+  record: AirtableRecord<{ QuickRef?: string }>,
+): string {
+  const quickRef = record.fields.QuickRef;
+  if (quickRef === undefined || quickRef.trim() === "") {
+    throw new Error(`Record ${record.id} is missing QuickRef`);
+  }
+  return quickRef;
+}
+
+export function groupRisksByPaper(
   risks: AirtableRecord<RiskFields>[],
 ): Map<string, AirtableRecord<RiskFields>[]> {
   const result = new Map<string, AirtableRecord<RiskFields>[]>();
   for (const risk of risks) {
-    const quickRef = risk.fields.QuickRef;
-    if (quickRef === undefined) {
-      continue;
-    }
+    const quickRef = requiredQuickRef(risk);
     const list = result.get(quickRef);
     if (list === undefined) {
       result.set(quickRef, [risk]);

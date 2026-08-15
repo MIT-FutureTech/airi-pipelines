@@ -67,4 +67,11 @@ The `check` script runs the formatter, linter and type checker.
 npm run check
 ```
 
-- link to PDF
+### Tests
+
+Here's how to run the tests.
+
+```bash
+npm run test        # run once
+npm run test:watch  # re-run on change
+```

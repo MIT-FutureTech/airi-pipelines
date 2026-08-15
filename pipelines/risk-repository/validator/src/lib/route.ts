@@ -40,7 +40,7 @@ function getSnapshot(): string {
   return window.location.href;
 }
 
-function parseRoute(href: string): Route {
+export function parseRoute(href: string): Route {
   const url = new URL(href);
   const segments = url.pathname.split("/").filter((segment) => segment !== "");
   if (segments[0] === "screening") {
@@ -62,7 +62,7 @@ function parseRoute(href: string): Route {
   return { name: "tasks" };
 }
 
-function formatRoute(route: Route): string {
+export function formatRoute(route: Route): string {
   switch (route.name) {
     case "tasks":
       return "/";
