@@ -104,7 +104,7 @@ export const CHAPTER_TWO: TourStep[] = [
     align: "start",
     title: "Then correct what's wrong",
     body:
-      "We changed <strong>Entity</strong> to AI. A solid button is your choice, and a light one is the pipeline's. " +
+      "We changed <strong>Entity</strong> to AI. A solid button is your choice, and an outlined one is the pipeline's. " +
       "The line underneath now reads <strong>Differs from pipeline</strong>.<br><br>" +
       "You can also toggle <strong>Not a risk</strong> and leave a comment to explain why.",
     act: () => {

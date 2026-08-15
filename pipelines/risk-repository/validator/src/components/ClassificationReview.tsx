@@ -231,6 +231,11 @@ export function ClassificationReview({
             </Text>
             <Badge
               variant="light"
+              title={
+                mode === "anchored"
+                  ? "Review the pipeline's selections"
+                  : "Pipeline selections not shown"
+              }
               color={mode === "anchored" ? "grape" : "blue"}
             >
               {mode}
