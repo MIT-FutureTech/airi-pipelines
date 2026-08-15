@@ -1,6 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import {
-  AXIS_FIELDS,
   type CodingWrite,
   REVIEW_FIELD_VALUES,
   REVIEW_FIELDS,
@@ -11,6 +10,7 @@ import {
   type SaveCodingsRequest,
   type SaveCodingsResponse,
 } from "../shared/classification.js";
+import { conflictsWithNotARisk } from "../shared/coding.js";
 import {
   createRecords,
   deleteRecords,
@@ -126,8 +126,7 @@ function parseCodings(value: unknown): CodingWrite[] | null {
     fields.add(coding.field);
     codings.push(coding);
   }
-  // "Not a risk" replaces the causal taxonomy rather than sitting alongside it.
-  if (fields.has("validity") && AXIS_FIELDS.some((axis) => fields.has(axis))) {
+  if (conflictsWithNotARisk(codings)) {
     return null;
   }
   return codings;
