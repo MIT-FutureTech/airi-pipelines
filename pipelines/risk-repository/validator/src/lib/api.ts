@@ -1,11 +1,13 @@
-import type {
-  PapersResponse,
-  PdfLinkResponse,
-  ReviewMode,
-  RiskManifestResponse,
-  SaveCodingsRequest,
-  SaveCodingsResponse,
+import {
+  type PapersResponse,
+  type PdfLinkResponse,
+  REVIEW_MODES,
+  type ReviewMode,
+  type RiskManifestResponse,
+  type SaveCodingsRequest,
+  type SaveCodingsResponse,
 } from "@shared/classification";
+import { isCoded } from "@shared/coding";
 import type {
   DecisionRequest,
   DecisionResponse,
@@ -101,7 +103,8 @@ function riskManifestUrl(params: RiskManifestParams): string {
   return `/api/risks/manifest?${query}`;
 }
 
-// Writes clear this cache, so callers must hold the promise they get in state.
+// Writes replace this cache's entries, so callers must hold the promise they
+// get in state.
 export function getRiskManifest(
   params: RiskManifestParams,
 ): Promise<RiskManifestResponse> {
@@ -123,9 +126,73 @@ export async function fetchRiskManifest(
   return await fresh;
 }
 
-function invalidateClassificationCaches(): void {
-  riskManifestCache.clear();
-  papersCache.clear();
+function applySavedCodings(
+  quickRef: string,
+  reviewer: string,
+  saved: SaveCodingsResponse,
+): void {
+  const manifest = patchRiskManifests(quickRef, reviewer, saved);
+  if (manifest === null) {
+    papersCache.delete(papersUrl(reviewer));
+    return;
+  }
+  patchPaperProgress(quickRef, reviewer, manifest);
+}
+
+function patchRiskManifests(
+  quickRef: string,
+  reviewer: string,
+  saved: SaveCodingsResponse,
+): Promise<RiskManifestResponse> | null {
+  let patched: Promise<RiskManifestResponse> | null = null;
+  for (const mode of REVIEW_MODES) {
+    const url = riskManifestUrl({ quickRef, reviewer, mode });
+    const cached = riskManifestCache.get(url);
+    if (cached === undefined) {
+      continue;
+    }
+    patched = cached.then((manifest) => ({
+      ...manifest,
+      risks: manifest.risks.map((risk) =>
+        risk.id === saved.riskId
+          ? { ...risk, responses: saved.responses }
+          : risk,
+      ),
+    }));
+    riskManifestCache.set(url, patched);
+  }
+  return patched;
+}
+
+function patchPaperProgress(
+  quickRef: string,
+  reviewer: string,
+  manifest: Promise<RiskManifestResponse>,
+): void {
+  const url = papersUrl(reviewer);
+  const cached = papersCache.get(url);
+  if (cached === undefined) {
+    return;
+  }
+  papersCache.set(
+    url,
+    Promise.all([cached, manifest]).then(
+      ([papers, risks]) => ({
+        papers: papers.papers.map((paper) =>
+          paper.quickRef === quickRef
+            ? { ...paper, reviewerCodedCount: codedRiskCount(risks) }
+            : paper,
+        ),
+      }),
+      () => cached,
+    ),
+  );
+}
+
+function codedRiskCount(manifest: RiskManifestResponse): number {
+  return manifest.risks.filter(
+    (risk) => risk.codable && isCoded(risk.responses),
+  ).length;
 }
 
 export async function fetchPdfLink(quickRef: string): Promise<PdfLinkResponse> {
@@ -141,6 +208,7 @@ export async function fetchPdfLink(quickRef: string): Promise<PdfLinkResponse> {
 }
 
 export async function saveCodings(
+  quickRef: string,
   body: SaveCodingsRequest,
 ): Promise<SaveCodingsResponse> {
   const response = await fetch("/api/codings", {
@@ -152,6 +220,7 @@ export async function saveCodings(
     const text = await response.text();
     throw new Error(`Failed to save coding: HTTP ${response.status} ${text}`);
   }
-  invalidateClassificationCaches();
-  return (await response.json()) as SaveCodingsResponse;
+  const saved = (await response.json()) as SaveCodingsResponse;
+  applySavedCodings(quickRef, body.reviewer, saved);
+  return saved;
 }
