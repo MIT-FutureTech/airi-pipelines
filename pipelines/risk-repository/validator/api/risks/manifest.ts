@@ -103,7 +103,7 @@ export default async function handler(
   }
 }
 
-function buildEntry(
+export function buildEntry(
   risk: AirtableRecord<RiskFields>,
   codable: Set<string>,
   reviewsByRisk: Map<string, AirtableRecord<ReviewFields>[]>,
