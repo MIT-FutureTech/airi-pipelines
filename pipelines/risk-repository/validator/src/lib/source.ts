@@ -22,6 +22,6 @@ export function airtableSource(
   return {
     load: () => getRiskManifest(params),
     refresh: () => fetchRiskManifest(params),
-    save: (body) => saveCodings(body),
+    save: (body) => saveCodings(params.quickRef, body),
   };
 }
