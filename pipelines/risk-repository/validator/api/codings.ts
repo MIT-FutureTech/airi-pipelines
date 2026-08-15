@@ -84,7 +84,7 @@ export default async function handler(
   }
 }
 
-function parseBody(body: unknown): SaveCodingsRequest | null {
+export function parseBody(body: unknown): SaveCodingsRequest | null {
   if (typeof body !== "object" || body === null) {
     return null;
   }
