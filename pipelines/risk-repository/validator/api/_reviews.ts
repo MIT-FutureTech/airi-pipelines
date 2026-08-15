@@ -1,5 +1,6 @@
 import {
   PIPELINE_REVIEWER_PREFIX,
+  type ReviewField,
   type ReviewFields,
   type ReviewMode,
   type ReviewResponse,
@@ -40,6 +41,21 @@ function ownAndPipeline(reviewer: string): string {
   return `OR(${ownReviewer(reviewer)}, ${PIPELINE_REVIEWER})`;
 }
 
+export function paperScopeFormula(quickRef: string): string {
+  // A risk's ReadableId is `{QuickRef}.NN.NN...`, so the paper's rows are the ones
+  // whose linked risk carries that prefix. The trailing dot is load-bearing: some
+  // QuickRefs are prefixes of others, and without it Lee2025 would match Lee2025a.
+  const prefix = `${quickRef}.`;
+  return `LEFT(ARRAYJOIN({${RISK_READABLE_ID_LOOKUP}}), ${prefix.length})="${escapeFormulaString(prefix)}"`;
+}
+
+export function reviewerScopeFormula(
+  reviewer: string,
+  mode: ReviewMode,
+): string {
+  return mode === "blind" ? ownReviewer(reviewer) : ownAndPipeline(reviewer);
+}
+
 // One human's rows plus the pipeline's, across every paper
 export async function fetchVisibleReviews(
   env: AirtableEnv,
@@ -63,13 +79,8 @@ export async function fetchVisibleReviewsForPaper(
   quickRef: string,
   mode: ReviewMode,
 ): Promise<AirtableRecord<ReviewFields>[]> {
-  // A risk's ReadableId is `{QuickRef}.NN.NN...`, so the paper's rows are the ones
-  // whose linked risk carries that prefix. The trailing dot is load-bearing: some
-  // QuickRefs are prefixes of others, and without it Lee2025 would match Lee2025a.
-  const prefix = `${quickRef}.`;
-  const paperScope = `LEFT(ARRAYJOIN({${RISK_READABLE_ID_LOOKUP}}), ${prefix.length})="${escapeFormulaString(prefix)}"`;
-  const reviewers =
-    mode === "blind" ? ownReviewer(reviewer) : ownAndPipeline(reviewer);
+  const paperScope = paperScopeFormula(quickRef);
+  const reviewers = reviewerScopeFormula(reviewer, mode);
   return await listAllRecords<ReviewFields>(
     env.pat,
     env.baseId,
@@ -81,19 +92,23 @@ export async function fetchVisibleReviewsForPaper(
   );
 }
 
+export function requiredRiskId(review: AirtableRecord<ReviewFields>): string {
+  const risk = review.fields.Risk;
+  if (risk === undefined || risk.length === 0) {
+    throw new Error(`Review ${review.id} is not linked to a risk`);
+  }
+  return risk[0];
+}
+
 export function indexReviewsByRisk(
   reviews: AirtableRecord<ReviewFields>[],
 ): Map<string, AirtableRecord<ReviewFields>[]> {
   const result = new Map<string, AirtableRecord<ReviewFields>[]>();
   for (const review of reviews) {
-    const risk = review.fields.Risk;
-    if (risk === undefined || risk.length === 0) {
-      console.warn(`Skipping review ${review.id}: not linked to a risk`);
-      continue;
-    }
-    const list = result.get(risk[0]);
+    const riskId = requiredRiskId(review);
+    const list = result.get(riskId);
     if (list === undefined) {
-      result.set(risk[0], [review]);
+      result.set(riskId, [review]);
     } else {
       list.push(review);
     }
@@ -101,18 +116,43 @@ export function indexReviewsByRisk(
   return result;
 }
 
-export function toReviewResponse(
-  record: AirtableRecord<ReviewFields>,
-): ReviewResponse {
-  const { Field, Value, Mode } = record.fields;
-  if (Field === undefined || Value === undefined || Mode === undefined) {
-    throw new Error(`Review ${record.id} is missing Field, Value, or Mode`);
+export interface ReviewRow {
+  id: string;
+  reviewer: string;
+  field: ReviewField;
+  value: string;
+  mode: ReviewMode;
+  comment: string | null;
+}
+
+export function toReviewRow(record: AirtableRecord<ReviewFields>): ReviewRow {
+  const { Reviewer, Field, Value, Mode } = record.fields;
+  if (
+    Reviewer === undefined ||
+    Field === undefined ||
+    Value === undefined ||
+    Mode === undefined
+  ) {
+    throw new Error(
+      `Review ${record.id} is missing Reviewer, Field, Value, or Mode`,
+    );
   }
   return {
     id: record.id,
+    reviewer: Reviewer,
     field: Field,
     value: Value,
     mode: Mode,
     comment: record.fields.Comment ?? null,
+  };
+}
+
+export function toReviewResponse(row: ReviewRow): ReviewResponse {
+  return {
+    id: row.id,
+    field: row.field,
+    value: row.value,
+    mode: row.mode,
+    comment: row.comment,
   };
 }

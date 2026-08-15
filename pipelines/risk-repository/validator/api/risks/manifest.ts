@@ -22,6 +22,7 @@ import {
   indexReviewsByRisk,
   isPipelineReviewer,
   toReviewResponse,
+  toReviewRow,
 } from "../_reviews.js";
 import { codableIds, parentId } from "../_tree.js";
 
@@ -103,25 +104,22 @@ export default async function handler(
   }
 }
 
-function buildEntry(
+export function buildEntry(
   risk: AirtableRecord<RiskFields>,
   codable: Set<string>,
   reviewsByRisk: Map<string, AirtableRecord<ReviewFields>[]>,
   reviewer: string,
   mode: ReviewMode,
 ): RiskEntry {
-  const riskReviews = reviewsByRisk.get(risk.id) ?? [];
+  const riskReviews = (reviewsByRisk.get(risk.id) ?? []).map(toReviewRow);
   const responses = riskReviews
-    .filter((review) => review.fields.Reviewer === reviewer)
+    .filter((row) => row.reviewer === reviewer)
     .map(toReviewResponse);
   const pipelineResponses =
     mode === "blind"
       ? []
       : riskReviews
-          .filter((review) => {
-            const name = review.fields.Reviewer;
-            return name !== undefined && isPipelineReviewer(name);
-          })
+          .filter((row) => isPipelineReviewer(row.reviewer))
           .map(toReviewResponse);
 
   return {
