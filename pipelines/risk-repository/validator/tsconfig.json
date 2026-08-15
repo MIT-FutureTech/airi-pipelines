@@ -17,9 +17,10 @@
     "verbatimModuleSyntax": true,
     "paths": {
       "@/*": ["./src/*"],
-      "@shared/*": ["./shared/*"]
+      "@shared/*": ["./shared/*"],
+      "@api/*": ["./api/*"]
     }
   },
-  "include": ["src", "api", "shared", "vite.config.ts"],
+  "include": ["src", "api", "shared", "tests", "vite.config.ts"],
   "exclude": ["node_modules", "dist", ".vercel"]
 }

@@ -46,7 +46,7 @@
               "options": {
                 "patterns": [
                   {
-                    "group": ["@shared/*", "@/*"],
+                    "group": ["@shared/*", "@/*", "@api/*"],
                     "message": "Use relative imports inside api/ and shared/"
                   },
                   {
