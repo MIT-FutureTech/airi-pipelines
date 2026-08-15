@@ -19,22 +19,49 @@ const REVIEW_FETCH_FIELDS = [
   "Comment",
 ];
 
+const RISK_READABLE_ID_LOOKUP = "ReadableId (from Risk)";
+
 export function isPipelineReviewer(reviewer: string): boolean {
   return reviewer.startsWith(PIPELINE_REVIEWER_PREFIX);
 }
 
-// One human's rows plus the pipeline's
+function visibleReviewers(reviewer: string): string {
+  const pipelinePrefix = `LEFT({Reviewer}, ${PIPELINE_REVIEWER_PREFIX.length})="${PIPELINE_REVIEWER_PREFIX}"`;
+  return `OR({Reviewer}="${escapeFormulaString(reviewer)}", ${pipelinePrefix})`;
+}
+
+// One human's rows plus the pipeline's, across every paper
 export async function fetchVisibleReviews(
   env: AirtableEnv,
   reviewer: string,
 ): Promise<AirtableRecord<ReviewFields>[]> {
-  const pipelinePrefix = `LEFT({Reviewer}, ${PIPELINE_REVIEWER_PREFIX.length})="${PIPELINE_REVIEWER_PREFIX}"`;
   return await listAllRecords<ReviewFields>(
     env.pat,
     env.baseId,
     env.reviewsTable,
     {
-      filterByFormula: `OR({Reviewer}="${escapeFormulaString(reviewer)}", ${pipelinePrefix})`,
+      filterByFormula: visibleReviewers(reviewer),
+      fields: REVIEW_FETCH_FIELDS,
+    },
+  );
+}
+
+export async function fetchVisibleReviewsForPaper(
+  env: AirtableEnv,
+  reviewer: string,
+  quickRef: string,
+): Promise<AirtableRecord<ReviewFields>[]> {
+  // A risk's ReadableId is `{QuickRef}.NN.NN...`, so the paper's rows are the ones
+  // whose linked risk carries that prefix. The trailing dot is load-bearing: some
+  // QuickRefs are prefixes of others, and without it Lee2025 would match Lee2025a.
+  const prefix = `${quickRef}.`;
+  const paperScope = `LEFT(ARRAYJOIN({${RISK_READABLE_ID_LOOKUP}}), ${prefix.length})="${escapeFormulaString(prefix)}"`;
+  return await listAllRecords<ReviewFields>(
+    env.pat,
+    env.baseId,
+    env.reviewsTable,
+    {
+      filterByFormula: `AND(${paperScope}, ${visibleReviewers(reviewer)})`,
       fields: REVIEW_FETCH_FIELDS,
     },
   );
