@@ -81,19 +81,23 @@ export async function fetchVisibleReviewsForPaper(
   );
 }
 
+export function requiredRiskId(review: AirtableRecord<ReviewFields>): string {
+  const risk = review.fields.Risk;
+  if (risk === undefined || risk.length === 0) {
+    throw new Error(`Review ${review.id} is not linked to a risk`);
+  }
+  return risk[0];
+}
+
 export function indexReviewsByRisk(
   reviews: AirtableRecord<ReviewFields>[],
 ): Map<string, AirtableRecord<ReviewFields>[]> {
   const result = new Map<string, AirtableRecord<ReviewFields>[]>();
   for (const review of reviews) {
-    const risk = review.fields.Risk;
-    if (risk === undefined || risk.length === 0) {
-      console.warn(`Skipping review ${review.id}: not linked to a risk`);
-      continue;
-    }
-    const list = result.get(risk[0]);
+    const riskId = requiredRiskId(review);
+    const list = result.get(riskId);
     if (list === undefined) {
-      result.set(risk[0], [review]);
+      result.set(riskId, [review]);
     } else {
       list.push(review);
     }
