@@ -1,4 +1,5 @@
 import {
+  AXIS_FIELDS,
   type CodingWrite,
   NOT_A_RISK,
   REVIEW_FIELDS,
@@ -80,13 +81,14 @@ export function withNotARisk(draft: Draft, notARisk: boolean): Draft {
   if (!notARisk) {
     return { ...draft, validity: emptyField() };
   }
-  return {
+  const next: Draft = {
+    ...draft,
     validity: { value: NOT_A_RISK, comment: draft.validity.comment },
-    entity: emptyField(),
-    intent: emptyField(),
-    timing: emptyField(),
-    subdomain: emptyField(),
   };
+  for (const field of AXIS_FIELDS) {
+    next[field] = emptyField();
+  }
+  return next;
 }
 
 interface RequestParams {
