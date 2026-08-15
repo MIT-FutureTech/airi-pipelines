@@ -76,6 +76,35 @@ export async function listAllRecords<F>(
   return records;
 }
 
+export interface ShardKey {
+  // Must name an always-populated integer field, so that taking it modulo
+  // `count` partitions the table exhaustively.
+  field: string;
+  count: number;
+}
+
+// Fetch records in parallel
+export async function listAllRecordsSharded<F>(
+  pat: string,
+  baseId: string,
+  table: string,
+  options: ListOptions,
+  shard: ShardKey,
+): Promise<AirtableRecord<F>[]> {
+  const streams = Array.from({ length: shard.count }, (_, index) => {
+    const partition = `MOD({${shard.field}}, ${shard.count})=${index}`;
+    const filterByFormula =
+      options.filterByFormula === undefined
+        ? partition
+        : `AND(${partition}, ${options.filterByFormula})`;
+    return listAllRecords<F>(pat, baseId, table, {
+      ...options,
+      filterByFormula,
+    });
+  });
+  return (await Promise.all(streams)).flat();
+}
+
 export async function getRecord<F>(
   pat: string,
   baseId: string,
