@@ -72,7 +72,7 @@ export default async function handler(
         filterByFormula: `{QuickRef}="${escapeFormulaString(quickRef)}"`,
         fields: RISK_FETCH_FIELDS,
       }),
-      fetchVisibleReviewsForPaper(env, reviewer, quickRef),
+      fetchVisibleReviewsForPaper(env, reviewer, quickRef, mode),
       listAllRecords<ProposedExtractionFields>(
         env.pat,
         env.baseId,
