@@ -1,6 +1,7 @@
 import {
   PIPELINE_REVIEWER_PREFIX,
   type ReviewFields,
+  type ReviewMode,
   type ReviewResponse,
 } from "../shared/classification.js";
 import {
@@ -25,9 +26,14 @@ export function isPipelineReviewer(reviewer: string): boolean {
   return reviewer.startsWith(PIPELINE_REVIEWER_PREFIX);
 }
 
-function visibleReviewers(reviewer: string): string {
-  const pipelinePrefix = `LEFT({Reviewer}, ${PIPELINE_REVIEWER_PREFIX.length})="${PIPELINE_REVIEWER_PREFIX}"`;
-  return `OR({Reviewer}="${escapeFormulaString(reviewer)}", ${pipelinePrefix})`;
+const PIPELINE_REVIEWER = `LEFT({Reviewer}, ${PIPELINE_REVIEWER_PREFIX.length})="${PIPELINE_REVIEWER_PREFIX}"`;
+
+function ownReviewer(reviewer: string): string {
+  return `{Reviewer}="${escapeFormulaString(reviewer)}"`;
+}
+
+function ownAndPipeline(reviewer: string): string {
+  return `OR(${ownReviewer(reviewer)}, ${PIPELINE_REVIEWER})`;
 }
 
 // One human's rows plus the pipeline's, across every paper
@@ -40,7 +46,7 @@ export async function fetchVisibleReviews(
     env.baseId,
     env.reviewsTable,
     {
-      filterByFormula: visibleReviewers(reviewer),
+      filterByFormula: ownAndPipeline(reviewer),
       fields: REVIEW_FETCH_FIELDS,
     },
   );
@@ -50,18 +56,21 @@ export async function fetchVisibleReviewsForPaper(
   env: AirtableEnv,
   reviewer: string,
   quickRef: string,
+  mode: ReviewMode,
 ): Promise<AirtableRecord<ReviewFields>[]> {
   // A risk's ReadableId is `{QuickRef}.NN.NN...`, so the paper's rows are the ones
   // whose linked risk carries that prefix. The trailing dot is load-bearing: some
   // QuickRefs are prefixes of others, and without it Lee2025 would match Lee2025a.
   const prefix = `${quickRef}.`;
   const paperScope = `LEFT(ARRAYJOIN({${RISK_READABLE_ID_LOOKUP}}), ${prefix.length})="${escapeFormulaString(prefix)}"`;
+  const reviewers =
+    mode === "blind" ? ownReviewer(reviewer) : ownAndPipeline(reviewer);
   return await listAllRecords<ReviewFields>(
     env.pat,
     env.baseId,
     env.reviewsTable,
     {
-      filterByFormula: `AND(${paperScope}, ${visibleReviewers(reviewer)})`,
+      filterByFormula: `AND(${paperScope}, ${reviewers})`,
       fields: REVIEW_FETCH_FIELDS,
     },
   );
