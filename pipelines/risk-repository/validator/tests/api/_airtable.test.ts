@@ -255,6 +255,28 @@ describe("listAllRecordsSharded", () => {
 });
 
 describe("rate limit handling", () => {
+  beforeEach(() => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("reports each back-off to the log", async () => {
+    recordDelays();
+    stubFetch([{ status: 429 }, page([])]);
+    await listAllRecords(PAT, BASE, TABLE);
+    expect(vi.mocked(console.warn)).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(console.warn).mock.calls[0][0]).toContain("rate limited");
+  });
+
+  it("says nothing when no request was rate limited", async () => {
+    stubFetch([page([])]);
+    await listAllRecords(PAT, BASE, TABLE);
+    expect(vi.mocked(console.warn)).not.toHaveBeenCalled();
+  });
+
   it("retries after a 429 and returns the records that follow", async () => {
     recordDelays();
     stubFetch([{ status: 429 }, page(["rec1"])]);
