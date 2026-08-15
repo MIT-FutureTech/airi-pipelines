@@ -40,6 +40,21 @@ function ownAndPipeline(reviewer: string): string {
   return `OR(${ownReviewer(reviewer)}, ${PIPELINE_REVIEWER})`;
 }
 
+export function paperScopeFormula(quickRef: string): string {
+  // A risk's ReadableId is `{QuickRef}.NN.NN...`, so the paper's rows are the ones
+  // whose linked risk carries that prefix. The trailing dot is load-bearing: some
+  // QuickRefs are prefixes of others, and without it Lee2025 would match Lee2025a.
+  const prefix = `${quickRef}.`;
+  return `LEFT(ARRAYJOIN({${RISK_READABLE_ID_LOOKUP}}), ${prefix.length})="${escapeFormulaString(prefix)}"`;
+}
+
+export function reviewerScopeFormula(
+  reviewer: string,
+  mode: ReviewMode,
+): string {
+  return mode === "blind" ? ownReviewer(reviewer) : ownAndPipeline(reviewer);
+}
+
 // One human's rows plus the pipeline's, across every paper
 export async function fetchVisibleReviews(
   env: AirtableEnv,
@@ -63,13 +78,8 @@ export async function fetchVisibleReviewsForPaper(
   quickRef: string,
   mode: ReviewMode,
 ): Promise<AirtableRecord<ReviewFields>[]> {
-  // A risk's ReadableId is `{QuickRef}.NN.NN...`, so the paper's rows are the ones
-  // whose linked risk carries that prefix. The trailing dot is load-bearing: some
-  // QuickRefs are prefixes of others, and without it Lee2025 would match Lee2025a.
-  const prefix = `${quickRef}.`;
-  const paperScope = `LEFT(ARRAYJOIN({${RISK_READABLE_ID_LOOKUP}}), ${prefix.length})="${escapeFormulaString(prefix)}"`;
-  const reviewers =
-    mode === "blind" ? ownReviewer(reviewer) : ownAndPipeline(reviewer);
+  const paperScope = paperScopeFormula(quickRef);
+  const reviewers = reviewerScopeFormula(reviewer, mode);
   return await listAllRecords<ReviewFields>(
     env.pat,
     env.baseId,
