@@ -84,7 +84,7 @@ export default async function handler(
   }
 }
 
-function buildEntry(
+export function buildEntry(
   quickRef: string,
   fields: ProposedExtractionFields,
   risks: AirtableRecord<RiskFields>[],
@@ -118,7 +118,7 @@ function buildEntry(
   };
 }
 
-function paperState(
+export function paperState(
   riskCount: number,
   codableCount: number,
   pipelineCodedCount: number,
@@ -156,7 +156,7 @@ export function requiredQuickRef(
   return quickRef;
 }
 
-function groupRisksByPaper(
+export function groupRisksByPaper(
   risks: AirtableRecord<RiskFields>[],
 ): Map<string, AirtableRecord<RiskFields>[]> {
   const result = new Map<string, AirtableRecord<RiskFields>[]>();
