@@ -63,10 +63,7 @@ export default async function handler(
 
     const entries: PaperEntry[] = [];
     for (const paper of papers) {
-      const quickRef = paper.fields.QuickRef;
-      if (quickRef === undefined) {
-        continue;
-      }
+      const quickRef = requiredQuickRef(paper);
       entries.push(
         buildEntry(
           quickRef,
@@ -149,15 +146,22 @@ function codingsBy(
   return codings;
 }
 
+export function requiredQuickRef(
+  record: AirtableRecord<{ QuickRef?: string }>,
+): string {
+  const quickRef = record.fields.QuickRef;
+  if (quickRef === undefined || quickRef.trim() === "") {
+    throw new Error(`Record ${record.id} is missing QuickRef`);
+  }
+  return quickRef;
+}
+
 function groupRisksByPaper(
   risks: AirtableRecord<RiskFields>[],
 ): Map<string, AirtableRecord<RiskFields>[]> {
   const result = new Map<string, AirtableRecord<RiskFields>[]>();
   for (const risk of risks) {
-    const quickRef = risk.fields.QuickRef;
-    if (quickRef === undefined) {
-      continue;
-    }
+    const quickRef = requiredQuickRef(risk);
     const list = result.get(quickRef);
     if (list === undefined) {
       result.set(quickRef, [risk]);
