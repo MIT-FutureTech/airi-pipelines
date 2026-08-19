@@ -240,6 +240,7 @@ export function Validator({ reviewer }: Props) {
         onClose={() => {
           setHighlightOpen(false);
         }}
+        description="Highlight matching keywords in titles and abstracts."
         groups={highlightGroups}
         onChange={updateHighlightGroups}
       />
