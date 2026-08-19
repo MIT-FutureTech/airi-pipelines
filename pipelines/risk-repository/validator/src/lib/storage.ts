@@ -2,9 +2,15 @@ import type { ReviewMode } from "@shared/classification";
 import type { HighlightGroup } from "./highlight";
 
 const REVIEWER_KEY = "validator.reviewer";
-const HIGHLIGHT_GROUPS_KEY = "validator.highlightGroups";
 const PAPER_PICKER_KEY = "validator.paperPicker";
 const TOUR_SEEN_KEY = "validator.tourSeen";
+
+export type HighlightScope = "screening" | "classification";
+
+const HIGHLIGHT_GROUPS_KEYS: Record<HighlightScope, string> = {
+  screening: "validator.highlightGroups",
+  classification: "validator.classificationHighlightGroups",
+};
 
 export function loadReviewer(): string | null {
   const value = window.localStorage.getItem(REVIEWER_KEY);
@@ -30,16 +36,22 @@ export function markTourSeen(): void {
   window.localStorage.setItem(TOUR_SEEN_KEY, "true");
 }
 
-export function loadHighlightGroups(): HighlightGroup[] {
-  const value = window.localStorage.getItem(HIGHLIGHT_GROUPS_KEY);
+export function loadHighlightGroups(scope: HighlightScope): HighlightGroup[] {
+  const value = window.localStorage.getItem(HIGHLIGHT_GROUPS_KEYS[scope]);
   if (value === null) {
     return [];
   }
   return JSON.parse(value) as HighlightGroup[];
 }
 
-export function saveHighlightGroups(groups: HighlightGroup[]): void {
-  window.localStorage.setItem(HIGHLIGHT_GROUPS_KEY, JSON.stringify(groups));
+export function saveHighlightGroups(
+  scope: HighlightScope,
+  groups: HighlightGroup[],
+): void {
+  window.localStorage.setItem(
+    HIGHLIGHT_GROUPS_KEYS[scope],
+    JSON.stringify(groups),
+  );
 }
 
 export interface PaperPickerPrefs {

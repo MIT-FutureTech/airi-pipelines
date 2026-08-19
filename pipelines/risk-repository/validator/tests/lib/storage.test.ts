@@ -81,17 +81,28 @@ describe("the tour", () => {
 
 describe("highlight groups", () => {
   it("start out empty", () => {
-    expect(loadHighlightGroups()).toEqual([]);
+    expect(loadHighlightGroups("screening")).toEqual([]);
+    expect(loadHighlightGroups("classification")).toEqual([]);
   });
 
   it("come back as they were saved", () => {
-    saveHighlightGroups([GROUP]);
-    expect(loadHighlightGroups()).toEqual([GROUP]);
+    saveHighlightGroups("screening", [GROUP]);
+    expect(loadHighlightGroups("screening")).toEqual([GROUP]);
+  });
+
+  it("are kept apart between screening and classification", () => {
+    saveHighlightGroups("screening", [GROUP]);
+    expect(loadHighlightGroups("classification")).toEqual([]);
+
+    const other = { ...GROUP, id: "g2", keywords: "dog" };
+    saveHighlightGroups("classification", [other]);
+    expect(loadHighlightGroups("screening")).toEqual([GROUP]);
+    expect(loadHighlightGroups("classification")).toEqual([other]);
   });
 
   it("fail loudly rather than silently resetting when the store is corrupt", () => {
     store.set("validator.highlightGroups", "{not json");
-    expect(() => loadHighlightGroups()).toThrow();
+    expect(() => loadHighlightGroups("screening")).toThrow();
   });
 });
 
@@ -124,7 +135,8 @@ describe("the stored keys", () => {
   it("are namespaced to the app", () => {
     saveReviewer("alice");
     markTourSeen();
-    saveHighlightGroups([GROUP]);
+    saveHighlightGroups("screening", [GROUP]);
+    saveHighlightGroups("classification", [GROUP]);
     savePaperPickerPrefs({ mode: "blind", assignee: null, status: null });
     for (const key of store.keys()) {
       expect(key.startsWith("validator.")).toBe(true);

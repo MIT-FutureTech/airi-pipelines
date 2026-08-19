@@ -1,5 +1,4 @@
 import {
-  ActionIcon,
   AppShell,
   Button,
   Group,
@@ -11,20 +10,19 @@ import {
 } from "@mantine/core";
 import { useHotkeys } from "@mantine/hooks";
 import type { Decision, ManifestEntry } from "@shared/screening";
-import { IconHighlight, IconKeyboard } from "@tabler/icons-react";
+import { IconKeyboard } from "@tabler/icons-react";
 import { use, useMemo, useState } from "react";
 import { DocumentCard } from "@/components/DocumentCard";
 import { DoneScreen } from "@/components/DoneScreen";
-import { HighlightSettingsDrawer } from "@/components/HighlightSettingsDrawer";
+import {
+  HighlightSettingsDrawer,
+  HighlightToggle,
+} from "@/components/HighlightSettingsDrawer";
 import { Sidebar } from "@/components/Sidebar";
 import { getManifest } from "@/lib/api";
-import type { HighlightGroup } from "@/lib/highlight";
-import {
-  clearReviewer,
-  loadHighlightGroups,
-  saveHighlightGroups,
-} from "@/lib/storage";
+import { clearReviewer } from "@/lib/storage";
 import { getDocFromUrl, setDocInUrl } from "@/lib/url";
+import { useHighlightGroups } from "@/lib/useHighlightGroups";
 
 interface Props {
   reviewer: string;
@@ -45,15 +43,7 @@ export function Validator({ reviewer }: Props) {
     return firstUndecidedId(initial.documents);
   });
   const [search, setSearch] = useState("");
-  const [highlightGroups, setHighlightGroups] = useState<HighlightGroup[]>(() =>
-    loadHighlightGroups(),
-  );
-  const [highlightOpen, setHighlightOpen] = useState(false);
-
-  const updateHighlightGroups = (next: HighlightGroup[]) => {
-    setHighlightGroups(next);
-    saveHighlightGroups(next);
-  };
+  const highlight = useHighlightGroups("screening");
 
   const activeIndex = useMemo(() => {
     if (activeId === null) {
@@ -134,17 +124,7 @@ export function Validator({ reviewer }: Props) {
         <Group h="100%" px="md" justify="space-between">
           <Title order={4}>Risk Repository Validator</Title>
           <Group gap="lg">
-            <Tooltip label="Highlight keywords">
-              <ActionIcon
-                variant="subtle"
-                aria-label="Highlight keywords"
-                onClick={() => {
-                  setHighlightOpen((v) => !v);
-                }}
-              >
-                <IconHighlight size={20} />
-              </ActionIcon>
-            </Tooltip>
+            <HighlightToggle onClick={highlight.toggleDrawer} />
             <Tooltip
               label={
                 <Stack gap={4}>
@@ -230,18 +210,17 @@ export function Validator({ reviewer }: Props) {
             entry={activeEntry}
             position={activeIndex + 1}
             total={manifest.length}
-            highlightGroups={highlightGroups}
+            highlightGroups={highlight.groups}
             onSubmitted={handleSubmitted}
           />
         )}
       </AppShell.Main>
       <HighlightSettingsDrawer
-        opened={highlightOpen}
-        onClose={() => {
-          setHighlightOpen(false);
-        }}
-        groups={highlightGroups}
-        onChange={updateHighlightGroups}
+        opened={highlight.drawerOpen}
+        onClose={highlight.closeDrawer}
+        description="Highlight matching keywords in titles and abstracts."
+        groups={highlight.groups}
+        onChange={highlight.setGroups}
       />
     </AppShell>
   );

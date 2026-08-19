@@ -26,9 +26,11 @@ import {
 } from "@shared/classification";
 import { isCoded, isNotARisk } from "@shared/coding";
 import { type ReactNode, useMemo } from "react";
+import { HighlightedText } from "@/components/HighlightedText";
 import { PipelineCard } from "@/components/PipelineCard";
 import { type Draft, withComment, withNotARisk, withValue } from "@/lib/draft";
 import { type AxisOption, CAUSAL_AXES, valueLabel } from "@/lib/fields";
+import type { HighlightGroup } from "@/lib/highlight";
 import { SUBDOMAIN_GROUPS } from "@/lib/subdomains";
 
 interface Props {
@@ -42,6 +44,7 @@ interface Props {
   error: string | null;
   position: number;
   total: number;
+  highlightGroups: HighlightGroup[];
   onDraftChange: (draft: Draft) => void;
   onSave: () => void;
   onExpandedAncestorsChange: (ids: string[]) => void;
@@ -58,6 +61,7 @@ export function RiskCard({
   error,
   position,
   total,
+  highlightGroups,
   onDraftChange,
   onSave,
   onExpandedAncestorsChange,
@@ -121,15 +125,19 @@ export function RiskCard({
             <AncestorTrail
               ancestors={ancestors}
               expanded={expandedAncestors}
+              highlightGroups={highlightGroups}
               onExpandedChange={onExpandedAncestorsChange}
             />
           ) : null}
           <Text fw={600} size="lg">
-            {entry.name}
+            <HighlightedText text={entry.name} groups={highlightGroups} />
           </Text>
-          <RiskDetails risk={entry} />
+          <RiskDetails risk={entry} highlightGroups={highlightGroups} />
           {hasSuggestions ? (
-            <PipelineCard responses={entry.pipelineResponses} />
+            <PipelineCard
+              responses={entry.pipelineResponses}
+              highlightGroups={highlightGroups}
+            />
           ) : null}
         </Stack>
       </ScrollArea>
@@ -454,12 +462,14 @@ function SaveStatus({
 interface AncestorTrailProps {
   ancestors: RiskEntry[];
   expanded: string[];
+  highlightGroups: HighlightGroup[];
   onExpandedChange: (ids: string[]) => void;
 }
 
 function AncestorTrail({
   ancestors,
   expanded,
+  highlightGroups,
   onExpandedChange,
 }: AncestorTrailProps) {
   return (
@@ -479,7 +489,10 @@ function AncestorTrail({
             <Accordion.Control>
               <Stack gap={0}>
                 <Text size="sm" fw={500}>
-                  {ancestor.name}
+                  <HighlightedText
+                    text={ancestor.name}
+                    groups={highlightGroups}
+                  />
                 </Text>
                 <Text size="xs" c="dimmed">
                   {ancestor.readableId}
@@ -487,7 +500,7 @@ function AncestorTrail({
               </Stack>
             </Accordion.Control>
             <Accordion.Panel>
-              <RiskDetails risk={ancestor} />
+              <RiskDetails risk={ancestor} highlightGroups={highlightGroups} />
             </Accordion.Panel>
           </Accordion.Item>
         ))}
@@ -496,7 +509,12 @@ function AncestorTrail({
   );
 }
 
-function RiskDetails({ risk }: { risk: RiskEntry }) {
+interface RiskDetailsProps {
+  risk: RiskEntry;
+  highlightGroups: HighlightGroup[];
+}
+
+function RiskDetails({ risk, highlightGroups }: RiskDetailsProps) {
   const showQuote =
     risk.supportingQuote !== "" && risk.supportingQuote !== risk.description;
   const empty =
@@ -522,19 +540,30 @@ function RiskDetails({ risk }: { risk: RiskEntry }) {
               : `Description (p. ${risk.descriptionPage})`
           }
         >
-          <Text style={{ whiteSpace: "pre-wrap" }}>{risk.description}</Text>
+          <Text style={{ whiteSpace: "pre-wrap" }}>
+            <HighlightedText text={risk.description} groups={highlightGroups} />
+          </Text>
         </RiskField>
       ) : null}
       {showQuote ? (
         <RiskField label="Supporting quote">
-          <Quote>{risk.supportingQuote}</Quote>
+          <Quote>
+            <HighlightedText
+              text={risk.supportingQuote}
+              groups={highlightGroups}
+            />
+          </Quote>
         </RiskField>
       ) : null}
       {risk.additionalEvidence.length > 0 ? (
         <RiskField label="Additional evidence">
           <Stack gap="xs">
             {risk.additionalEvidence.map((item) => (
-              <EvidenceCard key={item.index} item={item} />
+              <EvidenceCard
+                key={item.index}
+                item={item}
+                highlightGroups={highlightGroups}
+              />
             ))}
           </Stack>
         </RiskField>
@@ -543,7 +572,7 @@ function RiskDetails({ risk }: { risk: RiskEntry }) {
   );
 }
 
-function Quote({ children }: { children: string }) {
+function Quote({ children }: { children: ReactNode }) {
   return (
     <Text
       fs="italic"
@@ -558,7 +587,12 @@ function Quote({ children }: { children: string }) {
   );
 }
 
-function EvidenceCard({ item }: { item: EvidenceItem }) {
+interface EvidenceCardProps {
+  item: EvidenceItem;
+  highlightGroups: HighlightGroup[];
+}
+
+function EvidenceCard({ item, highlightGroups }: EvidenceCardProps) {
   return (
     <Paper withBorder p="xs">
       <Stack gap={4}>
@@ -568,7 +602,7 @@ function EvidenceCard({ item }: { item: EvidenceItem }) {
               {field.key}
             </Text>
             <Text size="sm" style={{ whiteSpace: "pre-wrap" }}>
-              {field.value}
+              <HighlightedText text={field.value} groups={highlightGroups} />
             </Text>
           </Group>
         ))}
