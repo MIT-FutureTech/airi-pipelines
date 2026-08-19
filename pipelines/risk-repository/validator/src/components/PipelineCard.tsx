@@ -1,14 +1,17 @@
 import { Group, Paper, Stack, Text } from "@mantine/core";
 import { AXIS_FIELDS, type ReviewResponse } from "@shared/classification";
 import { useMemo } from "react";
+import { HighlightedText } from "@/components/HighlightedText";
 import { FIELD_LABELS, valueLabel } from "@/lib/fields";
+import type { HighlightGroup } from "@/lib/highlight";
 import { groupReasoning, type ReasoningGroup } from "@/lib/reasoning";
 
 interface Props {
   responses: ReviewResponse[];
+  highlightGroups: HighlightGroup[];
 }
 
-export function PipelineCard({ responses }: Props) {
+export function PipelineCard({ responses, highlightGroups }: Props) {
   const groups = useMemo(() => groupReasoning(responses), [responses]);
   const byField = useMemo(
     () => new Map(responses.map((response) => [response.field, response])),
@@ -45,7 +48,7 @@ export function PipelineCard({ responses }: Props) {
               {reasoningLabel(group, groups.length)}
             </Text>
             <Text size="sm" style={{ whiteSpace: "pre-wrap" }}>
-              {group.comment}
+              <HighlightedText text={group.comment} groups={highlightGroups} />
             </Text>
           </Stack>
         ))}

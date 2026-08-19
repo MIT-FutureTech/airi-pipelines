@@ -300,6 +300,7 @@ export function ClassificationReview({
             }
             position={codableIndex + 1}
             total={codable.length}
+            highlightGroups={highlight.groups}
             onDraftChange={(draft) => {
               setDrafts((prev) => ({ ...prev, [activeEntry.id]: draft }));
             }}
