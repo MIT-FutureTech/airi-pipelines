@@ -18,13 +18,9 @@ import { DoneScreen } from "@/components/DoneScreen";
 import { HighlightSettingsDrawer } from "@/components/HighlightSettingsDrawer";
 import { Sidebar } from "@/components/Sidebar";
 import { getManifest } from "@/lib/api";
-import type { HighlightGroup } from "@/lib/highlight";
-import {
-  clearReviewer,
-  loadHighlightGroups,
-  saveHighlightGroups,
-} from "@/lib/storage";
+import { clearReviewer } from "@/lib/storage";
 import { getDocFromUrl, setDocInUrl } from "@/lib/url";
+import { useHighlightGroups } from "@/lib/useHighlightGroups";
 
 interface Props {
   reviewer: string;
@@ -45,15 +41,7 @@ export function Validator({ reviewer }: Props) {
     return firstUndecidedId(initial.documents);
   });
   const [search, setSearch] = useState("");
-  const [highlightGroups, setHighlightGroups] = useState<HighlightGroup[]>(() =>
-    loadHighlightGroups("screening"),
-  );
-  const [highlightOpen, setHighlightOpen] = useState(false);
-
-  const updateHighlightGroups = (next: HighlightGroup[]) => {
-    setHighlightGroups(next);
-    saveHighlightGroups("screening", next);
-  };
+  const highlight = useHighlightGroups("screening");
 
   const activeIndex = useMemo(() => {
     if (activeId === null) {
@@ -138,9 +126,7 @@ export function Validator({ reviewer }: Props) {
               <ActionIcon
                 variant="subtle"
                 aria-label="Highlight keywords"
-                onClick={() => {
-                  setHighlightOpen((v) => !v);
-                }}
+                onClick={highlight.toggleDrawer}
               >
                 <IconHighlight size={20} />
               </ActionIcon>
@@ -230,19 +216,17 @@ export function Validator({ reviewer }: Props) {
             entry={activeEntry}
             position={activeIndex + 1}
             total={manifest.length}
-            highlightGroups={highlightGroups}
+            highlightGroups={highlight.groups}
             onSubmitted={handleSubmitted}
           />
         )}
       </AppShell.Main>
       <HighlightSettingsDrawer
-        opened={highlightOpen}
-        onClose={() => {
-          setHighlightOpen(false);
-        }}
+        opened={highlight.drawerOpen}
+        onClose={highlight.closeDrawer}
         description="Highlight matching keywords in titles and abstracts."
-        groups={highlightGroups}
-        onChange={updateHighlightGroups}
+        groups={highlight.groups}
+        onChange={highlight.setGroups}
       />
     </AppShell>
   );
