@@ -13,6 +13,10 @@ import { useHotkeys } from "@mantine/hooks";
 import type { ReviewMode, RiskEntry } from "@shared/classification";
 import { isCoded } from "@shared/coding";
 import { use, useEffect, useMemo, useState } from "react";
+import {
+  HighlightSettingsDrawer,
+  HighlightToggle,
+} from "@/components/HighlightSettingsDrawer";
 import { PdfDownloadButton } from "@/components/PdfDownloadButton";
 import { RiskCard } from "@/components/RiskCard";
 import { RiskSidebar } from "@/components/RiskSidebar";
@@ -26,6 +30,7 @@ import { codableRisks, pipelineIsReady } from "@/lib/risks";
 import { navigate } from "@/lib/route";
 import type { ClassificationSource } from "@/lib/source";
 import { ancestorsOf, indexRisks } from "@/lib/tree";
+import { useHighlightGroups } from "@/lib/useHighlightGroups";
 
 interface Props {
   reviewer: string;
@@ -59,6 +64,7 @@ export function ClassificationReview({
   const [checking, setChecking] = useState(false);
   const [checkError, setCheckError] = useState<string | null>(null);
   const [expandedAncestors, setExpandedAncestors] = useState<string[]>([]);
+  const highlight = useHighlightGroups("classification");
 
   const codable = codableRisks(risks);
   const waitingForPipeline = mode === "anchored" && !pipelineIsReady(risks);
@@ -225,6 +231,7 @@ export function ClassificationReview({
             {initial.title ?? ""}
           </Text>
           <Group gap="sm" wrap="nowrap" style={{ flexShrink: 0 }}>
+            <HighlightToggle onClick={highlight.toggleDrawer} />
             <PdfDownloadButton quickRef={quickRef} />
             <Text size="sm" fw={500}>
               {reviewer}
@@ -293,6 +300,7 @@ export function ClassificationReview({
             }
             position={codableIndex + 1}
             total={codable.length}
+            highlightGroups={highlight.groups}
             onDraftChange={(draft) => {
               setDrafts((prev) => ({ ...prev, [activeEntry.id]: draft }));
             }}
@@ -301,6 +309,13 @@ export function ClassificationReview({
           />
         )}
       </AppShell.Main>
+      <HighlightSettingsDrawer
+        opened={highlight.drawerOpen}
+        onClose={highlight.closeDrawer}
+        description="Highlight matching keywords in risk descriptions, quotes and evidence."
+        groups={highlight.groups}
+        onChange={highlight.setGroups}
+      />
     </AppShell>
   );
 }

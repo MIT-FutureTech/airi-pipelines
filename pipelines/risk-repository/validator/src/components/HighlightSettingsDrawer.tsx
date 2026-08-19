@@ -9,17 +9,33 @@ import {
   Switch,
   Text,
   Textarea,
+  Tooltip,
 } from "@mantine/core";
-import { IconPlus, IconTrash } from "@tabler/icons-react";
+import { IconHighlight, IconPlus, IconTrash } from "@tabler/icons-react";
 import {
   HIGHLIGHT_PALETTE,
   type HighlightGroup,
   MAX_HIGHLIGHT_GROUPS,
 } from "@/lib/highlight";
 
+export function HighlightToggle({ onClick }: { onClick: () => void }) {
+  return (
+    <Tooltip label="Highlight keywords">
+      <ActionIcon
+        variant="subtle"
+        aria-label="Highlight keywords"
+        onClick={onClick}
+      >
+        <IconHighlight size={20} />
+      </ActionIcon>
+    </Tooltip>
+  );
+}
+
 interface Props {
   opened: boolean;
   onClose: () => void;
+  description: string;
   groups: HighlightGroup[];
   onChange: (groups: HighlightGroup[]) => void;
 }
@@ -27,6 +43,7 @@ interface Props {
 export function HighlightSettingsDrawer({
   opened,
   onClose,
+  description,
   groups,
   onChange,
 }: Props) {
@@ -72,8 +89,7 @@ export function HighlightSettingsDrawer({
     >
       <Stack gap="md">
         <Text size="sm" c="dimmed">
-          Highlight matching keywords in titles and abstracts. Enter one keyword
-          per line.
+          {description} Enter one keyword per line.
         </Text>
         {groups.map((g) => (
           <GroupRow
