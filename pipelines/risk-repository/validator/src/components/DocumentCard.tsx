@@ -11,9 +11,10 @@ import {
 } from "@mantine/core";
 import { useHotkeys } from "@mantine/hooks";
 import type { Decision, ManifestEntry } from "@shared/screening";
-import { Fragment, useMemo, useState } from "react";
+import { useState } from "react";
+import { HighlightedText } from "@/components/HighlightedText";
 import { submitDecision } from "@/lib/api";
-import { type HighlightGroup, highlightText } from "@/lib/highlight";
+import type { HighlightGroup } from "@/lib/highlight";
 import { DECISION_COLORS } from "@/lib/theme";
 
 const DECISION_OPTIONS: { decision: Decision; key: string; label: string }[] = [
@@ -172,37 +173,5 @@ export function DocumentCard({
         </Stack>
       </Stack>
     </Stack>
-  );
-}
-
-interface HighlightedTextProps {
-  text: string;
-  groups: HighlightGroup[];
-}
-
-function HighlightedText({ text, groups }: HighlightedTextProps) {
-  const chunks = useMemo(() => highlightText(text, groups), [text, groups]);
-  return (
-    <>
-      {chunks.map((chunk, idx) => {
-        const key = `${idx}-${chunk.text}`;
-        if (chunk.color === null) {
-          return <Fragment key={key}>{chunk.text}</Fragment>;
-        }
-        return (
-          <mark
-            key={key}
-            style={{
-              backgroundColor: `var(--mantine-color-${chunk.color}-3)`,
-              color: "#000",
-              padding: 0,
-              borderRadius: 2,
-            }}
-          >
-            {chunk.text}
-          </mark>
-        );
-      })}
-    </>
   );
 }
