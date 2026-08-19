@@ -1,5 +1,4 @@
 import {
-  ActionIcon,
   AppShell,
   Button,
   Group,
@@ -11,11 +10,14 @@ import {
 } from "@mantine/core";
 import { useHotkeys } from "@mantine/hooks";
 import type { Decision, ManifestEntry } from "@shared/screening";
-import { IconHighlight, IconKeyboard } from "@tabler/icons-react";
+import { IconKeyboard } from "@tabler/icons-react";
 import { use, useMemo, useState } from "react";
 import { DocumentCard } from "@/components/DocumentCard";
 import { DoneScreen } from "@/components/DoneScreen";
-import { HighlightSettingsDrawer } from "@/components/HighlightSettingsDrawer";
+import {
+  HighlightSettingsDrawer,
+  HighlightToggle,
+} from "@/components/HighlightSettingsDrawer";
 import { Sidebar } from "@/components/Sidebar";
 import { getManifest } from "@/lib/api";
 import { clearReviewer } from "@/lib/storage";
@@ -122,15 +124,7 @@ export function Validator({ reviewer }: Props) {
         <Group h="100%" px="md" justify="space-between">
           <Title order={4}>Risk Repository Validator</Title>
           <Group gap="lg">
-            <Tooltip label="Highlight keywords">
-              <ActionIcon
-                variant="subtle"
-                aria-label="Highlight keywords"
-                onClick={highlight.toggleDrawer}
-              >
-                <IconHighlight size={20} />
-              </ActionIcon>
-            </Tooltip>
+            <HighlightToggle onClick={highlight.toggleDrawer} />
             <Tooltip
               label={
                 <Stack gap={4}>

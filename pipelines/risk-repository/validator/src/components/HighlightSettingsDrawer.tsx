@@ -9,13 +9,28 @@ import {
   Switch,
   Text,
   Textarea,
+  Tooltip,
 } from "@mantine/core";
-import { IconPlus, IconTrash } from "@tabler/icons-react";
+import { IconHighlight, IconPlus, IconTrash } from "@tabler/icons-react";
 import {
   HIGHLIGHT_PALETTE,
   type HighlightGroup,
   MAX_HIGHLIGHT_GROUPS,
 } from "@/lib/highlight";
+
+export function HighlightToggle({ onClick }: { onClick: () => void }) {
+  return (
+    <Tooltip label="Highlight keywords">
+      <ActionIcon
+        variant="subtle"
+        aria-label="Highlight keywords"
+        onClick={onClick}
+      >
+        <IconHighlight size={20} />
+      </ActionIcon>
+    </Tooltip>
+  );
+}
 
 interface Props {
   opened: boolean;
