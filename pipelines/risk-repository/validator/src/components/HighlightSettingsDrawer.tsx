@@ -20,6 +20,7 @@ import {
 interface Props {
   opened: boolean;
   onClose: () => void;
+  description: string;
   groups: HighlightGroup[];
   onChange: (groups: HighlightGroup[]) => void;
 }
@@ -27,6 +28,7 @@ interface Props {
 export function HighlightSettingsDrawer({
   opened,
   onClose,
+  description,
   groups,
   onChange,
 }: Props) {
@@ -72,8 +74,7 @@ export function HighlightSettingsDrawer({
     >
       <Stack gap="md">
         <Text size="sm" c="dimmed">
-          Highlight matching keywords in titles and abstracts. Enter one keyword
-          per line.
+          {description} Enter one keyword per line.
         </Text>
         {groups.map((g) => (
           <GroupRow
