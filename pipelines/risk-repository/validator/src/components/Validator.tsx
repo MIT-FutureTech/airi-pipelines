@@ -46,13 +46,13 @@ export function Validator({ reviewer }: Props) {
   });
   const [search, setSearch] = useState("");
   const [highlightGroups, setHighlightGroups] = useState<HighlightGroup[]>(() =>
-    loadHighlightGroups(),
+    loadHighlightGroups("screening"),
   );
   const [highlightOpen, setHighlightOpen] = useState(false);
 
   const updateHighlightGroups = (next: HighlightGroup[]) => {
     setHighlightGroups(next);
-    saveHighlightGroups(next);
+    saveHighlightGroups("screening", next);
   };
 
   const activeIndex = useMemo(() => {
