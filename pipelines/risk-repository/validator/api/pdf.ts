@@ -24,7 +24,7 @@ export default async function handler(
   }
 
   try {
-    const env = readAirtableEnv();
+    const env = readAirtableEnv(process.env);
     const papers = await listAllRecords<ProposedExtractionFields>(
       env.pat,
       env.baseId,

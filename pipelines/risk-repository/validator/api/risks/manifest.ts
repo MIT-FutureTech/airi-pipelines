@@ -67,7 +67,7 @@ export default async function handler(
   }
 
   try {
-    const env = readAirtableEnv();
+    const env = readAirtableEnv(process.env);
     const [risks, reviews, papers] = await Promise.all([
       listAllRecords<RiskFields>(env.pat, env.baseId, env.risksTable, {
         filterByFormula: `{QuickRef}="${escapeFormulaString(quickRef)}"`,
