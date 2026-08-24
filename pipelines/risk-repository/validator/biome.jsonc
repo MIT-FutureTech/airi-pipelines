@@ -24,7 +24,12 @@
                 "selector": {
                   "kind": "typeProperty"
                 },
-                "formats": ["camelCase", "PascalCase", "snake_case"]
+                "formats": [
+                  "camelCase",
+                  "PascalCase",
+                  "snake_case",
+                  "CONSTANT_CASE"
+                ]
               }
             ]
           }
