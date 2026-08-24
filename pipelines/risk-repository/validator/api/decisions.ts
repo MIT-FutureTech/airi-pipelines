@@ -5,12 +5,12 @@ import {
   type DecisionRequest,
 } from "../shared/screening.js";
 import {
-  AirtableError,
   type AirtableRecord,
   createRecord,
   updateRecord,
 } from "./_airtable.js";
 import { readAirtableEnv } from "./_env.js";
+import { handleError } from "./_http.js";
 import { type DecisionFields, STAGE } from "./_types.js";
 
 export default async function handler(
@@ -61,14 +61,7 @@ export default async function handler(
       comments: parsed.comments,
     });
   } catch (error) {
-    if (error instanceof AirtableError) {
-      res
-        .status(502)
-        .json({ error: "Airtable request failed", detail: error.body });
-      return;
-    }
-    const message = error instanceof Error ? error.message : String(error);
-    res.status(500).json({ error: message });
+    handleError(res, error);
   }
 }
 

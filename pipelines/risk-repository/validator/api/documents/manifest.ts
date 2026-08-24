@@ -1,12 +1,12 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import type { ManifestEntry } from "../../shared/screening.js";
 import {
-  AirtableError,
   type AirtableRecord,
   escapeFormulaString,
   listAllRecords,
 } from "../_airtable.js";
 import { readAirtableEnv } from "../_env.js";
+import { handleError } from "../_http.js";
 import { type DecisionFields, type DocumentFields, STAGE } from "../_types.js";
 
 export default async function handler(
@@ -76,15 +76,4 @@ function indexDecisionsByDocument(
     }
   }
   return result;
-}
-
-function handleError(res: VercelResponse, error: unknown): void {
-  if (error instanceof AirtableError) {
-    res
-      .status(502)
-      .json({ error: "Airtable request failed", detail: error.body });
-    return;
-  }
-  const message = error instanceof Error ? error.message : String(error);
-  res.status(500).json({ error: message });
 }
