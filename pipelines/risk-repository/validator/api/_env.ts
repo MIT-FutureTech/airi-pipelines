@@ -1,3 +1,15 @@
+export interface WorkerEnv {
+  AIRTABLE_PAT?: string;
+  AIRTABLE_BASE_ID?: string;
+  AIRTABLE_DOCUMENTS_TABLE?: string;
+  AIRTABLE_DOCUMENTS_VIEW?: string;
+  AIRTABLE_DECISIONS_TABLE?: string;
+  AIRTABLE_RISKS_TABLE?: string;
+  AIRTABLE_REVIEWS_TABLE?: string;
+  AIRTABLE_PROPOSED_EXTRACTIONS_TABLE?: string;
+  AIRTABLE_FULL_TEXT_TABLE?: string;
+}
+
 export interface AirtableEnv {
   pat: string;
   baseId: string;
@@ -10,33 +22,25 @@ export interface AirtableEnv {
   fullTextTable: string;
 }
 
-export function readAirtableEnv(): AirtableEnv {
-  const pat = required("AIRTABLE_PAT");
-  const baseId = required("AIRTABLE_BASE_ID");
-  const documentsTable = required("AIRTABLE_DOCUMENTS_TABLE");
-  const documentsView = required("AIRTABLE_DOCUMENTS_VIEW");
-  const decisionsTable = required("AIRTABLE_DECISIONS_TABLE");
-  const risksTable = required("AIRTABLE_RISKS_TABLE");
-  const reviewsTable = required("AIRTABLE_REVIEWS_TABLE");
-  const proposedExtractionsTable = required(
-    "AIRTABLE_PROPOSED_EXTRACTIONS_TABLE",
-  );
-  const fullTextTable = required("AIRTABLE_FULL_TEXT_TABLE");
+export function readAirtableEnv(env: WorkerEnv): AirtableEnv {
   return {
-    pat,
-    baseId,
-    documentsTable,
-    documentsView,
-    decisionsTable,
-    risksTable,
-    reviewsTable,
-    proposedExtractionsTable,
-    fullTextTable,
+    pat: required(env, "AIRTABLE_PAT"),
+    baseId: required(env, "AIRTABLE_BASE_ID"),
+    documentsTable: required(env, "AIRTABLE_DOCUMENTS_TABLE"),
+    documentsView: required(env, "AIRTABLE_DOCUMENTS_VIEW"),
+    decisionsTable: required(env, "AIRTABLE_DECISIONS_TABLE"),
+    risksTable: required(env, "AIRTABLE_RISKS_TABLE"),
+    reviewsTable: required(env, "AIRTABLE_REVIEWS_TABLE"),
+    proposedExtractionsTable: required(
+      env,
+      "AIRTABLE_PROPOSED_EXTRACTIONS_TABLE",
+    ),
+    fullTextTable: required(env, "AIRTABLE_FULL_TEXT_TABLE"),
   };
 }
 
-function required(name: string): string {
-  const value = process.env[name];
+function required(env: WorkerEnv, name: keyof WorkerEnv): string {
+  const value = env[name];
   if (value === undefined || value === "") {
     throw new Error(`Missing required environment variable: ${name}`);
   }

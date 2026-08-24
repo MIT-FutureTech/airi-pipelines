@@ -45,7 +45,7 @@ export default async function handler(
   }
 
   try {
-    const env = readAirtableEnv();
+    const env = readAirtableEnv(process.env);
     const [papers, risks, reviews] = await Promise.all([
       listAllRecords<ProposedExtractionFields>(
         env.pat,

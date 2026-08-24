@@ -29,7 +29,7 @@ export default async function handler(
   }
 
   try {
-    const env = readAirtableEnv();
+    const env = readAirtableEnv(process.env);
     const fields: DecisionFields = {
       Document: [parsed.documentId],
       Reviewer: parsed.reviewer,

@@ -47,7 +47,7 @@ export default async function handler(
   }
 
   try {
-    const env = readAirtableEnv();
+    const env = readAirtableEnv(process.env);
     const creates: ReviewFields[] = [];
     const updates: RecordUpdate<ReviewFields>[] = [];
     for (const coding of parsed.codings) {
