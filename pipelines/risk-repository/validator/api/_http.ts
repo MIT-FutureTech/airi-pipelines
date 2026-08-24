@@ -1,4 +1,4 @@
-import type { VercelResponse } from "@vercel/node";
+import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { AirtableError } from "./_airtable.js";
 
 export function handleError(res: VercelResponse, error: unknown): void {
@@ -12,12 +12,18 @@ export function handleError(res: VercelResponse, error: unknown): void {
   res.status(500).json({ error: message });
 }
 
-export function queryString(
-  value: string | string[] | undefined,
+export function searchParams(req: VercelRequest): URLSearchParams {
+  return new URLSearchParams(req.url?.split("?")[1] ?? "");
+}
+
+export function queryParam(
+  params: URLSearchParams,
+  name: string,
 ): string | null {
-  if (typeof value !== "string") {
+  const values = params.getAll(name);
+  if (values.length !== 1) {
     return null;
   }
-  const trimmed = value.trim();
+  const trimmed = values[0].trim();
   return trimmed === "" ? null : trimmed;
 }

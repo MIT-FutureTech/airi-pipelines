@@ -6,7 +6,7 @@ import {
   listAllRecords,
 } from "../_airtable.js";
 import { readAirtableEnv } from "../_env.js";
-import { handleError } from "../_http.js";
+import { handleError, queryParam, searchParams } from "../_http.js";
 import { type DecisionFields, type DocumentFields, STAGE } from "../_types.js";
 
 export default async function handler(
@@ -18,8 +18,8 @@ export default async function handler(
     return;
   }
 
-  const reviewer = req.query.reviewer;
-  if (typeof reviewer !== "string" || reviewer.trim() === "") {
+  const reviewer = queryParam(searchParams(req), "reviewer");
+  if (reviewer === null) {
     res.status(400).json({ error: "reviewer query parameter is required" });
     return;
   }

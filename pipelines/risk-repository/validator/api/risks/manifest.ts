@@ -16,7 +16,7 @@ import {
 } from "../_airtable.js";
 import { readAirtableEnv } from "../_env.js";
 import { parseEvidence } from "../_evidence.js";
-import { handleError, queryString } from "../_http.js";
+import { handleError, queryParam, searchParams } from "../_http.js";
 import {
   fetchVisibleReviewsForPaper,
   indexReviewsByRisk,
@@ -47,9 +47,10 @@ export default async function handler(
     return;
   }
 
-  const quickRef = queryString(req.query.quickRef);
-  const reviewer = queryString(req.query.reviewer);
-  const mode = queryString(req.query.mode);
+  const params = searchParams(req);
+  const quickRef = queryParam(params, "quickRef");
+  const reviewer = queryParam(params, "reviewer");
+  const mode = queryParam(params, "mode");
 
   if (quickRef === null) {
     res.status(400).json({ error: "quickRef query parameter is required" });

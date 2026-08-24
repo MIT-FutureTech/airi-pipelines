@@ -6,7 +6,7 @@ import type {
 } from "../shared/classification.js";
 import { escapeFormulaString, getRecord, listAllRecords } from "./_airtable.js";
 import { readAirtableEnv } from "./_env.js";
-import { handleError, queryString } from "./_http.js";
+import { handleError, queryParam, searchParams } from "./_http.js";
 
 export default async function handler(
   req: VercelRequest,
@@ -17,7 +17,7 @@ export default async function handler(
     return;
   }
 
-  const quickRef = queryString(req.query.quickRef);
+  const quickRef = queryParam(searchParams(req), "quickRef");
   if (quickRef === null) {
     res.status(400).json({ error: "quickRef query parameter is required" });
     return;
