@@ -1,4 +1,3 @@
-import type { VercelRequest, VercelResponse } from "@vercel/node";
 import type {
   FullTextScreeningFields,
   PdfLinkResponse,
@@ -6,21 +5,16 @@ import type {
 } from "../shared/classification.js";
 import { escapeFormulaString, getRecord, listAllRecords } from "./_airtable.js";
 import { readAirtableEnv } from "./_env.js";
-import { handleError, queryParam, searchParams } from "./_http.js";
+import { errorResponse, handleError, queryParam } from "./_http.js";
 
-export default async function handler(
-  req: VercelRequest,
-  res: VercelResponse,
-): Promise<void> {
-  if (req.method !== "GET") {
-    res.status(405).json({ error: "Method not allowed" });
-    return;
+export default async function handler(request: Request): Promise<Response> {
+  if (request.method !== "GET") {
+    return errorResponse(405, "Method not allowed");
   }
 
-  const quickRef = queryParam(searchParams(req), "quickRef");
+  const quickRef = queryParam(new URL(request.url).searchParams, "quickRef");
   if (quickRef === null) {
-    res.status(400).json({ error: "quickRef query parameter is required" });
-    return;
+    return errorResponse(400, "quickRef query parameter is required");
   }
 
   try {
@@ -36,10 +30,10 @@ export default async function handler(
     );
     const screeningId = papers[0]?.fields["Full-Text Screening"]?.[0];
     if (screeningId === undefined) {
-      res
-        .status(404)
-        .json({ error: `No full-text screening record linked to ${quickRef}` });
-      return;
+      return errorResponse(
+        404,
+        `No full-text screening record linked to ${quickRef}`,
+      );
     }
 
     const screening = await getRecord<FullTextScreeningFields>(
@@ -50,8 +44,7 @@ export default async function handler(
     );
     const attachment = screening.fields.full_text_pdf?.[0];
     if (attachment === undefined) {
-      res.status(404).json({ error: `No PDF attached to ${quickRef}` });
-      return;
+      return errorResponse(404, `No PDF attached to ${quickRef}`);
     }
 
     const body: PdfLinkResponse = {
@@ -62,9 +55,8 @@ export default async function handler(
     };
     // Airtable signs attachment URLs with an expiry, so this must be resolved
     // afresh on every request rather than served from a cache.
-    res.setHeader("Cache-Control", "no-store");
-    res.status(200).json(body);
+    return Response.json(body, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
-    handleError(res, error);
+    return handleError(error);
   }
 }

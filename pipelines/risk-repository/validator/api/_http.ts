@@ -1,15 +1,19 @@
-import type { VercelRequest, VercelResponse } from "@vercel/node";
+import type { VercelRequest } from "@vercel/node";
 import { AirtableError } from "./_airtable.js";
 
-export function handleError(res: VercelResponse, error: unknown): void {
+export function errorResponse(status: number, message: string): Response {
+  return Response.json({ error: message }, { status });
+}
+
+export function handleError(error: unknown): Response {
   if (error instanceof AirtableError) {
-    res
-      .status(502)
-      .json({ error: "Airtable request failed", detail: error.body });
-    return;
+    return Response.json(
+      { error: "Airtable request failed", detail: error.body },
+      { status: 502 },
+    );
   }
   const message = error instanceof Error ? error.message : String(error);
-  res.status(500).json({ error: message });
+  return Response.json({ error: message }, { status: 500 });
 }
 
 export function searchParams(req: VercelRequest): URLSearchParams {

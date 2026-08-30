@@ -1,4 +1,3 @@
-import type { VercelRequest, VercelResponse } from "@vercel/node";
 import {
   DECISIONS,
   type Decision,
@@ -10,22 +9,17 @@ import {
   updateRecord,
 } from "./_airtable.js";
 import { readAirtableEnv } from "./_env.js";
-import { handleError } from "./_http.js";
+import { errorResponse, handleError } from "./_http.js";
 import { type DecisionFields, STAGE } from "./_types.js";
 
-export default async function handler(
-  req: VercelRequest,
-  res: VercelResponse,
-): Promise<void> {
-  if (req.method !== "POST") {
-    res.status(405).json({ error: "Method not allowed" });
-    return;
+export default async function handler(request: Request): Promise<Response> {
+  if (request.method !== "POST") {
+    return errorResponse(405, "Method not allowed");
   }
 
-  const parsed = parseBody(req.body);
+  const parsed = parseBody(await request.json().catch(() => null));
   if (parsed === null) {
-    res.status(400).json({ error: "Invalid request body" });
-    return;
+    return errorResponse(400, "Invalid request body");
   }
 
   try {
@@ -54,14 +48,14 @@ export default async function handler(
         fields,
       );
     }
-    res.status(200).json({
+    return Response.json({
       documentId: parsed.documentId,
       decisionId: record.id,
       decision: parsed.decision,
       comments: parsed.comments,
     });
   } catch (error) {
-    handleError(res, error);
+    return handleError(error);
   }
 }
 

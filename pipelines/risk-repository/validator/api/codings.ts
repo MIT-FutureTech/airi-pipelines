@@ -1,4 +1,3 @@
-import type { VercelRequest, VercelResponse } from "@vercel/node";
 import {
   type CodingWrite,
   REVIEW_FIELD_VALUES,
@@ -18,32 +17,24 @@ import {
   updateRecords,
 } from "./_airtable.js";
 import { readAirtableEnv } from "./_env.js";
-import { handleError } from "./_http.js";
+import { errorResponse, handleError } from "./_http.js";
 import {
   isPipelineReviewer,
   toReviewResponse,
   toReviewRow,
 } from "./_reviews.js";
 
-export default async function handler(
-  req: VercelRequest,
-  res: VercelResponse,
-): Promise<void> {
-  if (req.method !== "POST") {
-    res.status(405).json({ error: "Method not allowed" });
-    return;
+export default async function handler(request: Request): Promise<Response> {
+  if (request.method !== "POST") {
+    return errorResponse(405, "Method not allowed");
   }
 
-  const parsed = parseBody(req.body);
+  const parsed = parseBody(await request.json().catch(() => null));
   if (parsed === null) {
-    res.status(400).json({ error: "Invalid request body" });
-    return;
+    return errorResponse(400, "Invalid request body");
   }
   if (isPipelineReviewer(parsed.reviewer)) {
-    res
-      .status(400)
-      .json({ error: "Reviewer name is reserved for the pipeline" });
-    return;
+    return errorResponse(400, "Reviewer name is reserved for the pipeline");
   }
 
   try {
@@ -84,9 +75,9 @@ export default async function handler(
       (a, b) => REVIEW_FIELDS.indexOf(a.field) - REVIEW_FIELDS.indexOf(b.field),
     );
     const body: SaveCodingsResponse = { riskId: parsed.riskId, responses };
-    res.status(200).json(body);
+    return Response.json(body);
   } catch (error) {
-    handleError(res, error);
+    return handleError(error);
   }
 }
 
