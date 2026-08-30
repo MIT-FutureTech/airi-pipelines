@@ -1,4 +1,8 @@
-import { AXIS_FIELDS, NOT_A_RISK, type ReviewField } from "./classification.js";
+import {
+  AXIS_FIELDS,
+  NOT_A_RISK,
+  type ReviewField,
+} from "@shared/classification";
 
 export interface Coding {
   field: ReviewField;

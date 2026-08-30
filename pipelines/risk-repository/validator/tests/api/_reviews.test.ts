@@ -16,7 +16,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const LOOKUP = "ReadableId (from Risk)";
 
-const ENV: AirtableEnv = {
+const AIRTABLE: AirtableEnv = {
   pat: "pat-test",
   baseId: "appTest",
   documentsTable: "Documents",
@@ -108,7 +108,7 @@ describe("reviewerScopeFormula", () => {
 
 describe("fetchVisibleReviewsForPaper", () => {
   it("asks Airtable for nothing outside the reviewer's own rows in blind mode", async () => {
-    await fetchVisibleReviewsForPaper(ENV, "alice", "Lee2025", "blind");
+    await fetchVisibleReviewsForPaper(AIRTABLE, "alice", "Lee2025", "blind");
     expect(formulas()).toEqual([
       `AND(${paperScopeFormula("Lee2025")}, ${reviewerScopeFormula("alice", "blind")})`,
     ]);
@@ -116,19 +116,19 @@ describe("fetchVisibleReviewsForPaper", () => {
   });
 
   it("asks for the pipeline's rows too in anchored mode", async () => {
-    await fetchVisibleReviewsForPaper(ENV, "alice", "Lee2025", "anchored");
+    await fetchVisibleReviewsForPaper(AIRTABLE, "alice", "Lee2025", "anchored");
     expect(formulas()[0]).toContain("pipeline:");
   });
 
   it("scopes to the requested paper", async () => {
-    await fetchVisibleReviewsForPaper(ENV, "alice", "Lee2025", "blind");
+    await fetchVisibleReviewsForPaper(AIRTABLE, "alice", "Lee2025", "blind");
     expect(formulas()[0]).toContain('="Lee2025."');
   });
 });
 
 describe("fetchVisibleReviews", () => {
   it("always includes the pipeline, since the paper list reports its progress", async () => {
-    await fetchVisibleReviews(ENV, "alice");
+    await fetchVisibleReviews(AIRTABLE, "alice");
     expect(formulas().length).toBeGreaterThan(0);
     for (const formula of formulas()) {
       expect(formula).toContain("pipeline:");

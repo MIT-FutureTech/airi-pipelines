@@ -4,6 +4,7 @@
 
 # Environments
 .env
+.dev.vars
 .venv/
 
 # IDE
@@ -31,6 +32,6 @@ next-env.d.ts
 /pipelines/risk-repository/auditor/dist
 /pipelines/risk-repository/auditor/public/bundles
 
-# Validator build + Vercel local state
+# Validator build + Wrangler local state
 /pipelines/risk-repository/validator/dist
-/pipelines/risk-repository/validator/.vercel
+/pipelines/risk-repository/validator/.wrangler

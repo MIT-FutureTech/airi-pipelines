@@ -1,4 +1,14 @@
-import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { type AirtableRecord, listAllRecords } from "@api/_airtable";
+import { readAirtableEnv, type WorkerEnv } from "@api/_env";
+import { errorResponse, handleError, queryParam } from "@api/_http";
+import {
+  fetchVisibleReviews,
+  indexReviewsByRisk,
+  isPipelineReviewer,
+  type ReviewRow,
+  toReviewRow,
+} from "@api/_reviews";
+import { codableIds } from "@api/_tree";
 import type {
   PaperEntry,
   PaperState,
@@ -6,19 +16,8 @@ import type {
   ProposedExtractionFields,
   ReviewFields,
   RiskFields,
-} from "../shared/classification.js";
-import { type Coding, isCoded } from "../shared/coding.js";
-import { type AirtableRecord, listAllRecords } from "./_airtable.js";
-import { readAirtableEnv } from "./_env.js";
-import { handleError, queryString } from "./_http.js";
-import {
-  fetchVisibleReviews,
-  indexReviewsByRisk,
-  isPipelineReviewer,
-  type ReviewRow,
-  toReviewRow,
-} from "./_reviews.js";
-import { codableIds } from "./_tree.js";
+} from "@shared/classification";
+import { type Coding, isCoded } from "@shared/coding";
 
 const PAPER_FETCH_FIELDS = [
   "QuickRef",
@@ -30,33 +29,36 @@ const PAPER_FETCH_FIELDS = [
 const RISK_FETCH_FIELDS = ["QuickRef", "Parent", "Origin"];
 
 export default async function handler(
-  req: VercelRequest,
-  res: VercelResponse,
-): Promise<void> {
-  if (req.method !== "GET") {
-    res.status(405).json({ error: "Method not allowed" });
-    return;
+  request: Request,
+  env: WorkerEnv,
+): Promise<Response> {
+  if (request.method !== "GET") {
+    return errorResponse(405, "Method not allowed");
   }
 
-  const reviewer = queryString(req.query.reviewer);
+  const reviewer = queryParam(new URL(request.url).searchParams, "reviewer");
   if (reviewer === null) {
-    res.status(400).json({ error: "reviewer query parameter is required" });
-    return;
+    return errorResponse(400, "reviewer query parameter is required");
   }
 
   try {
-    const env = readAirtableEnv();
+    const airtable = readAirtableEnv(env);
     const [papers, risks, reviews] = await Promise.all([
       listAllRecords<ProposedExtractionFields>(
-        env.pat,
-        env.baseId,
-        env.proposedExtractionsTable,
+        airtable.pat,
+        airtable.baseId,
+        airtable.proposedExtractionsTable,
         { fields: PAPER_FETCH_FIELDS },
       ),
-      listAllRecords<RiskFields>(env.pat, env.baseId, env.risksTable, {
-        fields: RISK_FETCH_FIELDS,
-      }),
-      fetchVisibleReviews(env, reviewer),
+      listAllRecords<RiskFields>(
+        airtable.pat,
+        airtable.baseId,
+        airtable.risksTable,
+        {
+          fields: RISK_FETCH_FIELDS,
+        },
+      ),
+      fetchVisibleReviews(airtable, reviewer),
     ]);
 
     const codable = codableIds(risks);
@@ -80,9 +82,9 @@ export default async function handler(
     entries.sort((a, b) => a.quickRef.localeCompare(b.quickRef));
 
     const body: PapersResponse = { papers: entries };
-    res.status(200).json(body);
+    return Response.json(body);
   } catch (error) {
-    handleError(res, error);
+    return handleError(error);
   }
 }
 

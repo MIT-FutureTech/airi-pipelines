@@ -24,41 +24,17 @@
                 "selector": {
                   "kind": "typeProperty"
                 },
-                "formats": ["camelCase", "PascalCase", "snake_case"]
+                "formats": [
+                  "camelCase",
+                  "PascalCase",
+                  "snake_case",
+                  "CONSTANT_CASE"
+                ]
               }
             ]
           }
         }
       }
     }
-  },
-  "overrides": [
-    {
-      // Vercel serverless functions are deployed as plain .js and run as
-      // Node ESM. Path aliases aren't resolved at runtime, and relative
-      // imports need the .js extension matching the emitted file.
-      "includes": ["api/**", "shared/**"],
-      "linter": {
-        "rules": {
-          "style": {
-            "noRestrictedImports": {
-              "level": "error",
-              "options": {
-                "patterns": [
-                  {
-                    "group": ["@shared/*", "@/*", "@api/*"],
-                    "message": "Use relative imports inside api/ and shared/"
-                  },
-                  {
-                    "group": ["./**", "../**", "!./**/*.js", "!../**/*.js"],
-                    "message": "Relative imports inside api/ and shared/ must end with .js"
-                  }
-                ]
-              }
-            }
-          }
-        }
-      }
-    }
-  ]
+  }
 }
