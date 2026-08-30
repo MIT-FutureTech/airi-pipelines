@@ -1,40 +1,47 @@
-import type { VercelRequest, VercelResponse } from "@vercel/node";
-import type { ManifestEntry } from "../../shared/screening.js";
 import {
-  AirtableError,
   type AirtableRecord,
   escapeFormulaString,
   listAllRecords,
-} from "../_airtable.js";
-import { readAirtableEnv } from "../_env.js";
-import { type DecisionFields, type DocumentFields, STAGE } from "../_types.js";
+} from "@api/_airtable";
+import { readAirtableEnv, type WorkerEnv } from "@api/_env";
+import { errorResponse, handleError, queryParam } from "@api/_http";
+import { type DecisionFields, type DocumentFields, STAGE } from "@api/_types";
+import type { ManifestEntry } from "@shared/screening";
 
 export default async function handler(
-  req: VercelRequest,
-  res: VercelResponse,
-): Promise<void> {
-  if (req.method !== "GET") {
-    res.status(405).json({ error: "Method not allowed" });
-    return;
+  request: Request,
+  env: WorkerEnv,
+): Promise<Response> {
+  if (request.method !== "GET") {
+    return errorResponse(405, "Method not allowed");
   }
 
-  const reviewer = req.query.reviewer;
-  if (typeof reviewer !== "string" || reviewer.trim() === "") {
-    res.status(400).json({ error: "reviewer query parameter is required" });
-    return;
+  const reviewer = queryParam(new URL(request.url).searchParams, "reviewer");
+  if (reviewer === null) {
+    return errorResponse(400, "reviewer query parameter is required");
   }
 
   try {
-    const env = readAirtableEnv();
+    const airtable = readAirtableEnv(env);
     const [documents, decisions] = await Promise.all([
-      listAllRecords<DocumentFields>(env.pat, env.baseId, env.documentsTable, {
-        view: env.documentsView,
-        fields: ["QuickRef", "DocTitle", "Abstract"],
-      }),
-      listAllRecords<DecisionFields>(env.pat, env.baseId, env.decisionsTable, {
-        filterByFormula: `AND({Reviewer}="${escapeFormulaString(reviewer)}", {Stage}="${STAGE}")`,
-        fields: ["Document", "Decision", "Comments"],
-      }),
+      listAllRecords<DocumentFields>(
+        airtable.pat,
+        airtable.baseId,
+        airtable.documentsTable,
+        {
+          view: airtable.documentsView,
+          fields: ["QuickRef", "DocTitle", "Abstract"],
+        },
+      ),
+      listAllRecords<DecisionFields>(
+        airtable.pat,
+        airtable.baseId,
+        airtable.decisionsTable,
+        {
+          filterByFormula: `AND({Reviewer}="${escapeFormulaString(reviewer)}", {Stage}="${STAGE}")`,
+          fields: ["Document", "Decision", "Comments"],
+        },
+      ),
     ]);
 
     const byDocId = indexDecisionsByDocument(decisions);
@@ -56,9 +63,9 @@ export default async function handler(
       };
     });
 
-    res.status(200).json({ documents: entries });
+    return Response.json({ documents: entries });
   } catch (error) {
-    handleError(res, error);
+    return handleError(error);
   }
 }
 
@@ -76,15 +83,4 @@ function indexDecisionsByDocument(
     }
   }
   return result;
-}
-
-function handleError(res: VercelResponse, error: unknown): void {
-  if (error instanceof AirtableError) {
-    res
-      .status(502)
-      .json({ error: "Airtable request failed", detail: error.body });
-    return;
-  }
-  const message = error instanceof Error ? error.message : String(error);
-  res.status(500).json({ error: message });
 }

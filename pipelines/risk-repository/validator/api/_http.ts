@@ -1,23 +1,28 @@
-import type { VercelResponse } from "@vercel/node";
-import { AirtableError } from "./_airtable.js";
+import { AirtableError } from "@api/_airtable";
 
-export function handleError(res: VercelResponse, error: unknown): void {
-  if (error instanceof AirtableError) {
-    res
-      .status(502)
-      .json({ error: "Airtable request failed", detail: error.body });
-    return;
-  }
-  const message = error instanceof Error ? error.message : String(error);
-  res.status(500).json({ error: message });
+export function errorResponse(status: number, message: string): Response {
+  return Response.json({ error: message }, { status });
 }
 
-export function queryString(
-  value: string | string[] | undefined,
+export function handleError(error: unknown): Response {
+  if (error instanceof AirtableError) {
+    return Response.json(
+      { error: "Airtable request failed", detail: error.body },
+      { status: 502 },
+    );
+  }
+  const message = error instanceof Error ? error.message : String(error);
+  return Response.json({ error: message }, { status: 500 });
+}
+
+export function queryParam(
+  params: URLSearchParams,
+  name: string,
 ): string | null {
-  if (typeof value !== "string") {
+  const values = params.getAll(name);
+  if (values.length !== 1) {
     return null;
   }
-  const trimmed = value.trim();
+  const trimmed = values[0].trim();
   return trimmed === "" ? null : trimmed;
 }

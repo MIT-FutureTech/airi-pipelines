@@ -1,4 +1,16 @@
-import type { VercelRequest, VercelResponse } from "@vercel/node";
+import {
+  createRecords,
+  deleteRecords,
+  type RecordUpdate,
+  updateRecords,
+} from "@api/_airtable";
+import { readAirtableEnv, type WorkerEnv } from "@api/_env";
+import { errorResponse, handleError } from "@api/_http";
+import {
+  isPipelineReviewer,
+  toReviewResponse,
+  toReviewRow,
+} from "@api/_reviews";
 import {
   type CodingWrite,
   REVIEW_FIELD_VALUES,
@@ -9,45 +21,27 @@ import {
   type ReviewMode,
   type SaveCodingsRequest,
   type SaveCodingsResponse,
-} from "../shared/classification.js";
-import { conflictsWithNotARisk } from "../shared/coding.js";
-import {
-  createRecords,
-  deleteRecords,
-  type RecordUpdate,
-  updateRecords,
-} from "./_airtable.js";
-import { readAirtableEnv } from "./_env.js";
-import { handleError } from "./_http.js";
-import {
-  isPipelineReviewer,
-  toReviewResponse,
-  toReviewRow,
-} from "./_reviews.js";
+} from "@shared/classification";
+import { conflictsWithNotARisk } from "@shared/coding";
 
 export default async function handler(
-  req: VercelRequest,
-  res: VercelResponse,
-): Promise<void> {
-  if (req.method !== "POST") {
-    res.status(405).json({ error: "Method not allowed" });
-    return;
+  request: Request,
+  env: WorkerEnv,
+): Promise<Response> {
+  if (request.method !== "POST") {
+    return errorResponse(405, "Method not allowed");
   }
 
-  const parsed = parseBody(req.body);
+  const parsed = parseBody(await request.json().catch(() => null));
   if (parsed === null) {
-    res.status(400).json({ error: "Invalid request body" });
-    return;
+    return errorResponse(400, "Invalid request body");
   }
   if (isPipelineReviewer(parsed.reviewer)) {
-    res
-      .status(400)
-      .json({ error: "Reviewer name is reserved for the pipeline" });
-    return;
+    return errorResponse(400, "Reviewer name is reserved for the pipeline");
   }
 
   try {
-    const env = readAirtableEnv();
+    const airtable = readAirtableEnv(env);
     const creates: ReviewFields[] = [];
     const updates: RecordUpdate<ReviewFields>[] = [];
     for (const coding of parsed.codings) {
@@ -67,14 +61,24 @@ export default async function handler(
     }
 
     await deleteRecords(
-      env.pat,
-      env.baseId,
-      env.reviewsTable,
+      airtable.pat,
+      airtable.baseId,
+      airtable.reviewsTable,
       parsed.staleReviewIds,
     );
     const [created, updated] = await Promise.all([
-      createRecords(env.pat, env.baseId, env.reviewsTable, creates),
-      updateRecords(env.pat, env.baseId, env.reviewsTable, updates),
+      createRecords(
+        airtable.pat,
+        airtable.baseId,
+        airtable.reviewsTable,
+        creates,
+      ),
+      updateRecords(
+        airtable.pat,
+        airtable.baseId,
+        airtable.reviewsTable,
+        updates,
+      ),
     ]);
 
     const responses = [...created, ...updated]
@@ -84,9 +88,9 @@ export default async function handler(
       (a, b) => REVIEW_FIELDS.indexOf(a.field) - REVIEW_FIELDS.indexOf(b.field),
     );
     const body: SaveCodingsResponse = { riskId: parsed.riskId, responses };
-    res.status(200).json(body);
+    return Response.json(body);
   } catch (error) {
-    handleError(res, error);
+    return handleError(error);
   }
 }
 

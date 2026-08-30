@@ -1,35 +1,32 @@
-import type { VercelRequest, VercelResponse } from "@vercel/node";
+import {
+  type AirtableRecord,
+  createRecord,
+  updateRecord,
+} from "@api/_airtable";
+import { readAirtableEnv, type WorkerEnv } from "@api/_env";
+import { errorResponse, handleError } from "@api/_http";
+import { type DecisionFields, STAGE } from "@api/_types";
 import {
   DECISIONS,
   type Decision,
   type DecisionRequest,
-} from "../shared/screening.js";
-import {
-  AirtableError,
-  type AirtableRecord,
-  createRecord,
-  updateRecord,
-} from "./_airtable.js";
-import { readAirtableEnv } from "./_env.js";
-import { type DecisionFields, STAGE } from "./_types.js";
+} from "@shared/screening";
 
 export default async function handler(
-  req: VercelRequest,
-  res: VercelResponse,
-): Promise<void> {
-  if (req.method !== "POST") {
-    res.status(405).json({ error: "Method not allowed" });
-    return;
+  request: Request,
+  env: WorkerEnv,
+): Promise<Response> {
+  if (request.method !== "POST") {
+    return errorResponse(405, "Method not allowed");
   }
 
-  const parsed = parseBody(req.body);
+  const parsed = parseBody(await request.json().catch(() => null));
   if (parsed === null) {
-    res.status(400).json({ error: "Invalid request body" });
-    return;
+    return errorResponse(400, "Invalid request body");
   }
 
   try {
-    const env = readAirtableEnv();
+    const airtable = readAirtableEnv(env);
     const fields: DecisionFields = {
       Document: [parsed.documentId],
       Reviewer: parsed.reviewer,
@@ -40,35 +37,28 @@ export default async function handler(
     let record: AirtableRecord<DecisionFields>;
     if (parsed.decisionId === null) {
       record = await createRecord(
-        env.pat,
-        env.baseId,
-        env.decisionsTable,
+        airtable.pat,
+        airtable.baseId,
+        airtable.decisionsTable,
         fields,
       );
     } else {
       record = await updateRecord(
-        env.pat,
-        env.baseId,
-        env.decisionsTable,
+        airtable.pat,
+        airtable.baseId,
+        airtable.decisionsTable,
         parsed.decisionId,
         fields,
       );
     }
-    res.status(200).json({
+    return Response.json({
       documentId: parsed.documentId,
       decisionId: record.id,
       decision: parsed.decision,
       comments: parsed.comments,
     });
   } catch (error) {
-    if (error instanceof AirtableError) {
-      res
-        .status(502)
-        .json({ error: "Airtable request failed", detail: error.body });
-      return;
-    }
-    const message = error instanceof Error ? error.message : String(error);
-    res.status(500).json({ error: message });
+    return handleError(error);
   }
 }
 

@@ -1,4 +1,4 @@
-import type { Decision, Stage } from "../shared/screening.js";
+import type { Decision, Stage } from "@shared/screening";
 
 export const STAGE: Stage = "abstract";
 

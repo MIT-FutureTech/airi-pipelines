@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "dev:vercel": "vercel dev",
     "build": "tsc --noEmit && vite build",
+    "deploy": "npm run build && wrangler deploy",
     "preview": "vite preview",
     "lint": "biome lint --write",
     "format": "biome format --write",
@@ -26,17 +26,17 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.8",
+    "@cloudflare/vite-plugin": "^1.53.1",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@vercel/node": "^5.0.0",
     "@vitejs/plugin-react": "^4.3.4",
     "postcss": "^8.4.49",
     "postcss-preset-mantine": "^1.17.0",
     "postcss-simple-vars": "^7.0.1",
     "typescript": "^5",
-    "vercel": "^54.0.0",
     "vite": "^6.0.0",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.10",
+    "wrangler": "^4.125.0"
   }
 }

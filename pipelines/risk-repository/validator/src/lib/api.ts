@@ -34,8 +34,8 @@ async function fetchJson<T>(url: string, label: string): Promise<T> {
   if (!contentType.includes("application/json")) {
     throw new Error(
       `Failed to load ${label}: expected JSON from ${url} but the content type ` +
-        `was ${contentType}. Run \`npm run dev:vercel\`, or set ` +
-        "VITE_API_PROXY_TARGET to use a deployed API.",
+        `was ${contentType}. Set VITE_API_PROXY_TARGET to use a ` +
+        "deployed API.",
     );
   }
   return (await response.json()) as T;

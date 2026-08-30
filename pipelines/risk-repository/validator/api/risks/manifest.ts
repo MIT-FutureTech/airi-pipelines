@@ -1,4 +1,19 @@
-import type { VercelRequest, VercelResponse } from "@vercel/node";
+import {
+  type AirtableRecord,
+  escapeFormulaString,
+  listAllRecords,
+} from "@api/_airtable";
+import { readAirtableEnv, type WorkerEnv } from "@api/_env";
+import { parseEvidence } from "@api/_evidence";
+import { errorResponse, handleError, queryParam } from "@api/_http";
+import {
+  fetchVisibleReviewsForPaper,
+  indexReviewsByRisk,
+  isPipelineReviewer,
+  toReviewResponse,
+  toReviewRow,
+} from "@api/_reviews";
+import { codableIds, parentId } from "@api/_tree";
 import {
   type ProposedExtractionFields,
   REVIEW_MODES,
@@ -8,23 +23,7 @@ import {
   type RiskFields,
   type RiskManifestResponse,
   type RiskOrigin,
-} from "../../shared/classification.js";
-import {
-  type AirtableRecord,
-  escapeFormulaString,
-  listAllRecords,
-} from "../_airtable.js";
-import { readAirtableEnv } from "../_env.js";
-import { parseEvidence } from "../_evidence.js";
-import { handleError, queryString } from "../_http.js";
-import {
-  fetchVisibleReviewsForPaper,
-  indexReviewsByRisk,
-  isPipelineReviewer,
-  toReviewResponse,
-  toReviewRow,
-} from "../_reviews.js";
-import { codableIds, parentId } from "../_tree.js";
+} from "@shared/classification";
 
 const RISK_FETCH_FIELDS = [
   "ReadableId",
@@ -39,45 +38,48 @@ const RISK_FETCH_FIELDS = [
 ];
 
 export default async function handler(
-  req: VercelRequest,
-  res: VercelResponse,
-): Promise<void> {
-  if (req.method !== "GET") {
-    res.status(405).json({ error: "Method not allowed" });
-    return;
+  request: Request,
+  env: WorkerEnv,
+): Promise<Response> {
+  if (request.method !== "GET") {
+    return errorResponse(405, "Method not allowed");
   }
 
-  const quickRef = queryString(req.query.quickRef);
-  const reviewer = queryString(req.query.reviewer);
-  const mode = queryString(req.query.mode);
+  const params = new URL(request.url).searchParams;
+  const quickRef = queryParam(params, "quickRef");
+  const reviewer = queryParam(params, "reviewer");
+  const mode = queryParam(params, "mode");
 
   if (quickRef === null) {
-    res.status(400).json({ error: "quickRef query parameter is required" });
-    return;
+    return errorResponse(400, "quickRef query parameter is required");
   }
   if (reviewer === null) {
-    res.status(400).json({ error: "reviewer query parameter is required" });
-    return;
+    return errorResponse(400, "reviewer query parameter is required");
   }
   if (mode === null || !isMode(mode)) {
-    res
-      .status(400)
-      .json({ error: 'mode query parameter must be "blind" or "anchored"' });
-    return;
+    return errorResponse(
+      400,
+      'mode query parameter must be "blind" or "anchored"',
+    );
   }
 
   try {
-    const env = readAirtableEnv();
+    const airtable = readAirtableEnv(env);
     const [risks, reviews, papers] = await Promise.all([
-      listAllRecords<RiskFields>(env.pat, env.baseId, env.risksTable, {
-        filterByFormula: `{QuickRef}="${escapeFormulaString(quickRef)}"`,
-        fields: RISK_FETCH_FIELDS,
-      }),
-      fetchVisibleReviewsForPaper(env, reviewer, quickRef, mode),
+      listAllRecords<RiskFields>(
+        airtable.pat,
+        airtable.baseId,
+        airtable.risksTable,
+        {
+          filterByFormula: `{QuickRef}="${escapeFormulaString(quickRef)}"`,
+          fields: RISK_FETCH_FIELDS,
+        },
+      ),
+      fetchVisibleReviewsForPaper(airtable, reviewer, quickRef, mode),
       listAllRecords<ProposedExtractionFields>(
-        env.pat,
-        env.baseId,
-        env.proposedExtractionsTable,
+        airtable.pat,
+        airtable.baseId,
+        airtable.proposedExtractionsTable,
         {
           filterByFormula: `{QuickRef}="${escapeFormulaString(quickRef)}"`,
           fields: ["Title"],
@@ -98,9 +100,9 @@ export default async function handler(
       mode,
       risks: entries,
     };
-    res.status(200).json(body);
+    return Response.json(body);
   } catch (error) {
-    handleError(res, error);
+    return handleError(error);
   }
 }
 
