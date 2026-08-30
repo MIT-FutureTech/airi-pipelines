@@ -1,0 +1,28 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "risk-repository-validator",
+  "main": "./api/worker.ts",
+  "compatibility_date": "2026-08-27",
+  "preview_urls": true,
+  "observability": {
+    "enabled": true,
+    "logs": {
+      "enabled": true
+    }
+  },
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+  "vars": {
+    "AIRTABLE_BASE_ID": "app32FOUBa5WcUfEO",
+    "AIRTABLE_DOCUMENTS_TABLE": "Documents 2026",
+    "AIRTABLE_DOCUMENTS_VIEW": "Human Screening",
+    "AIRTABLE_DECISIONS_TABLE": "Documents 2026 Screening Decisions",
+    "AIRTABLE_RISKS_TABLE": "Risks 2026",
+    "AIRTABLE_REVIEWS_TABLE": "Classification Reviews 2026",
+    "AIRTABLE_PROPOSED_EXTRACTIONS_TABLE": "Proposed Extractions",
+    "AIRTABLE_FULL_TEXT_TABLE": "Full-Text Screening"
+  }
+}

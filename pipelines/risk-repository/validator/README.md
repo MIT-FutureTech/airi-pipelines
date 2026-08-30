@@ -11,12 +11,12 @@ extraction, risk classification) to the app in the future.
 ## Architecture
 
 - **Frontend**: Vite + React 19 + Mantine
-- **Backend**: Vercel serverless functions in `api/`
+- **Backend**: Cloudflare Worker in `api/`
 - **Storage**: Airtable
 
 ## Local development
 
-Then from this folder:
+From this folder:
 
 ```bash
 npm install
@@ -30,30 +30,24 @@ deployed backend.
 
 ### Deployment
 
-This app deploys to Vercel as a static site plus serverless functions.
+This app deploys to Cloudflare as a single Worker. The Worker serves the built
+frontend from `dist/` and handles `/api/*` itself.
 
 #### One-time Setup
 
-Install the [Vercel CLI](https://vercel.com/docs/cli):
-
 ```bash
-npm install -g vercel
-vercel login
-vercel link
+npx wrangler login
 ```
+
+Be sure that the following Developer Platform permissions are enabled:
+
+- Workers Write
+- Workers Scripts Write
 
 #### Deploy
 
-Deploy to preview:
-
 ```bash
-vercel deploy --target preview
-```
-
-Deploy to production:
-
-```bash
-vercel deploy --target production
+npm run deploy
 ```
 
 ### Checks

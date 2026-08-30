@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
+    "deploy": "npm run build && wrangler deploy",
     "preview": "vite preview",
     "lint": "biome lint --write",
     "format": "biome format --write",
