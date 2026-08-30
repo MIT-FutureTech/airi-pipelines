@@ -1,4 +1,3 @@
-import type { VercelRequest } from "@vercel/node";
 import { AirtableError } from "./_airtable.js";
 
 export function errorResponse(status: number, message: string): Response {
@@ -14,10 +13,6 @@ export function handleError(error: unknown): Response {
   }
   const message = error instanceof Error ? error.message : String(error);
   return Response.json({ error: message }, { status: 500 });
-}
-
-export function searchParams(req: VercelRequest): URLSearchParams {
-  return new URLSearchParams(req.url?.split("?")[1] ?? "");
 }
 
 export function queryParam(
