@@ -1,3 +1,14 @@
+import { type AirtableRecord, listAllRecords } from "@api/_airtable";
+import { readAirtableEnv, type WorkerEnv } from "@api/_env";
+import { errorResponse, handleError, queryParam } from "@api/_http";
+import {
+  fetchVisibleReviews,
+  indexReviewsByRisk,
+  isPipelineReviewer,
+  type ReviewRow,
+  toReviewRow,
+} from "@api/_reviews";
+import { codableIds } from "@api/_tree";
 import type {
   PaperEntry,
   PaperState,
@@ -5,19 +16,8 @@ import type {
   ProposedExtractionFields,
   ReviewFields,
   RiskFields,
-} from "../shared/classification.js";
-import { type Coding, isCoded } from "../shared/coding.js";
-import { type AirtableRecord, listAllRecords } from "./_airtable.js";
-import { readAirtableEnv, type WorkerEnv } from "./_env.js";
-import { errorResponse, handleError, queryParam } from "./_http.js";
-import {
-  fetchVisibleReviews,
-  indexReviewsByRisk,
-  isPipelineReviewer,
-  type ReviewRow,
-  toReviewRow,
-} from "./_reviews.js";
-import { codableIds } from "./_tree.js";
+} from "@shared/classification";
+import { type Coding, isCoded } from "@shared/coding";
 
 const PAPER_FETCH_FIELDS = [
   "QuickRef",

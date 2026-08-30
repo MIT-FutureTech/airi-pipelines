@@ -1,4 +1,17 @@
 import {
+  createRecords,
+  deleteRecords,
+  type RecordUpdate,
+  updateRecords,
+} from "@api/_airtable";
+import { readAirtableEnv, type WorkerEnv } from "@api/_env";
+import { errorResponse, handleError } from "@api/_http";
+import {
+  isPipelineReviewer,
+  toReviewResponse,
+  toReviewRow,
+} from "@api/_reviews";
+import {
   type CodingWrite,
   REVIEW_FIELD_VALUES,
   REVIEW_FIELDS,
@@ -8,21 +21,8 @@ import {
   type ReviewMode,
   type SaveCodingsRequest,
   type SaveCodingsResponse,
-} from "../shared/classification.js";
-import { conflictsWithNotARisk } from "../shared/coding.js";
-import {
-  createRecords,
-  deleteRecords,
-  type RecordUpdate,
-  updateRecords,
-} from "./_airtable.js";
-import { readAirtableEnv, type WorkerEnv } from "./_env.js";
-import { errorResponse, handleError } from "./_http.js";
-import {
-  isPipelineReviewer,
-  toReviewResponse,
-  toReviewRow,
-} from "./_reviews.js";
+} from "@shared/classification";
+import { conflictsWithNotARisk } from "@shared/coding";
 
 export default async function handler(
   request: Request,

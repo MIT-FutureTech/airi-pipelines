@@ -1,4 +1,4 @@
-import { AirtableError } from "./_airtable.js";
+import { AirtableError } from "@api/_airtable";
 
 export function errorResponse(status: number, message: string): Response {
   return Response.json({ error: message }, { status });

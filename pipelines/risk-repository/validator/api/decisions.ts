@@ -1,16 +1,16 @@
 import {
-  DECISIONS,
-  type Decision,
-  type DecisionRequest,
-} from "../shared/screening.js";
-import {
   type AirtableRecord,
   createRecord,
   updateRecord,
-} from "./_airtable.js";
-import { readAirtableEnv, type WorkerEnv } from "./_env.js";
-import { errorResponse, handleError } from "./_http.js";
-import { type DecisionFields, STAGE } from "./_types.js";
+} from "@api/_airtable";
+import { readAirtableEnv, type WorkerEnv } from "@api/_env";
+import { errorResponse, handleError } from "@api/_http";
+import { type DecisionFields, STAGE } from "@api/_types";
+import {
+  DECISIONS,
+  type Decision,
+  type DecisionRequest,
+} from "@shared/screening";
 
 export default async function handler(
   request: Request,
