@@ -38,7 +38,7 @@ export default async function handler(request: Request): Promise<Response> {
   }
 
   try {
-    const env = readAirtableEnv(process.env);
+    const airtable = readAirtableEnv(process.env);
     const creates: ReviewFields[] = [];
     const updates: RecordUpdate<ReviewFields>[] = [];
     for (const coding of parsed.codings) {
@@ -58,14 +58,24 @@ export default async function handler(request: Request): Promise<Response> {
     }
 
     await deleteRecords(
-      env.pat,
-      env.baseId,
-      env.reviewsTable,
+      airtable.pat,
+      airtable.baseId,
+      airtable.reviewsTable,
       parsed.staleReviewIds,
     );
     const [created, updated] = await Promise.all([
-      createRecords(env.pat, env.baseId, env.reviewsTable, creates),
-      updateRecords(env.pat, env.baseId, env.reviewsTable, updates),
+      createRecords(
+        airtable.pat,
+        airtable.baseId,
+        airtable.reviewsTable,
+        creates,
+      ),
+      updateRecords(
+        airtable.pat,
+        airtable.baseId,
+        airtable.reviewsTable,
+        updates,
+      ),
     ]);
 
     const responses = [...created, ...updated]

@@ -18,11 +18,11 @@ export default async function handler(request: Request): Promise<Response> {
   }
 
   try {
-    const env = readAirtableEnv(process.env);
+    const airtable = readAirtableEnv(process.env);
     const papers = await listAllRecords<ProposedExtractionFields>(
-      env.pat,
-      env.baseId,
-      env.proposedExtractionsTable,
+      airtable.pat,
+      airtable.baseId,
+      airtable.proposedExtractionsTable,
       {
         filterByFormula: `{QuickRef}="${escapeFormulaString(quickRef)}"`,
         fields: ["Full-Text Screening"],
@@ -37,9 +37,9 @@ export default async function handler(request: Request): Promise<Response> {
     }
 
     const screening = await getRecord<FullTextScreeningFields>(
-      env.pat,
-      env.baseId,
-      env.fullTextTable,
+      airtable.pat,
+      airtable.baseId,
+      airtable.fullTextTable,
       screeningId,
     );
     const attachment = screening.fields.full_text_pdf?.[0];

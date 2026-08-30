@@ -19,16 +19,26 @@ export default async function handler(request: Request): Promise<Response> {
   }
 
   try {
-    const env = readAirtableEnv(process.env);
+    const airtable = readAirtableEnv(process.env);
     const [documents, decisions] = await Promise.all([
-      listAllRecords<DocumentFields>(env.pat, env.baseId, env.documentsTable, {
-        view: env.documentsView,
-        fields: ["QuickRef", "DocTitle", "Abstract"],
-      }),
-      listAllRecords<DecisionFields>(env.pat, env.baseId, env.decisionsTable, {
-        filterByFormula: `AND({Reviewer}="${escapeFormulaString(reviewer)}", {Stage}="${STAGE}")`,
-        fields: ["Document", "Decision", "Comments"],
-      }),
+      listAllRecords<DocumentFields>(
+        airtable.pat,
+        airtable.baseId,
+        airtable.documentsTable,
+        {
+          view: airtable.documentsView,
+          fields: ["QuickRef", "DocTitle", "Abstract"],
+        },
+      ),
+      listAllRecords<DecisionFields>(
+        airtable.pat,
+        airtable.baseId,
+        airtable.decisionsTable,
+        {
+          filterByFormula: `AND({Reviewer}="${escapeFormulaString(reviewer)}", {Stage}="${STAGE}")`,
+          fields: ["Document", "Decision", "Comments"],
+        },
+      ),
     ]);
 
     const byDocId = indexDecisionsByDocument(decisions);

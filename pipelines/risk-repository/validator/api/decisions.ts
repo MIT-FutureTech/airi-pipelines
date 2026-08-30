@@ -23,7 +23,7 @@ export default async function handler(request: Request): Promise<Response> {
   }
 
   try {
-    const env = readAirtableEnv(process.env);
+    const airtable = readAirtableEnv(process.env);
     const fields: DecisionFields = {
       Document: [parsed.documentId],
       Reviewer: parsed.reviewer,
@@ -34,16 +34,16 @@ export default async function handler(request: Request): Promise<Response> {
     let record: AirtableRecord<DecisionFields>;
     if (parsed.decisionId === null) {
       record = await createRecord(
-        env.pat,
-        env.baseId,
-        env.decisionsTable,
+        airtable.pat,
+        airtable.baseId,
+        airtable.decisionsTable,
         fields,
       );
     } else {
       record = await updateRecord(
-        env.pat,
-        env.baseId,
-        env.decisionsTable,
+        airtable.pat,
+        airtable.baseId,
+        airtable.decisionsTable,
         parsed.decisionId,
         fields,
       );
