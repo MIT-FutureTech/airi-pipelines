@@ -58,13 +58,13 @@ export function reviewerScopeFormula(
 
 // One human's rows plus the pipeline's, across every paper
 export async function fetchVisibleReviews(
-  env: AirtableEnv,
+  airtable: AirtableEnv,
   reviewer: string,
 ): Promise<AirtableRecord<ReviewFields>[]> {
   return await listAllRecordsSharded<ReviewFields>(
-    env.pat,
-    env.baseId,
-    env.reviewsTable,
+    airtable.pat,
+    airtable.baseId,
+    airtable.reviewsTable,
     {
       filterByFormula: ownAndPipeline(reviewer),
       fields: REVIEW_FETCH_FIELDS,
@@ -74,7 +74,7 @@ export async function fetchVisibleReviews(
 }
 
 export async function fetchVisibleReviewsForPaper(
-  env: AirtableEnv,
+  airtable: AirtableEnv,
   reviewer: string,
   quickRef: string,
   mode: ReviewMode,
@@ -82,9 +82,9 @@ export async function fetchVisibleReviewsForPaper(
   const paperScope = paperScopeFormula(quickRef);
   const reviewers = reviewerScopeFormula(reviewer, mode);
   return await listAllRecords<ReviewFields>(
-    env.pat,
-    env.baseId,
-    env.reviewsTable,
+    airtable.pat,
+    airtable.baseId,
+    airtable.reviewsTable,
     {
       filterByFormula: `AND(${paperScope}, ${reviewers})`,
       fields: REVIEW_FETCH_FIELDS,

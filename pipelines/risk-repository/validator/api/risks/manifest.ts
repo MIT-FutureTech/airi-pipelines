@@ -61,17 +61,22 @@ export default async function handler(request: Request): Promise<Response> {
   }
 
   try {
-    const env = readAirtableEnv(process.env);
+    const airtable = readAirtableEnv(process.env);
     const [risks, reviews, papers] = await Promise.all([
-      listAllRecords<RiskFields>(env.pat, env.baseId, env.risksTable, {
-        filterByFormula: `{QuickRef}="${escapeFormulaString(quickRef)}"`,
-        fields: RISK_FETCH_FIELDS,
-      }),
-      fetchVisibleReviewsForPaper(env, reviewer, quickRef, mode),
+      listAllRecords<RiskFields>(
+        airtable.pat,
+        airtable.baseId,
+        airtable.risksTable,
+        {
+          filterByFormula: `{QuickRef}="${escapeFormulaString(quickRef)}"`,
+          fields: RISK_FETCH_FIELDS,
+        },
+      ),
+      fetchVisibleReviewsForPaper(airtable, reviewer, quickRef, mode),
       listAllRecords<ProposedExtractionFields>(
-        env.pat,
-        env.baseId,
-        env.proposedExtractionsTable,
+        airtable.pat,
+        airtable.baseId,
+        airtable.proposedExtractionsTable,
         {
           filterByFormula: `{QuickRef}="${escapeFormulaString(quickRef)}"`,
           fields: ["Title"],

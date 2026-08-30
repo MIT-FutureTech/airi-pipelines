@@ -39,18 +39,23 @@ export default async function handler(request: Request): Promise<Response> {
   }
 
   try {
-    const env = readAirtableEnv(process.env);
+    const airtable = readAirtableEnv(process.env);
     const [papers, risks, reviews] = await Promise.all([
       listAllRecords<ProposedExtractionFields>(
-        env.pat,
-        env.baseId,
-        env.proposedExtractionsTable,
+        airtable.pat,
+        airtable.baseId,
+        airtable.proposedExtractionsTable,
         { fields: PAPER_FETCH_FIELDS },
       ),
-      listAllRecords<RiskFields>(env.pat, env.baseId, env.risksTable, {
-        fields: RISK_FETCH_FIELDS,
-      }),
-      fetchVisibleReviews(env, reviewer),
+      listAllRecords<RiskFields>(
+        airtable.pat,
+        airtable.baseId,
+        airtable.risksTable,
+        {
+          fields: RISK_FETCH_FIELDS,
+        },
+      ),
+      fetchVisibleReviews(airtable, reviewer),
     ]);
 
     const codable = codableIds(risks);
