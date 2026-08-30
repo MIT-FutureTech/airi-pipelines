@@ -16,17 +16,20 @@ extraction, risk classification) to the app in the future.
 
 ## Local development
 
-From this folder:
+From this folder, run these steps once to set up your development environment.
 
 ```bash
+# Do once
 npm install
 cp .env.example .env
 # fill in .env
 ```
 
-Set `VITE_API_PROXY_TARGET` in `.env` to a deployed API URL and run
-`npm run dev`. Vite will serve the frontend locally and forward `/api/*` to the
-deployed backend.
+Then anytime you want to start the app, run this:
+
+```bash
+npm run dev
+```
 
 ### Deployment
 
