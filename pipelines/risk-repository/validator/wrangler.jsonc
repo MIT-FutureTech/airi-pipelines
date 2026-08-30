@@ -1,6 +1,7 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "risk-repository-validator",
+  "account_id": "dee3a047356fdb8bb892c9cf407d4554",
   "main": "./api/worker.ts",
   "compatibility_date": "2026-08-27",
   "preview_urls": true,
