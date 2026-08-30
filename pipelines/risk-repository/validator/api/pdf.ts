@@ -4,10 +4,13 @@ import type {
   ProposedExtractionFields,
 } from "../shared/classification.js";
 import { escapeFormulaString, getRecord, listAllRecords } from "./_airtable.js";
-import { readAirtableEnv } from "./_env.js";
+import { readAirtableEnv, type WorkerEnv } from "./_env.js";
 import { errorResponse, handleError, queryParam } from "./_http.js";
 
-export default async function handler(request: Request): Promise<Response> {
+export default async function handler(
+  request: Request,
+  env: WorkerEnv,
+): Promise<Response> {
   if (request.method !== "GET") {
     return errorResponse(405, "Method not allowed");
   }
@@ -18,7 +21,7 @@ export default async function handler(request: Request): Promise<Response> {
   }
 
   try {
-    const airtable = readAirtableEnv(process.env);
+    const airtable = readAirtableEnv(env);
     const papers = await listAllRecords<ProposedExtractionFields>(
       airtable.pat,
       airtable.baseId,

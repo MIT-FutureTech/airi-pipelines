@@ -8,11 +8,14 @@ import {
   createRecord,
   updateRecord,
 } from "./_airtable.js";
-import { readAirtableEnv } from "./_env.js";
+import { readAirtableEnv, type WorkerEnv } from "./_env.js";
 import { errorResponse, handleError } from "./_http.js";
 import { type DecisionFields, STAGE } from "./_types.js";
 
-export default async function handler(request: Request): Promise<Response> {
+export default async function handler(
+  request: Request,
+  env: WorkerEnv,
+): Promise<Response> {
   if (request.method !== "POST") {
     return errorResponse(405, "Method not allowed");
   }
@@ -23,7 +26,7 @@ export default async function handler(request: Request): Promise<Response> {
   }
 
   try {
-    const airtable = readAirtableEnv(process.env);
+    const airtable = readAirtableEnv(env);
     const fields: DecisionFields = {
       Document: [parsed.documentId],
       Reviewer: parsed.reviewer,
