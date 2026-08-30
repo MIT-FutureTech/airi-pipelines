@@ -6,9 +6,11 @@ on:
       - main
     paths:
       - "pipelines/risk-repository/validator/**"
+      - ".github/workflows/validator-ci.yml"
   pull_request:
     paths:
       - "pipelines/risk-repository/validator/**"
+      - ".github/workflows/validator-ci.yml"
 
 defaults:
   run:
