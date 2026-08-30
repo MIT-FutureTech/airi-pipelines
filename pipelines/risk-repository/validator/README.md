@@ -22,12 +22,9 @@ Then from this folder:
 npm install
 cp .env.example .env
 # fill in .env
-
-npm run dev:vercel  # You may be asked to log into Vercel
 ```
 
-For UI-only work without setting up Airtable credentials, set
-`VITE_API_PROXY_TARGET` in `.env` to a deployed Vercel URL and run
+Set `VITE_API_PROXY_TARGET` in `.env` to a deployed API URL and run
 `npm run dev`. Vite will serve the frontend locally and forward `/api/*` to the
 deployed backend.
 
