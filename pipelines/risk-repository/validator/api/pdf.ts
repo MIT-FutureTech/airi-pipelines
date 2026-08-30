@@ -1,11 +1,11 @@
+import { escapeFormulaString, getRecord, listAllRecords } from "@api/_airtable";
+import { readAirtableEnv, type WorkerEnv } from "@api/_env";
+import { errorResponse, handleError, queryParam } from "@api/_http";
 import type {
   FullTextScreeningFields,
   PdfLinkResponse,
   ProposedExtractionFields,
-} from "../shared/classification.js";
-import { escapeFormulaString, getRecord, listAllRecords } from "./_airtable.js";
-import { readAirtableEnv, type WorkerEnv } from "./_env.js";
-import { errorResponse, handleError, queryParam } from "./_http.js";
+} from "@shared/classification";
 
 export default async function handler(
   request: Request,

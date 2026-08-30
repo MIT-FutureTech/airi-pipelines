@@ -1,18 +1,18 @@
 import {
-  PIPELINE_REVIEWER_PREFIX,
-  type ReviewField,
-  type ReviewFields,
-  type ReviewMode,
-  type ReviewResponse,
-} from "../shared/classification.js";
-import {
   type AirtableRecord,
   escapeFormulaString,
   listAllRecords,
   listAllRecordsSharded,
   type ShardKey,
-} from "./_airtable.js";
-import type { AirtableEnv } from "./_env.js";
+} from "@api/_airtable";
+import type { AirtableEnv } from "@api/_env";
+import {
+  PIPELINE_REVIEWER_PREFIX,
+  type ReviewField,
+  type ReviewFields,
+  type ReviewMode,
+  type ReviewResponse,
+} from "@shared/classification";
 
 const REVIEW_FETCH_FIELDS = [
   "Risk",

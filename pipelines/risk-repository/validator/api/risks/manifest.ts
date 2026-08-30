@@ -1,4 +1,20 @@
 import {
+  type AirtableRecord,
+  escapeFormulaString,
+  listAllRecords,
+} from "@api/_airtable";
+import { readAirtableEnv, type WorkerEnv } from "@api/_env";
+import { parseEvidence } from "@api/_evidence";
+import { errorResponse, handleError, queryParam } from "@api/_http";
+import {
+  fetchVisibleReviewsForPaper,
+  indexReviewsByRisk,
+  isPipelineReviewer,
+  toReviewResponse,
+  toReviewRow,
+} from "@api/_reviews";
+import { codableIds, parentId } from "@api/_tree";
+import {
   type ProposedExtractionFields,
   REVIEW_MODES,
   type ReviewFields,
@@ -7,23 +23,7 @@ import {
   type RiskFields,
   type RiskManifestResponse,
   type RiskOrigin,
-} from "../../shared/classification.js";
-import {
-  type AirtableRecord,
-  escapeFormulaString,
-  listAllRecords,
-} from "../_airtable.js";
-import { readAirtableEnv, type WorkerEnv } from "../_env.js";
-import { parseEvidence } from "../_evidence.js";
-import { errorResponse, handleError, queryParam } from "../_http.js";
-import {
-  fetchVisibleReviewsForPaper,
-  indexReviewsByRisk,
-  isPipelineReviewer,
-  toReviewResponse,
-  toReviewRow,
-} from "../_reviews.js";
-import { codableIds, parentId } from "../_tree.js";
+} from "@shared/classification";
 
 const RISK_FETCH_FIELDS = [
   "ReadableId",

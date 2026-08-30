@@ -1,12 +1,12 @@
-import type { ManifestEntry } from "../../shared/screening.js";
 import {
   type AirtableRecord,
   escapeFormulaString,
   listAllRecords,
-} from "../_airtable.js";
-import { readAirtableEnv, type WorkerEnv } from "../_env.js";
-import { errorResponse, handleError, queryParam } from "../_http.js";
-import { type DecisionFields, type DocumentFields, STAGE } from "../_types.js";
+} from "@api/_airtable";
+import { readAirtableEnv, type WorkerEnv } from "@api/_env";
+import { errorResponse, handleError, queryParam } from "@api/_http";
+import { type DecisionFields, type DocumentFields, STAGE } from "@api/_types";
+import type { ManifestEntry } from "@shared/screening";
 
 export default async function handler(
   request: Request,

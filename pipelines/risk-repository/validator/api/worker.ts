@@ -1,11 +1,11 @@
-import type { WorkerEnv } from "./_env.js";
-import { errorResponse } from "./_http.js";
-import codings from "./codings.js";
-import decisions from "./decisions.js";
-import documentsManifest from "./documents/manifest.js";
-import papers from "./papers.js";
-import pdf from "./pdf.js";
-import risksManifest from "./risks/manifest.js";
+import type { WorkerEnv } from "@api/_env";
+import { errorResponse } from "@api/_http";
+import codings from "@api/codings";
+import decisions from "@api/decisions";
+import documentsManifest from "@api/documents/manifest";
+import papers from "@api/papers";
+import pdf from "@api/pdf";
+import risksManifest from "@api/risks/manifest";
 
 type Handler = (request: Request, env: WorkerEnv) => Promise<Response>;
 
