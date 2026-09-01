@@ -227,7 +227,7 @@ export function ClassificationReview({
     <AppShell
       header={{ height: 56 }}
       navbar={{
-        width: 340,
+        width: { base: 150, lg: 340 },
         breakpoint: "sm",
         collapsed: { mobile: !navOpened },
       }}
