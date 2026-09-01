@@ -14,7 +14,9 @@ import {
   Text,
   Textarea,
   Tooltip,
+  useMantineTheme,
 } from "@mantine/core";
+import { useMediaQuery } from "@mantine/hooks";
 import {
   AXIS_FIELDS,
   type EvidenceItem,
@@ -381,6 +383,12 @@ function NoteField({
   disabled,
   onChange,
 }: NoteFieldProps) {
+  const theme = useMantineTheme();
+  const sideBySide = useMediaQuery(
+    `(min-width: ${theme.breakpoints.md})`,
+    false,
+    { getInitialValueInEffect: false },
+  );
   return (
     <Textarea
       data-tour={anchor}
@@ -391,7 +399,7 @@ function NoteField({
         onChange(event.currentTarget.value);
       }}
       autosize
-      minRows={2}
+      minRows={sideBySide ? 2 : 1}
       maxRows={6}
     />
   );
