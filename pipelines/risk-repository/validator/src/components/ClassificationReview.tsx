@@ -12,6 +12,7 @@ import {
 import { useHotkeys } from "@mantine/hooks";
 import type { ReviewMode, RiskEntry } from "@shared/classification";
 import { isCoded } from "@shared/coding";
+import { IconArrowLeft } from "@tabler/icons-react";
 import { use, useEffect, useMemo, useState } from "react";
 import {
   HighlightSettingsDrawer,
@@ -96,6 +97,13 @@ export function ClassificationReview({
       window.removeEventListener("beforeunload", warn);
     };
   }, [hasUnsavedWork]);
+
+  const backToPapers = () => {
+    if (hasUnsavedWork && !window.confirm(unsavedWarning(dirtyIds.size))) {
+      return;
+    }
+    navigate({ name: "papers" });
+  };
 
   const checkForPipeline = async () => {
     setChecking(true);
@@ -219,6 +227,15 @@ export function ClassificationReview({
     >
       <AppShell.Header>
         <Group h="100%" px="md" gap="md" wrap="nowrap">
+          <Button
+            variant="subtle"
+            size="compact-sm"
+            leftSection={<IconArrowLeft size={16} />}
+            onClick={backToPapers}
+            style={{ flexShrink: 0 }}
+          >
+            Papers
+          </Button>
           <Title order={4} style={{ flexShrink: 0 }}>
             {quickRef}
           </Title>
@@ -357,6 +374,11 @@ function WaitingForPipeline({
       </Stack>
     </Center>
   );
+}
+
+function unsavedWarning(dirtyCount: number): string {
+  const risks = dirtyCount === 1 ? "1 risk has" : `${dirtyCount} risks have`;
+  return `${risks} unsaved changes. Leave without saving?`;
 }
 
 function firstUncodedId(risks: RiskEntry[]): string | null {
