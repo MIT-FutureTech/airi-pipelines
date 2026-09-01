@@ -1,5 +1,6 @@
 import {
   AppShell,
+  Burger,
   Button,
   Group,
   Kbd,
@@ -8,7 +9,7 @@ import {
   Title,
   Tooltip,
 } from "@mantine/core";
-import { useHotkeys } from "@mantine/hooks";
+import { useDisclosure, useHotkeys } from "@mantine/hooks";
 import type { Decision, ManifestEntry } from "@shared/screening";
 import { IconKeyboard } from "@tabler/icons-react";
 import { use, useMemo, useState } from "react";
@@ -43,6 +44,8 @@ export function Validator({ reviewer }: Props) {
     return firstUndecidedId(initial.documents);
   });
   const [search, setSearch] = useState("");
+  const [navOpened, { toggle: toggleNav, close: closeNav }] =
+    useDisclosure(false);
   const highlight = useHighlightGroups("screening");
 
   const activeIndex = useMemo(() => {
@@ -55,6 +58,7 @@ export function Validator({ reviewer }: Props) {
   const activeEntry = activeIndex === -1 ? null : manifest[activeIndex];
 
   const selectAndScroll = (id: string | null) => {
+    closeNav();
     setActiveId(id);
     const readableId =
       id === null
@@ -117,12 +121,25 @@ export function Validator({ reviewer }: Props) {
   return (
     <AppShell
       header={{ height: 56 }}
-      navbar={{ width: 320, breakpoint: "sm" }}
+      navbar={{
+        width: 320,
+        breakpoint: "sm",
+        collapsed: { mobile: !navOpened },
+      }}
       padding="md"
     >
       <AppShell.Header>
         <Group h="100%" px="md" justify="space-between">
-          <Title order={4}>Risk Repository Validator</Title>
+          <Group gap="sm" wrap="nowrap">
+            <Burger
+              opened={navOpened}
+              onClick={toggleNav}
+              hiddenFrom="sm"
+              size="sm"
+              aria-label="Toggle document list"
+            />
+            <Title order={4}>Risk Repository Validator</Title>
+          </Group>
           <Group gap="lg">
             <HighlightToggle onClick={highlight.toggleDrawer} />
             <Tooltip

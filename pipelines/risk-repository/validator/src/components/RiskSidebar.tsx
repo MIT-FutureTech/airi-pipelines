@@ -1,4 +1,12 @@
-import { Badge, NavLink, ScrollArea, Stack, Text } from "@mantine/core";
+import {
+  Badge,
+  NavLink,
+  ScrollArea,
+  Stack,
+  Text,
+  useMantineTheme,
+} from "@mantine/core";
+import { useMediaQuery } from "@mantine/hooks";
 import { REJECTED_ORIGIN, type RiskEntry } from "@shared/classification";
 import { isCoded, isNotARisk } from "@shared/coding";
 import { useMemo } from "react";
@@ -15,6 +23,10 @@ interface Props {
 const MARKER_WIDTH = "2.5rem";
 
 export function RiskSidebar({ risks, activeId, dirtyIds, onSelect }: Props) {
+  const theme = useMantineTheme();
+  const rail = !useMediaQuery(`(min-width: ${theme.breakpoints.lg})`, false, {
+    getInitialValueInEffect: false,
+  });
   const index = useMemo(() => indexRisks(risks), [risks]);
   const codable = codableRisks(risks);
   const codedCount = codable.filter((risk) => isCoded(risk.responses)).length;
@@ -33,6 +45,7 @@ export function RiskSidebar({ risks, activeId, dirtyIds, onSelect }: Props) {
                 key={entry.id}
                 entry={entry}
                 indent={indent}
+                rail={rail}
                 active={entry.id === activeId}
                 dirty={dirtyIds.has(entry.id)}
                 onClick={() => {
@@ -40,7 +53,12 @@ export function RiskSidebar({ risks, activeId, dirtyIds, onSelect }: Props) {
                 }}
               />
             ) : (
-              <GroupingRow key={entry.id} entry={entry} indent={indent} />
+              <GroupingRow
+                key={entry.id}
+                entry={entry}
+                indent={indent}
+                rail={rail}
+              />
             );
           })}
         </Stack>
@@ -56,6 +74,7 @@ function indentStyle(indent: number): string {
 interface CodableRowProps {
   entry: RiskEntry;
   indent: number;
+  rail: boolean;
   active: boolean;
   dirty: boolean;
   onClick: () => void;
@@ -64,35 +83,50 @@ interface CodableRowProps {
 function CodableRow({
   entry,
   indent,
+  rail,
   active,
   dirty,
   onClick,
 }: CodableRowProps) {
   const notARisk = isNotARisk(entry.responses);
   const coded = isCoded(entry.responses);
+  const marker = (
+    <Badge
+      size="sm"
+      variant={dirty ? "filled" : "light"}
+      color={dirty ? "orange" : coded && !notARisk ? "green" : "gray"}
+      w={MARKER_WIDTH}
+      title={markerHint(dirty, coded, notARisk)}
+    >
+      {notARisk ? "NR" : coded ? "✓" : "—"}
+    </Badge>
+  );
+  const readableId = (
+    <Text size="xs" c="dimmed" truncate="start" ta="left">
+      {entry.readableId}
+    </Text>
+  );
   return (
     <NavLink
       data-risk-id={entry.id}
       active={active}
       onClick={onClick}
       pl={indentStyle(indent)}
+      title={rail ? entry.name : undefined}
       label={
-        <Text size="sm" lineClamp={2}>
-          {entry.name}
-        </Text>
+        rail ? (
+          <Stack gap={2}>
+            {marker}
+            {readableId}
+          </Stack>
+        ) : (
+          <Text size="sm" lineClamp={2}>
+            {entry.name}
+          </Text>
+        )
       }
-      description={entry.readableId}
-      leftSection={
-        <Badge
-          size="sm"
-          variant={dirty ? "filled" : "light"}
-          color={dirty ? "orange" : coded && !notARisk ? "green" : "gray"}
-          w={MARKER_WIDTH}
-          title={markerHint(dirty, coded, notARisk)}
-        >
-          {notARisk ? "NR" : coded ? "✓" : "—"}
-        </Badge>
-      }
+      description={rail ? undefined : readableId}
+      leftSection={rail ? undefined : marker}
     />
   );
 }
@@ -107,8 +141,15 @@ function markerHint(dirty: boolean, coded: boolean, notARisk: boolean): string {
   return coded ? "Coded" : "Not coded yet";
 }
 
-function GroupingRow({ entry, indent }: { entry: RiskEntry; indent: number }) {
+interface GroupingRowProps {
+  entry: RiskEntry;
+  indent: number;
+  rail: boolean;
+}
+
+function GroupingRow({ entry, indent, rail }: GroupingRowProps) {
   const rejected = entry.origin === REJECTED_ORIGIN;
+  const struck = rejected ? "line-through" : undefined;
   return (
     <Stack
       gap={0}
@@ -116,16 +157,20 @@ function GroupingRow({ entry, indent }: { entry: RiskEntry; indent: number }) {
       pl={indentStyle(indent)}
       pr="xs"
       opacity={rejected ? 0.6 : 1}
+      title={rail ? entry.name : undefined}
     >
+      {rail ? null : (
+        <Text size="sm" fw={600} lineClamp={2} td={struck}>
+          {entry.name}
+        </Text>
+      )}
       <Text
-        size="sm"
-        fw={600}
-        lineClamp={2}
-        td={rejected ? "line-through" : undefined}
+        size="xs"
+        c="dimmed"
+        truncate="start"
+        ta="left"
+        td={rail ? struck : undefined}
       >
-        {entry.name}
-      </Text>
-      <Text size="xs" c="dimmed">
         {entry.readableId}
       </Text>
     </Stack>

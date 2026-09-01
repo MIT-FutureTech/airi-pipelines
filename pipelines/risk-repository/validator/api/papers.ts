@@ -10,6 +10,7 @@ import {
 } from "@api/_reviews";
 import { codableIds } from "@api/_tree";
 import type {
+  AirtableCollaborator,
   PaperEntry,
   PaperState,
   PapersResponse,
@@ -113,13 +114,22 @@ export function buildEntry(
   return {
     quickRef,
     title: fields.Title?.[0] ?? null,
-    assignee: fields.ClassificationReviewer?.name ?? null,
+    assignee: collaboratorLabel(fields.ClassificationReviewer),
     progress: fields.ClassificationProgress ?? null,
     state: paperState(risks.length, codableRisks.length, pipelineCodedCount),
     codableCount: codableRisks.length,
     reviewerCodedCount,
     pipelineCodedCount,
   };
+}
+
+function collaboratorLabel(
+  collaborator: AirtableCollaborator | undefined,
+): string | null {
+  if (collaborator === undefined) {
+    return null;
+  }
+  return collaborator.name ?? collaborator.email ?? null;
 }
 
 export function paperState(

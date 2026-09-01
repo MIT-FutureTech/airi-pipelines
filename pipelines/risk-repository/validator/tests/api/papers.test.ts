@@ -187,7 +187,14 @@ describe("buildEntry paper fields", () => {
     expect(entry.progress).toBeNull();
   });
 
-  it("reports a collaborator with no name as unassigned", () => {
+  it("falls back to the email of a collaborator with no name", () => {
+    const entry = entryFor([], new Set(), new Map(), {
+      ClassificationReviewer: { id: "usr1", email: "example@example.edu" },
+    });
+    expect(entry.assignee).toBe("example@example.edu");
+  });
+
+  it("reports a collaborator with neither name nor email as unassigned", () => {
     const entry = entryFor([], new Set(), new Map(), {
       ClassificationReviewer: { id: "usr1" },
     });
