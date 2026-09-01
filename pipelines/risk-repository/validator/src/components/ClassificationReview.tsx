@@ -2,6 +2,7 @@ import {
   Alert,
   AppShell,
   Badge,
+  Burger,
   Button,
   Center,
   Group,
@@ -9,9 +10,10 @@ import {
   Text,
   Title,
 } from "@mantine/core";
-import { useHotkeys } from "@mantine/hooks";
+import { useDisclosure, useHotkeys } from "@mantine/hooks";
 import type { ReviewMode, RiskEntry } from "@shared/classification";
 import { isCoded } from "@shared/coding";
+import { IconArrowLeft } from "@tabler/icons-react";
 import { use, useEffect, useMemo, useState } from "react";
 import {
   HighlightSettingsDrawer,
@@ -64,6 +66,8 @@ export function ClassificationReview({
   const [checking, setChecking] = useState(false);
   const [checkError, setCheckError] = useState<string | null>(null);
   const [expandedAncestors, setExpandedAncestors] = useState<string[]>([]);
+  const [navOpened, { toggle: toggleNav, close: closeNav }] =
+    useDisclosure(false);
   const highlight = useHighlightGroups("classification");
 
   const codable = codableRisks(risks);
@@ -97,6 +101,13 @@ export function ClassificationReview({
     };
   }, [hasUnsavedWork]);
 
+  const backToPapers = () => {
+    if (hasUnsavedWork && !window.confirm(unsavedWarning(dirtyIds.size))) {
+      return;
+    }
+    navigate({ name: "papers" });
+  };
+
   const checkForPipeline = async () => {
     setChecking(true);
     setCheckError(null);
@@ -123,6 +134,7 @@ export function ClassificationReview({
       : codable.findIndex((risk) => risk.id === activeEntry.id);
 
   const selectAndScroll = (id: string | null) => {
+    closeNav();
     setActiveId(id);
     if (id !== null) {
       requestAnimationFrame(() => {
@@ -214,11 +226,31 @@ export function ClassificationReview({
   return (
     <AppShell
       header={{ height: 56 }}
-      navbar={{ width: 340, breakpoint: "sm" }}
+      navbar={{
+        width: { base: 150, lg: 340 },
+        breakpoint: "sm",
+        collapsed: { mobile: !navOpened },
+      }}
       padding="md"
     >
       <AppShell.Header>
         <Group h="100%" px="md" gap="md" wrap="nowrap">
+          <Burger
+            opened={navOpened}
+            onClick={toggleNav}
+            hiddenFrom="sm"
+            size="sm"
+            aria-label="Toggle risk list"
+          />
+          <Button
+            variant="subtle"
+            size="compact-sm"
+            leftSection={<IconArrowLeft size={16} />}
+            onClick={backToPapers}
+            style={{ flexShrink: 0 }}
+          >
+            Papers
+          </Button>
           <Title order={4} style={{ flexShrink: 0 }}>
             {quickRef}
           </Title>
@@ -357,6 +389,11 @@ function WaitingForPipeline({
       </Stack>
     </Center>
   );
+}
+
+function unsavedWarning(dirtyCount: number): string {
+  const risks = dirtyCount === 1 ? "1 risk has" : `${dirtyCount} risks have`;
+  return `${risks} unsaved changes. Leave without saving?`;
 }
 
 function firstUncodedId(risks: RiskEntry[]): string | null {
