@@ -1,0 +1,56 @@
+name: Risk Repository Validator Preview
+
+on:
+  workflow_dispatch:
+    inputs:
+      alias:
+        description: "Optional alias for preview URL: lowercase letters, numbers and dashes only"
+        required: false
+        type: string
+
+defaults:
+  run:
+    shell: bash
+    working-directory: pipelines/risk-repository/validator
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: pipelines/risk-repository/validator/package-lock.json
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload version
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          ALIAS: ${{ inputs.alias }}
+          ACTOR: ${{ github.actor }}
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          args=(
+            --tag "${GITHUB_SHA::7}"
+            --message "$BRANCH: $(git log -1 --pretty=%s) (uploaded by $ACTOR)"
+          )
+          if [[ -n "$ALIAS" ]]; then
+            args+=(--preview-alias "$ALIAS")
+          fi
+          npx wrangler versions upload "${args[@]}" | tee "$RUNNER_TEMP/upload.log"
+          {
+            echo "### Preview URLs"
+            grep -oE 'https://[a-z0-9.-]+\.workers\.dev' "$RUNNER_TEMP/upload.log" |
+              sort -u |
+              sed 's/^/- /' ||
+              echo "- (none found)"
+          } >> "$GITHUB_STEP_SUMMARY"
