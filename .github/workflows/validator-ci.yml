@@ -14,6 +14,7 @@ on:
 
 defaults:
   run:
+    shell: bash
     working-directory: pipelines/risk-repository/validator
 
 jobs:
@@ -63,8 +64,10 @@ jobs:
         run: npm run build
 
       - name: Deploy
-        uses: cloudflare/wrangler-action@v4
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          workingDirectory: pipelines/risk-repository/validator
-          command: deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          ACTOR: ${{ github.actor }}
+        run: |
+          npx wrangler deploy \
+            --tag "${GITHUB_SHA::7}" \
+            --message "$(git log -1 --pretty=%s) (deployed by $ACTOR)"
