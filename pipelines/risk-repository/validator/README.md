@@ -62,6 +62,7 @@ gives you a way to share preliminary changes with a select group. From this
 folder run,
 
 ```bash
+npm run build
 npx wrangler versions upload
 ```
 
@@ -73,6 +74,7 @@ send that URL to others to share your changes.
 You can also give your preview an alias like this:
 
 ```bash
+npm run build
 npx wrangler versions upload --preview-alias staging
 ```
 
