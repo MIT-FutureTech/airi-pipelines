@@ -9,7 +9,7 @@ _PIPELINE_DIR = Path(__file__).parent.parent.parent
 DEFAULT_CORPUS_PATH = (
     _PIPELINE_DIR / "input" / "oecd_policy_initiatives_extracted_results.csv"
 )
-DEFAULT_MODEL = "google/gemini-3.8-flash"
+DEFAULT_MODEL = "google/gemini-3.5-flash-lite"
 DEFAULT_CONCURRENCY = 5
 DEFAULT_LLM_RATE_LIMIT_RPS = 10.0
 
@@ -64,9 +64,11 @@ class AgoraScreeningSettings(
     temperature: float = Field(
         default=0.0,
         description="""
-            Sampling temperature. Zero by default so that re-running a document
-            reproduces its score, which the invariance checks in
-            `agora_screening.compare` depend on.
+            Sampling temperature. Zero by default, but note that this does NOT make
+            scoring deterministic: re-running 100 documents unchanged reproduced 72
+            of them exactly, 91 within five points, and moved three by more than
+            twenty. Treat a single document's score as carrying a few points of
+            noise either way.
         """,
     )
     limit: int | None = Field(
