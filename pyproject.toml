@@ -31,8 +31,6 @@ reportExplicitAny = false
 reportUnusedCallResult = false
 
 executionEnvironments = [
-    # Add each pipeline to the search path for imports
-    { root = "pipelines/risk-repository/src" },
     # Tests are allowed to access private attributes
     { root = "toolbox-lib/tests", reportPrivateUsage = false },
     { root = "pipelines/risk-repository/tests", reportPrivateUsage = false },
