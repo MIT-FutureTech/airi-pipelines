@@ -9,7 +9,7 @@ _PIPELINE_DIR = Path(__file__).parent.parent.parent
 DEFAULT_CORPUS_PATH = (
     _PIPELINE_DIR / "input" / "oecd_policy_initiatives_extracted_results.csv"
 )
-DEFAULT_MODEL = "google/gemini-3.5-flash-lite"
+DEFAULT_MODEL = "google/gemini-3.8-flash"
 DEFAULT_CONCURRENCY = 5
 DEFAULT_LLM_RATE_LIMIT_RPS = 10.0
 
