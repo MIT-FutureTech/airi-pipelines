@@ -17,6 +17,7 @@ dev = [
 members = [
     "toolbox-lib",
     "pipelines/risk-repository",
+    "pipelines/agora-screening",
 ]
 
 [tool.basedpyright]

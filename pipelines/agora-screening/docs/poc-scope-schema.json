@@ -1,0 +1,39 @@
+{
+  "name": "agora_scope_assessment",
+  "strict": true,
+  "schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "name_original_language",
+      "name_original_language_code",
+      "name_english",
+      "scope_score",
+      "scope_score_rationale"
+    ],
+    "properties": {
+      "name_original_language": {
+        "type": "string",
+        "description": "The document's own title, COPIED CHARACTER-FOR-CHARACTER from the supplied document text. This is a TRANSCRIPTION task, not a knowledge task. The string you return MUST literally appear in the document text supplied to you. NEVER reconstruct, recall, guess, translate back, or supply a title from your own prior knowledge of this document - if you have seen this document before and know its native-language title, that is irrelevant unless that exact title appears in the supplied text. If the document prints its title in a non-Latin script (Arabic, Hangul, Japanese, Hanzi, Cyrillic, Hebrew, Thai), copy that script exactly. If the document is bilingual and prints BOTH a native title and an English one, return the native-script title. But if the supplied text is an official translation, or is simply an English-language document, its title IS English - return that English title and set the code to 'en'. Many documents from non-anglophone jurisdictions are published in English or supplied as translations; returning English for those is CORRECT, not a failure. If no title is discernible, return an empty string."
+      },
+      "name_original_language_code": {
+        "type": "string",
+        "description": "ISO 639-1 two-letter code for the language of name_original_language (e.g. 'ar' for Arabic, 'ko' for Korean, 'ja' for Japanese, 'zh' for Chinese, 'ru' for Russian, 'en' for English). Use 'en' only if the document's own official title is genuinely English. Return an empty string if name_original_language is empty."
+      },
+      "name_english": {
+        "type": "string",
+        "description": "The document's title in English. If the original title is already English, repeat it verbatim. If it is in another language, supply a faithful English translation - prefer the document's own official English rendering if it prints one, otherwise translate. If no title appears in the text, fall back to the supplied initiative name."
+      },
+      "scope_score": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 100,
+        "description": "How well the document falls within AGORA's scope, 0-100, per the banded rubric in agora_scope.md Section 4. 0 = definitively out of scope, 100 = unambiguously in scope."
+      },
+      "scope_score_rationale": {
+        "type": "string",
+        "description": "2-4 sentences justifying the score. Must cite the specific AGORA criteria that drove it - notably whether the text is operative or non-operative, whether AI is addressed directly and substantively, and the proportion of the document AI occupies. Note explicitly if the supplied text was truncated or of poor extraction quality."
+      }
+    }
+  }
+}
