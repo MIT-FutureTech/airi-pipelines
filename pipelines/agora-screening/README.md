@@ -20,15 +20,17 @@ The scoring stage is ported from a proof of concept (`docs/poc-report.md`) onto
 the shared `toolbox` library, and is exercised end to end by the tests against a
 stub LLM client.
 
-**It has not yet made a single real API call.** The repository-root `.env` is a
-byte-identical copy of `.env.example`, so `OPENROUTER_API_KEY` is still the
-placeholder and the one live attempt returned HTTP 401. Nothing downstream of
-the request has been proven against a real provider: whether OpenRouter accepts
-the OpenAI Responses API calls that `toolbox` makes, and whether the ported
-prompt reproduces the proof of concept's scores, are both open.
+It runs. A five-document sample on `google/gemini-3.8-flash` scored 5 of 5,
+verified every title against the source text, and moved a mean of 3.2 points
+against the proof of concept's scores for the same documents, with no document
+crossing the in-scope threshold. That is a different model as well as different
+code, so it is corroboration rather than proof, and it is only five documents.
 
-The offline half is done: `agora_screening.compare` runs against the baseline
-today and reproduces the report's findings.
+**The full 730-document regression run has not been done.** Until it has, the
+port is unproven at corpus scale.
+
+`agora_screening.compare` runs against the baseline today and reproduces the
+report's findings.
 
 ## Layout
 
@@ -82,8 +84,19 @@ uv run --env-file=.env -m agora_screening \
     --export-csv pipelines/agora-screening/output/results.csv
 ```
 
-`--help` lists every option. The PoC's full 730-document run cost $2.61 and took
-under six minutes.
+`--help` lists every option.
+
+## Model and cost
+
+The default is `google/gemini-3.8-flash` at temperature 0.
+
+Budget about **$9 for a full 730-document run**, measured from a five-document
+sample at 10,800 input and 1,130 output tokens per document. The proof of
+concept cost $2.61 on `google/gemini-3.5-flash-lite`, and almost all of the
+difference is output tokens: it averaged about 150 per document against this
+model's 1,130, which at $3.75 per million output tokens is where the money
+goes. Passing `--model google/gemini-3.5-flash-lite` reproduces the cheaper
+configuration.
 
 Results are one JSON file per document under `output/score/`. A second run skips
 documents already scored, so an interrupted run resumes; `--force` rescores. To
