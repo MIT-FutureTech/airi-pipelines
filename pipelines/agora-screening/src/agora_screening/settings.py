@@ -57,6 +57,13 @@ class AgoraScreeningSettings(
         default=None,
         description="Append log output to given path. Default: log.txt in the output directory.",
     )
+    report_path: Path | None = Field(
+        default=None,
+        description="""
+            Write the end-of-run summary report to this path. Default: report.md in
+            the output directory.
+        """,
+    )
     model: str = Field(
         default=DEFAULT_MODEL,
         description="LLM model to use for scoring",

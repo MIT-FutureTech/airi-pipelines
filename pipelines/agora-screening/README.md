@@ -128,7 +128,32 @@ documents already scored, so an interrupted run resumes; `--force` rescores. To
 re-run a handful after a rubric change, delete their JSON files or pass
 `--document-ids ID_0002,ID_0005`.
 
-## Reporting on a run
+## The run report
+
+Every run finishes by writing `report.md` into the output directory (or to
+`--report-path`). It is the summary of what the run did, meant to be read
+before the CSV:
+
+- **Run** - model, temperature, rubric, corpus and text budget, taken from
+  `run.json`, which the run writes before its first LLM call.
+- **Coverage** - corpus size, how many records carried scoreable text, how
+  many results are on disk, how many were written in this run versus carried
+  over from earlier runs of the same directory, and how many failed.
+- **Scores** - the banded distribution, mean and median, and the count at or
+  above the in-scope threshold: the shortlist.
+- **Highest-scoring documents** - the top ten with their English titles.
+- **Checks that need no ground truth** - title verification counts, truncation,
+  extraction quality and text invariance, each explained in one line.
+- **Token usage** - totals, with a note that cost is not captured.
+- **Outputs** - where everything landed.
+
+To rebuild it after deleting or re-scoring individual results:
+
+```bash
+uv run -m agora_screening.report --output-dir pipelines/agora-screening/output
+```
+
+## Comparing two runs
 
 ```bash
 uv run -m agora_screening.compare \

@@ -1,9 +1,11 @@
 import asyncio
 import logging
+from datetime import UTC, datetime
 
 from agora_screening.corpus import apply_selection, load_oecd_corpus, select_with_text
 from agora_screening.export import export_csv
 from agora_screening.prompts import build_system_prompt, load_rubric
+from agora_screening.report import REPORT_FILENAME, write_manifest, write_report
 from agora_screening.score import run_scoring
 from agora_screening.settings import AgoraScreeningSettings
 from toolbox.llm import OpenRouterClient
@@ -31,6 +33,9 @@ async def main() -> None:
             limit=settings.limit,
         )
         logger.info(f"Scoring {len(records)} documents")
+        manifest = write_manifest(
+            settings, selected=len(records), started_at=datetime.now(UTC)
+        )
 
         system_prompt = build_system_prompt(load_rubric(settings.rubric_path))
 
@@ -48,6 +53,15 @@ async def main() -> None:
             _ = export_csv(
                 records, output_dir=settings.output_dir, csv_path=settings.export_csv
             )
+
+        _ = write_report(
+            output_dir=settings.output_dir,
+            corpus=corpus,
+            min_chars=settings.min_chars,
+            manifest=manifest,
+            report_path=settings.report_path or settings.output_dir / REPORT_FILENAME,
+            export_csv=settings.export_csv,
+        )
     except:
         logger.exception("Uncaught exception")
         raise
