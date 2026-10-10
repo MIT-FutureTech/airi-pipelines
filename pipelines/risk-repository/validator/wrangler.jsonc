@@ -24,5 +24,8 @@
     "AIRTABLE_REVIEWS_TABLE": "Classification Reviews 2026",
     "AIRTABLE_PROPOSED_EXTRACTIONS_TABLE": "Proposed Extractions",
     "AIRTABLE_FULL_TEXT_TABLE": "Full-Text Screening"
+  },
+  "secrets": {
+    "required": ["AIRTABLE_PAT"]
   }
 }

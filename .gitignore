@@ -3,8 +3,9 @@
 [Dd]esktop.ini
 
 # Environments
-.env
-.dev.vars
+.env*
+!.env.example
+.dev.vars*
 .venv/
 
 # IDE
