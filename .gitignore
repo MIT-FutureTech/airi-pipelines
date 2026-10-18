@@ -31,5 +31,6 @@ dist/
 /pipelines/*/output
 /pipelines/*/download_cache
 
-# Input data for auditor app
+# Input data for apps
 /pipelines/risk-repository/auditor/public/bundles
+/pipelines/org-mitigations/reviewer/public/data
