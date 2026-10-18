@@ -1,16 +1,17 @@
-import { Alert, Container, Loader, Stack, Text, Title } from "@mantine/core";
+import { Alert, Container, Loader, Stack, Title } from "@mantine/core";
 import { Suspense, use } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
+import { EvidenceGrid } from "@/components/EvidenceGrid";
 import { getBundle } from "@/lib/api";
 
 export function App() {
   return (
-    <Container py="xl">
+    <Container fluid py="xl">
       <Stack>
         <Title order={2}>Organization Mitigations Reviewer</Title>
         <ErrorBoundary fallbackRender={renderError}>
           <Suspense fallback={<Loader />}>
-            <BundleSummary />
+            <Reviewer />
           </Suspense>
         </ErrorBoundary>
       </Stack>
@@ -18,13 +19,10 @@ export function App() {
   );
 }
 
-function BundleSummary() {
+function Reviewer() {
   const bundle = use(getBundle());
   return (
-    <Text>
-      {bundle.companies.length} companies, {bundle.documents.length} documents,{" "}
-      {bundle.evidence.length} quotes
-    </Text>
+    <EvidenceGrid companies={bundle.companies} taxonomy={bundle.taxonomy} />
   );
 }
 
