@@ -4,6 +4,7 @@ import { Suspense, use, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { EvidenceGrid } from "@/components/EvidenceGrid";
 import { EvidencePanel } from "@/components/EvidencePanel";
+import { MockupNotice } from "@/components/MockupNotice";
 import { StrengthLegend } from "@/components/StrengthLegend";
 import { getBundle } from "@/lib/api";
 import { type CellSelection, cellKey, evidenceByCell } from "@/lib/cells";
@@ -47,6 +48,11 @@ function Reviewer() {
       <AppShell.Main>
         <Stack>
           <Title order={2}>Organization Mitigations Reviewer</Title>
+          <MockupNotice
+            run={bundle.run}
+            companyCount={bundle.companies.length}
+            codeCount={bundle.taxonomy.flatMap((locus) => locus.codes).length}
+          />
           <StrengthLegend />
           <EvidenceGrid
             companies={bundle.companies}
