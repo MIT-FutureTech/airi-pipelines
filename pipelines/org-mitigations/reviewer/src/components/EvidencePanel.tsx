@@ -1,7 +1,10 @@
 import {
+  AccordionChevron,
+  ActionIcon,
   Anchor,
   AppShell,
   CloseButton,
+  Collapse,
   Group,
   Paper,
   ScrollArea,
@@ -9,6 +12,7 @@ import {
   Text,
   Title,
 } from "@mantine/core";
+import { useDisclosure } from "@mantine/hooks";
 import type { CellSelection } from "@/lib/cells";
 import { formatDate } from "@/lib/dates";
 import { type DocumentGroup, groupByDocument } from "@/lib/grouping";
@@ -39,9 +43,7 @@ export function EvidencePanel({
             <CloseButton aria-label="Close evidence" onClick={onClose} />
           </Group>
           <Text>{code.definition}</Text>
-          <Text fw={600}>
-            {evidence.length === 1 ? "1 quote" : `${evidence.length} quotes`}
-          </Text>
+          <Text fw={600}>{formatQuoteCount(evidence.length)}</Text>
         </Stack>
       </AppShell.Section>
       <AppShell.Section grow component={ScrollArea} mt="md">
@@ -65,29 +67,51 @@ interface DocumentQuotesProps {
 }
 
 function DocumentQuotes({ group, documents }: DocumentQuotesProps) {
+  const [isOpen, { toggle }] = useDisclosure(true);
   const source = documents.get(group.documentId);
   if (source === undefined) {
     throw new Error(`Evidence refers to unknown document ${group.documentId}`);
   }
   return (
     <Stack gap="xs">
-      <Text fw={600}>
-        <Anchor
-          href={source.link}
-          target="_blank"
-          rel="noopener noreferrer"
-          inherit
+      <Group gap="xs" wrap="nowrap" align="flex-start">
+        <ActionIcon
+          variant="subtle"
+          color="gray"
+          aria-expanded={isOpen}
+          aria-label={isOpen ? "Hide quotes" : "Show quotes"}
+          onClick={toggle}
         >
-          {source.title}
-        </Anchor>
-        {`, ${source.doc_type}, ${formatDate(source.date, source.date_precision)}`}
-      </Text>
-      {group.evidence.map((item) => (
-        <QuoteCard
-          key={`${item.excerpt_id} ${item.mitigation} ${item.quote}`}
-          item={item}
-        />
-      ))}
+          <AccordionChevron
+            style={{
+              transform: isOpen ? undefined : "rotate(-90deg)",
+              transition: "transform 150ms",
+            }}
+          />
+        </ActionIcon>
+        <Text fw={600}>
+          <Anchor
+            href={source.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            inherit
+          >
+            {source.title}
+          </Anchor>
+          {`, ${source.doc_type}, ${formatDate(source.date, source.date_precision)}`}
+          {` · ${formatQuoteCount(group.evidence.length)}`}
+        </Text>
+      </Group>
+      <Collapse in={isOpen}>
+        <Stack gap="xs">
+          {group.evidence.map((item) => (
+            <QuoteCard
+              key={`${item.excerpt_id} ${item.mitigation} ${item.quote}`}
+              item={item}
+            />
+          ))}
+        </Stack>
+      </Collapse>
     </Stack>
   );
 }
@@ -109,4 +133,8 @@ function QuoteCard({ item }: { item: LocatedEvidence }) {
       </Stack>
     </Paper>
   );
+}
+
+function formatQuoteCount(count: number): string {
+  return count === 1 ? "1 quote" : `${count} quotes`;
 }

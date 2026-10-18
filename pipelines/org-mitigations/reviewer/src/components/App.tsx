@@ -6,7 +6,7 @@ import { EvidenceGrid } from "@/components/EvidenceGrid";
 import { EvidencePanel } from "@/components/EvidencePanel";
 import { StrengthLegend } from "@/components/StrengthLegend";
 import { getBundle } from "@/lib/api";
-import { type CellSelection, evidenceByCell } from "@/lib/cells";
+import { type CellSelection, cellKey, evidenceByCell } from "@/lib/cells";
 
 export function App() {
   return (
@@ -53,6 +53,7 @@ function Reviewer() {
       <AppShell.Aside p="md">
         {selection !== null && (
           <EvidencePanel
+            key={cellKey(selection.company.company_id, selection.code.code)}
             selection={selection}
             documents={documents}
             onClose={() => setSelection(null)}
