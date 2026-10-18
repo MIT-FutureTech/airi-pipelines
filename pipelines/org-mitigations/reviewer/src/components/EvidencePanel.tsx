@@ -1,4 +1,5 @@
 import {
+  Anchor,
   AppShell,
   CloseButton,
   Group,
@@ -9,19 +10,22 @@ import {
   Title,
 } from "@mantine/core";
 import type { CellSelection } from "@/lib/cells";
-import {
-  STRENGTH_COLORS,
-  STRENGTH_LABELS,
-  sortByStrength,
-} from "@/lib/strength";
-import type { LocatedEvidence } from "@/lib/types";
+import { formatDate } from "@/lib/dates";
+import { type DocumentGroup, groupByDocument } from "@/lib/grouping";
+import { STRENGTH_COLORS, STRENGTH_LABELS } from "@/lib/strength";
+import type { CompanyDocument, LocatedEvidence } from "@/lib/types";
 
 interface EvidencePanelProps {
   selection: CellSelection;
+  documents: Map<string, CompanyDocument>;
   onClose: () => void;
 }
 
-export function EvidencePanel({ selection, onClose }: EvidencePanelProps) {
+export function EvidencePanel({
+  selection,
+  documents,
+  onClose,
+}: EvidencePanelProps) {
   const { company, code, evidence } = selection;
   return (
     <>
@@ -41,16 +45,50 @@ export function EvidencePanel({ selection, onClose }: EvidencePanelProps) {
         </Stack>
       </AppShell.Section>
       <AppShell.Section grow component={ScrollArea} mt="md">
-        <Stack>
-          {sortByStrength(evidence).map((item) => (
-            <QuoteCard
-              key={`${item.excerpt_id} ${item.mitigation} ${item.quote}`}
-              item={item}
+        <Stack gap="lg">
+          {groupByDocument(evidence).map((group) => (
+            <DocumentQuotes
+              key={group.documentId}
+              group={group}
+              documents={documents}
             />
           ))}
         </Stack>
       </AppShell.Section>
     </>
+  );
+}
+
+interface DocumentQuotesProps {
+  group: DocumentGroup;
+  documents: Map<string, CompanyDocument>;
+}
+
+function DocumentQuotes({ group, documents }: DocumentQuotesProps) {
+  const source = documents.get(group.documentId);
+  if (source === undefined) {
+    throw new Error(`Evidence refers to unknown document ${group.documentId}`);
+  }
+  return (
+    <Stack gap="xs">
+      <Text fw={600}>
+        <Anchor
+          href={source.link}
+          target="_blank"
+          rel="noopener noreferrer"
+          inherit
+        >
+          {source.title}
+        </Anchor>
+        {`, ${source.doc_type}, ${formatDate(source.date, source.date_precision)}`}
+      </Text>
+      {group.evidence.map((item) => (
+        <QuoteCard
+          key={`${item.excerpt_id} ${item.mitigation} ${item.quote}`}
+          item={item}
+        />
+      ))}
+    </Stack>
   );
 }
 

@@ -21,6 +21,9 @@ export function App() {
 function Reviewer() {
   const bundle = use(getBundle());
   const cells = evidenceByCell(bundle.evidence, bundle.documents);
+  const documents = new Map(
+    bundle.documents.map((document) => [document.document_id, document]),
+  );
   const [selection, setSelection] = useState<CellSelection | null>(null);
   useHotkeys([["Escape", () => setSelection(null)]]);
 
@@ -51,6 +54,7 @@ function Reviewer() {
         {selection !== null && (
           <EvidencePanel
             selection={selection}
+            documents={documents}
             onClose={() => setSelection(null)}
           />
         )}
