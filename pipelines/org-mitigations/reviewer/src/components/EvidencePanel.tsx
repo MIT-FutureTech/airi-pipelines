@@ -175,6 +175,7 @@ interface ExcerptContextProps {
 }
 
 function ExcerptContext({ excerpt, location }: ExcerptContextProps) {
+  const [isWhole, { toggle }] = useDisclosure(false);
   if (location === null) {
     return (
       <Box pl="sm" style={CONTEXT_BORDER}>
@@ -186,15 +187,27 @@ function ExcerptContext({ excerpt, location }: ExcerptContextProps) {
       </Box>
     );
   }
-  const parts = highlightWindow(excerpt.text, location, CONTEXT_CHARACTERS);
+  const fitsInWindow =
+    location.start <= CONTEXT_CHARACTERS &&
+    excerpt.text.length - location.end <= CONTEXT_CHARACTERS;
+  const parts = highlightWindow(
+    excerpt.text,
+    location,
+    isWhole ? excerpt.text.length : CONTEXT_CHARACTERS,
+  );
   return (
-    <Box pl="sm" style={CONTEXT_BORDER}>
+    <Stack gap="xs" pl="sm" style={CONTEXT_BORDER}>
       <Text>
         {parts.before}
         <Mark color="yellow.1">{parts.highlight}</Mark>
         {parts.after}
       </Text>
-    </Box>
+      {!fitsInWindow && (
+        <Anchor component="button" type="button" ta="left" onClick={toggle}>
+          {isWhole ? "Show less of the excerpt" : "Show the whole excerpt"}
+        </Anchor>
+      )}
+    </Stack>
   );
 }
 
