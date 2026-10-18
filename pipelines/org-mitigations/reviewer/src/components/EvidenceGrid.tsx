@@ -1,7 +1,7 @@
-import { Table } from "@mantine/core";
+import { Stack, Table, Text, Tooltip } from "@mantine/core";
 import { cellKey } from "@/lib/cells";
 import { STRENGTH_COLORS, strongest } from "@/lib/strength";
-import type { Company, LocatedEvidence, Locus } from "@/lib/types";
+import type { Code, Company, LocatedEvidence, Locus } from "@/lib/types";
 
 interface EvidenceGridProps {
   companies: Company[];
@@ -22,20 +22,30 @@ export function EvidenceGrid({
           <Table.Tr>
             <Table.Th rowSpan={2}>Company</Table.Th>
             {taxonomy.map((locus) => (
-              <Table.Th
+              <Tooltip
                 key={locus.code}
-                colSpan={locus.codes.length}
-                ta="center"
+                label={<LocusDefinition locus={locus} />}
+                multiline
+                w={360}
               >
-                {locus.name}
-              </Table.Th>
+                <Table.Th colSpan={locus.codes.length} ta="center">
+                  {locus.name}
+                </Table.Th>
+              </Tooltip>
             ))}
           </Table.Tr>
           <Table.Tr>
             {codes.map((code) => (
-              <Table.Th key={code.code} fw="normal">
-                {`${code.code} ${code.short_name}`}
-              </Table.Th>
+              <Tooltip
+                key={code.code}
+                label={<CodeDefinition code={code} />}
+                multiline
+                w={360}
+              >
+                <Table.Th fw="normal">
+                  {`${code.code} ${code.short_name}`}
+                </Table.Th>
+              </Tooltip>
             ))}
           </Table.Tr>
         </Table.Thead>
@@ -65,5 +75,24 @@ function GridCell({ evidence }: { evidence: LocatedEvidence[] | undefined }) {
     <Table.Td ta="center" style={STRENGTH_COLORS[strongest(evidence)]}>
       {evidence.length}
     </Table.Td>
+  );
+}
+
+function LocusDefinition({ locus }: { locus: Locus }) {
+  return (
+    <Stack gap={4}>
+      <Text fw={600}>{locus.name}</Text>
+      <Text>{locus.definition}</Text>
+    </Stack>
+  );
+}
+
+function CodeDefinition({ code }: { code: Code }) {
+  return (
+    <Stack gap={4}>
+      <Text fw={600}>{`${code.code} ${code.name}`}</Text>
+      <Text>{code.definition}</Text>
+      <Text>{`Examples: ${code.examples.join("; ")}`}</Text>
+    </Stack>
   );
 }
