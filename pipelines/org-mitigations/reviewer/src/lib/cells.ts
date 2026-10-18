@@ -8,6 +8,7 @@ import type {
 export interface CellSelection {
   company: Company;
   code: Code;
+  evidence: LocatedEvidence[];
 }
 
 export function cellKey(companyId: string, code: string): string {

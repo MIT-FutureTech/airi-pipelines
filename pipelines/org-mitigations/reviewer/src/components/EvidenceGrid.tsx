@@ -65,7 +65,7 @@ export function EvidenceGrid({
                     selection?.company.company_id === company.company_id &&
                     selection.code.code === code.code
                   }
-                  onSelect={() => onSelect({ company, code })}
+                  onSelect={(evidence) => onSelect({ company, code, evidence })}
                 />
               ))}
             </Table.Tr>
@@ -81,7 +81,7 @@ const SELECTED_OUTLINE = "inset 0 0 0 3px currentColor";
 interface GridCellProps {
   evidence: LocatedEvidence[] | undefined;
   isSelected: boolean;
-  onSelect: () => void;
+  onSelect: (evidence: LocatedEvidence[]) => void;
 }
 
 function GridCell({ evidence, isSelected, onSelect }: GridCellProps) {
@@ -102,7 +102,7 @@ function GridCell({ evidence, isSelected, onSelect }: GridCellProps) {
         fz="sm"
         ta="center"
         aria-pressed={isSelected}
-        onClick={onSelect}
+        onClick={() => onSelect(evidence)}
       >
         {evidence.length}
       </UnstyledButton>

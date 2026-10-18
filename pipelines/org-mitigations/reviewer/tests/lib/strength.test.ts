@@ -1,6 +1,6 @@
 // biome-ignore-all lint/style/useNamingConvention: these fixtures mirror what Python outputs
 import { describe, expect, it } from "vitest";
-import { strongest } from "@/lib/strength";
+import { sortByStrength, strongest } from "@/lib/strength";
 import type { LocatedEvidence, Strength } from "@/lib/types";
 
 function evidence(strength: Strength): LocatedEvidence {
@@ -34,5 +34,28 @@ describe("strongest", () => {
 
   it("rejects an empty list", () => {
     expect(() => strongest([])).toThrow("No evidence to rate");
+  });
+});
+
+describe("sortByStrength", () => {
+  it("puts stronger quotes first and keeps the order within a rating", () => {
+    const firstReference = { ...evidence("reference"), quote: "First" };
+    const stated = evidence("stated");
+    const secondReference = { ...evidence("reference"), quote: "Second" };
+    const described = evidence("described");
+
+    const sorted = sortByStrength([
+      firstReference,
+      stated,
+      secondReference,
+      described,
+    ]);
+
+    expect(sorted).toEqual([
+      described,
+      stated,
+      firstReference,
+      secondReference,
+    ]);
   });
 });

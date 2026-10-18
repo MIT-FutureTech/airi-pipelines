@@ -25,6 +25,12 @@ export const STRENGTH_COLORS: Record<Strength, CSSProperties> = {
   },
 };
 
+export function sortByStrength(evidence: LocatedEvidence[]): LocatedEvidence[] {
+  return evidence.toSorted(
+    (a, b) => STRENGTHS.indexOf(a.strength) - STRENGTHS.indexOf(b.strength),
+  );
+}
+
 export function strongest(evidence: LocatedEvidence[]): Strength {
   const strength = STRENGTHS.find((candidate) =>
     evidence.some((item) => item.strength === candidate),
