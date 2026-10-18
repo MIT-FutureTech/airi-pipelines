@@ -3,7 +3,6 @@ import {
   ActionIcon,
   Anchor,
   AppShell,
-  Box,
   CloseButton,
   Collapse,
   Group,
@@ -178,13 +177,14 @@ function ExcerptContext({ excerpt, location }: ExcerptContextProps) {
   const [isWhole, { toggle }] = useDisclosure(false);
   if (location === null) {
     return (
-      <Box pl="sm" style={CONTEXT_BORDER}>
+      <Stack gap="xs" pl="sm" style={CONTEXT_BORDER}>
         <Text fs="italic">
           This quote wasn't found word for word in its excerpt, so the whole
           excerpt is shown.
         </Text>
-        <Text mt="xs">{excerpt.text}</Text>
-      </Box>
+        <Text>{excerpt.text}</Text>
+        <PassageIds excerpt={excerpt} />
+      </Stack>
     );
   }
   const fitsInWindow =
@@ -207,8 +207,14 @@ function ExcerptContext({ excerpt, location }: ExcerptContextProps) {
           {isWhole ? "Show less of the excerpt" : "Show the whole excerpt"}
         </Anchor>
       )}
+      <PassageIds excerpt={excerpt} />
     </Stack>
   );
+}
+
+function PassageIds({ excerpt }: { excerpt: Excerpt }) {
+  const label = excerpt.passage_ids.length === 1 ? "Passage" : "Passages";
+  return <Text>{`${label}: ${excerpt.passage_ids.join(", ")}`}</Text>;
 }
 
 function formatQuoteCount(count: number): string {
