@@ -6,6 +6,7 @@ requires-python = ">=3.12"
 members = [
     "agora-screening",
     "airi-pipelines",
+    "org-mitigations",
     "risk-repository",
     "toolbox",
 ]
@@ -642,6 +643,11 @@ sdist = { url = "https://files.pythonhosted.org/packages/88/15/52580c8fbc16d0675
 wheels = [
     { url = "https://files.pythonhosted.org/packages/2a/9e/5bfa2270f902d5b92ab7d41ce0475b8630572e71e349b2a4996d14bdda93/openai-2.30.0-py3-none-any.whl", hash = "sha256:9a5ae616888eb2748ec5e0c5b955a51592e0b201a11f4262db920f2a78c5231d", size = 1146656, upload-time = "2026-03-25T22:08:58.2Z" },
 ]
+
+[[package]]
+name = "org-mitigations"
+version = "0.1.0"
+source = { editable = "pipelines/org-mitigations" }
 
 [[package]]
 name = "packaging"
