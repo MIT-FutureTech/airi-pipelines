@@ -20,6 +20,8 @@ node_modules/
 .next/
 *.tsbuildinfo
 next-env.d.ts
+dist/
+.wrangler/
 
 # Documents and data files
 *.pdf
@@ -29,10 +31,5 @@ next-env.d.ts
 /pipelines/*/output
 /pipelines/*/download_cache
 
-# Auditor build + bundle data
-/pipelines/risk-repository/auditor/dist
+# Input data for auditor app
 /pipelines/risk-repository/auditor/public/bundles
-
-# Validator build + Wrangler local state
-/pipelines/risk-repository/validator/dist
-/pipelines/risk-repository/validator/.wrangler
