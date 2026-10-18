@@ -10,9 +10,10 @@ export const DISCLOSURE_LABELS: Record<Disclosure, string> = {
 
 export interface Decision {
   disclosure: Disclosure | null;
+  comment: string;
 }
 
-export const NO_DECISION: Decision = { disclosure: null };
+export const NO_DECISION: Decision = { disclosure: null, comment: "" };
 
 export function parseDisclosure(value: string): Disclosure {
   const disclosure = DISCLOSURES.find((candidate) => candidate === value);
