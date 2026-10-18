@@ -1,44 +1,67 @@
-import { Alert, Container, Loader, Stack, Title } from "@mantine/core";
-import { Suspense, use } from "react";
+import { Alert, AppShell, Loader, Stack, Title } from "@mantine/core";
+import { useHotkeys } from "@mantine/hooks";
+import { Suspense, use, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { EvidenceGrid } from "@/components/EvidenceGrid";
+import { EvidencePanel } from "@/components/EvidencePanel";
 import { StrengthLegend } from "@/components/StrengthLegend";
 import { getBundle } from "@/lib/api";
-import { evidenceByCell } from "@/lib/cells";
+import { type CellSelection, evidenceByCell } from "@/lib/cells";
 
 export function App() {
   return (
-    <Container fluid py="xl">
-      <Stack>
-        <Title order={2}>Organization Mitigations Reviewer</Title>
-        <ErrorBoundary fallbackRender={renderError}>
-          <Suspense fallback={<Loader />}>
-            <Reviewer />
-          </Suspense>
-        </ErrorBoundary>
-      </Stack>
-    </Container>
+    <ErrorBoundary fallbackRender={renderError}>
+      <Suspense fallback={<Loader m="xl" />}>
+        <Reviewer />
+      </Suspense>
+    </ErrorBoundary>
   );
 }
 
 function Reviewer() {
   const bundle = use(getBundle());
   const cells = evidenceByCell(bundle.evidence, bundle.documents);
+  const [selection, setSelection] = useState<CellSelection | null>(null);
+  useHotkeys([["Escape", () => setSelection(null)]]);
+
+  const isPanelClosed = selection === null;
   return (
-    <>
-      <StrengthLegend />
-      <EvidenceGrid
-        companies={bundle.companies}
-        taxonomy={bundle.taxonomy}
-        cells={cells}
-      />
-    </>
+    <AppShell
+      padding="md"
+      aside={{
+        width: 560,
+        breakpoint: "sm",
+        collapsed: { desktop: isPanelClosed, mobile: isPanelClosed },
+      }}
+    >
+      <AppShell.Main>
+        <Stack>
+          <Title order={2}>Organization Mitigations Reviewer</Title>
+          <StrengthLegend />
+          <EvidenceGrid
+            companies={bundle.companies}
+            taxonomy={bundle.taxonomy}
+            cells={cells}
+            selection={selection}
+            onSelect={setSelection}
+          />
+        </Stack>
+      </AppShell.Main>
+      <AppShell.Aside p="md">
+        {selection !== null && (
+          <EvidencePanel
+            selection={selection}
+            onClose={() => setSelection(null)}
+          />
+        )}
+      </AppShell.Aside>
+    </AppShell>
   );
 }
 
 function renderError({ error }: FallbackProps) {
   return (
-    <Alert color="red" title="Couldn't load data">
+    <Alert m="xl" color="red" title="Couldn't load data">
       {error instanceof Error ? error.message : String(error)}
     </Alert>
   );

@@ -1,4 +1,14 @@
-import type { CompanyDocument, LocatedEvidence } from "@/lib/types";
+import type {
+  Code,
+  Company,
+  CompanyDocument,
+  LocatedEvidence,
+} from "@/lib/types";
+
+export interface CellSelection {
+  company: Company;
+  code: Code;
+}
 
 export function cellKey(companyId: string, code: string): string {
   return `${companyId} ${code}`;

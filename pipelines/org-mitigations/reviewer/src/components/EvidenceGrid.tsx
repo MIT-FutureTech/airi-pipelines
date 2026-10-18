@@ -1,5 +1,5 @@
-import { Stack, Table, Text, Tooltip } from "@mantine/core";
-import { cellKey } from "@/lib/cells";
+import { Stack, Table, Text, Tooltip, UnstyledButton } from "@mantine/core";
+import { type CellSelection, cellKey } from "@/lib/cells";
 import { STRENGTH_COLORS, strongest } from "@/lib/strength";
 import type { Code, Company, LocatedEvidence, Locus } from "@/lib/types";
 
@@ -7,12 +7,16 @@ interface EvidenceGridProps {
   companies: Company[];
   taxonomy: Locus[];
   cells: Map<string, LocatedEvidence[]>;
+  selection: CellSelection | null;
+  onSelect: (selection: CellSelection) => void;
 }
 
 export function EvidenceGrid({
   companies,
   taxonomy,
   cells,
+  selection,
+  onSelect,
 }: EvidenceGridProps) {
   const codes = taxonomy.flatMap((locus) => locus.codes);
   return (
@@ -57,6 +61,11 @@ export function EvidenceGrid({
                 <GridCell
                   key={code.code}
                   evidence={cells.get(cellKey(company.company_id, code.code))}
+                  isSelected={
+                    selection?.company.company_id === company.company_id &&
+                    selection.code.code === code.code
+                  }
+                  onSelect={() => onSelect({ company, code })}
                 />
               ))}
             </Table.Tr>
@@ -67,13 +76,36 @@ export function EvidenceGrid({
   );
 }
 
-function GridCell({ evidence }: { evidence: LocatedEvidence[] | undefined }) {
+const SELECTED_OUTLINE = "inset 0 0 0 3px currentColor";
+
+interface GridCellProps {
+  evidence: LocatedEvidence[] | undefined;
+  isSelected: boolean;
+  onSelect: () => void;
+}
+
+function GridCell({ evidence, isSelected, onSelect }: GridCellProps) {
   if (evidence === undefined) {
     return <Table.Td />;
   }
   return (
-    <Table.Td ta="center" style={STRENGTH_COLORS[strongest(evidence)]}>
-      {evidence.length}
+    <Table.Td
+      p={0}
+      style={{
+        ...STRENGTH_COLORS[strongest(evidence)],
+        boxShadow: isSelected ? SELECTED_OUTLINE : undefined,
+      }}
+    >
+      <UnstyledButton
+        w="100%"
+        py="xs"
+        fz="sm"
+        ta="center"
+        aria-pressed={isSelected}
+        onClick={onSelect}
+      >
+        {evidence.length}
+      </UnstyledButton>
     </Table.Td>
   );
 }
