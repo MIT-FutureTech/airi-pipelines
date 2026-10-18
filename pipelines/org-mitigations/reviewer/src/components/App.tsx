@@ -7,6 +7,7 @@ import { EvidencePanel } from "@/components/EvidencePanel";
 import { StrengthLegend } from "@/components/StrengthLegend";
 import { getBundle } from "@/lib/api";
 import { type CellSelection, cellKey, evidenceByCell } from "@/lib/cells";
+import { type Decision, NO_DECISION } from "@/lib/decisions";
 
 export function App() {
   return (
@@ -28,8 +29,11 @@ function Reviewer() {
     bundle.excerpts.map((excerpt) => [excerpt.excerpt_id, excerpt]),
   );
   const [selection, setSelection] = useState<CellSelection | null>(null);
+  const [decisions, setDecisions] = useState(() => new Map<string, Decision>());
   useHotkeys([["Escape", () => setSelection(null)]]);
 
+  const selectedKey =
+    selection && cellKey(selection.company.company_id, selection.code.code);
   const isPanelClosed = selection === null;
   return (
     <AppShell
@@ -54,12 +58,18 @@ function Reviewer() {
         </Stack>
       </AppShell.Main>
       <AppShell.Aside p="md">
-        {selection !== null && (
+        {selection !== null && selectedKey !== null && (
           <EvidencePanel
-            key={cellKey(selection.company.company_id, selection.code.code)}
+            key={selectedKey}
             selection={selection}
             documents={documents}
             excerpts={excerpts}
+            decision={decisions.get(selectedKey) ?? NO_DECISION}
+            onDecisionChange={(decision) =>
+              setDecisions((current) =>
+                new Map(current).set(selectedKey, decision),
+              )
+            }
             onClose={() => setSelection(null)}
           />
         )}

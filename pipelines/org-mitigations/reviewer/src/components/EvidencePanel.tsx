@@ -14,8 +14,10 @@ import {
   Title,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
+import { DecisionControls } from "@/components/DecisionControls";
 import type { CellSelection } from "@/lib/cells";
 import { formatDate } from "@/lib/dates";
+import type { Decision } from "@/lib/decisions";
 import { type DocumentGroup, groupByDocument } from "@/lib/grouping";
 import { highlightWindow } from "@/lib/highlight";
 import { STRENGTH_COLORS, STRENGTH_LABELS } from "@/lib/strength";
@@ -30,11 +32,16 @@ const CONTEXT_CHARACTERS = 300;
 const CONTEXT_BORDER = {
   borderLeft: "3px solid var(--mantine-color-default-border)",
 };
+const FOOTER_BORDER = {
+  borderTop: "1px solid var(--mantine-color-default-border)",
+};
 
 interface EvidencePanelProps {
   selection: CellSelection;
   documents: Map<string, CompanyDocument>;
   excerpts: Map<string, Excerpt>;
+  decision: Decision;
+  onDecisionChange: (decision: Decision) => void;
   onClose: () => void;
 }
 
@@ -42,6 +49,8 @@ export function EvidencePanel({
   selection,
   documents,
   excerpts,
+  decision,
+  onDecisionChange,
   onClose,
 }: EvidencePanelProps) {
   const { company, code, evidence } = selection;
@@ -71,6 +80,13 @@ export function EvidencePanel({
             />
           ))}
         </Stack>
+      </AppShell.Section>
+      <AppShell.Section mt="md" pt="md" style={FOOTER_BORDER}>
+        <DecisionControls
+          companyName={company.name}
+          decision={decision}
+          onChange={onDecisionChange}
+        />
       </AppShell.Section>
     </>
   );
