@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
+    "deploy": "npm run build && wrangler deploy",
     "preview": "vite preview",
     "lint": "biome lint --write",
     "format": "biome format --write",
@@ -32,6 +33,7 @@
     "postcss-simple-vars": "^7.0.1",
     "typescript": "^5",
     "vite": "^6.0.0",
-    "vitest": "^4.1.12"
+    "vitest": "^4.1.12",
+    "wrangler": "^4.151.1"
   }
 }
