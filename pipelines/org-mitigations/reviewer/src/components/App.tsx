@@ -52,6 +52,7 @@ function Reviewer() {
             companies={bundle.companies}
             taxonomy={bundle.taxonomy}
             cells={cells}
+            decisions={decisions}
             selection={selection}
             onSelect={setSelection}
           />

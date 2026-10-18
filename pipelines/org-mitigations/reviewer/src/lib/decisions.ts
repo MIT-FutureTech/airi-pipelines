@@ -8,6 +8,12 @@ export const DISCLOSURE_LABELS: Record<Disclosure, string> = {
   unsure: "Unsure",
 };
 
+export const DISCLOSURE_MARKS: Record<Disclosure, string> = {
+  yes: "✓",
+  no: "✗",
+  unsure: "?",
+};
+
 export interface Decision {
   disclosure: Disclosure | null;
   comment: string;

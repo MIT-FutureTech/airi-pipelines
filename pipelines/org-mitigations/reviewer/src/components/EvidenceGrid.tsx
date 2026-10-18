@@ -1,5 +1,11 @@
 import { Stack, Table, Text, Tooltip, UnstyledButton } from "@mantine/core";
 import { type CellSelection, cellKey } from "@/lib/cells";
+import {
+  type Decision,
+  DISCLOSURE_LABELS,
+  DISCLOSURE_MARKS,
+  type Disclosure,
+} from "@/lib/decisions";
 import { STRENGTH_COLORS, strongest } from "@/lib/strength";
 import type { Code, Company, LocatedEvidence, Locus } from "@/lib/types";
 
@@ -7,6 +13,7 @@ interface EvidenceGridProps {
   companies: Company[];
   taxonomy: Locus[];
   cells: Map<string, LocatedEvidence[]>;
+  decisions: Map<string, Decision>;
   selection: CellSelection | null;
   onSelect: (selection: CellSelection) => void;
 }
@@ -15,6 +22,7 @@ export function EvidenceGrid({
   companies,
   taxonomy,
   cells,
+  decisions,
   selection,
   onSelect,
 }: EvidenceGridProps) {
@@ -57,17 +65,23 @@ export function EvidenceGrid({
           {companies.map((company) => (
             <Table.Tr key={company.company_id}>
               <Table.Th scope="row">{company.name}</Table.Th>
-              {codes.map((code) => (
-                <GridCell
-                  key={code.code}
-                  evidence={cells.get(cellKey(company.company_id, code.code))}
-                  isSelected={
-                    selection?.company.company_id === company.company_id &&
-                    selection.code.code === code.code
-                  }
-                  onSelect={(evidence) => onSelect({ company, code, evidence })}
-                />
-              ))}
+              {codes.map((code) => {
+                const key = cellKey(company.company_id, code.code);
+                return (
+                  <GridCell
+                    key={code.code}
+                    evidence={cells.get(key)}
+                    disclosure={decisions.get(key)?.disclosure ?? null}
+                    isSelected={
+                      selection?.company.company_id === company.company_id &&
+                      selection.code.code === code.code
+                    }
+                    onSelect={(evidence) =>
+                      onSelect({ company, code, evidence })
+                    }
+                  />
+                );
+              })}
             </Table.Tr>
           ))}
         </Table.Tbody>
@@ -80,19 +94,32 @@ const SELECTED_OUTLINE = "inset 0 0 0 3px currentColor";
 
 interface GridCellProps {
   evidence: LocatedEvidence[] | undefined;
+  disclosure: Disclosure | null;
   isSelected: boolean;
   onSelect: (evidence: LocatedEvidence[]) => void;
 }
 
-function GridCell({ evidence, isSelected, onSelect }: GridCellProps) {
+function GridCell({
+  evidence,
+  disclosure,
+  isSelected,
+  onSelect,
+}: GridCellProps) {
   if (evidence === undefined) {
     return <Table.Td />;
   }
+  const strength = strongest(evidence);
+  const quotes =
+    evidence.length === 1 ? "1 quote" : `${evidence.length} quotes`;
+  const decided =
+    disclosure === null
+      ? "undecided"
+      : `decided ${DISCLOSURE_LABELS[disclosure]}`;
   return (
     <Table.Td
       p={0}
       style={{
-        ...STRENGTH_COLORS[strongest(evidence)],
+        ...STRENGTH_COLORS[strength],
         boxShadow: isSelected ? SELECTED_OUTLINE : undefined,
       }}
     >
@@ -102,9 +129,12 @@ function GridCell({ evidence, isSelected, onSelect }: GridCellProps) {
         fz="sm"
         ta="center"
         aria-pressed={isSelected}
+        aria-label={`${quotes}, strongest ${strength}, ${decided}`}
         onClick={() => onSelect(evidence)}
       >
-        {evidence.length}
+        {disclosure === null
+          ? evidence.length
+          : `${evidence.length} ${DISCLOSURE_MARKS[disclosure]}`}
       </UnstyledButton>
     </Table.Td>
   );
