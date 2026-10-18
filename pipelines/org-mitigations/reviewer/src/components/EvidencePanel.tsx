@@ -3,9 +3,11 @@ import {
   ActionIcon,
   Anchor,
   AppShell,
+  Box,
   CloseButton,
   Collapse,
   Group,
+  Mark,
   Paper,
   ScrollArea,
   Stack,
@@ -16,18 +18,31 @@ import { useDisclosure } from "@mantine/hooks";
 import type { CellSelection } from "@/lib/cells";
 import { formatDate } from "@/lib/dates";
 import { type DocumentGroup, groupByDocument } from "@/lib/grouping";
+import { highlightWindow } from "@/lib/highlight";
 import { STRENGTH_COLORS, STRENGTH_LABELS } from "@/lib/strength";
-import type { CompanyDocument, LocatedEvidence } from "@/lib/types";
+import type {
+  CompanyDocument,
+  Excerpt,
+  LocatedEvidence,
+  Span,
+} from "@/lib/types";
+
+const CONTEXT_CHARACTERS = 300;
+const CONTEXT_BORDER = {
+  borderLeft: "3px solid var(--mantine-color-default-border)",
+};
 
 interface EvidencePanelProps {
   selection: CellSelection;
   documents: Map<string, CompanyDocument>;
+  excerpts: Map<string, Excerpt>;
   onClose: () => void;
 }
 
 export function EvidencePanel({
   selection,
   documents,
+  excerpts,
   onClose,
 }: EvidencePanelProps) {
   const { company, code, evidence } = selection;
@@ -53,6 +68,7 @@ export function EvidencePanel({
               key={group.documentId}
               group={group}
               documents={documents}
+              excerpts={excerpts}
             />
           ))}
         </Stack>
@@ -64,9 +80,10 @@ export function EvidencePanel({
 interface DocumentQuotesProps {
   group: DocumentGroup;
   documents: Map<string, CompanyDocument>;
+  excerpts: Map<string, Excerpt>;
 }
 
-function DocumentQuotes({ group, documents }: DocumentQuotesProps) {
+function DocumentQuotes({ group, documents, excerpts }: DocumentQuotesProps) {
   const [isOpen, { toggle }] = useDisclosure(true);
   const source = documents.get(group.documentId);
   if (source === undefined) {
@@ -108,6 +125,7 @@ function DocumentQuotes({ group, documents }: DocumentQuotesProps) {
             <QuoteCard
               key={`${item.excerpt_id} ${item.mitigation} ${item.quote}`}
               item={item}
+              excerpts={excerpts}
             />
           ))}
         </Stack>
@@ -116,7 +134,17 @@ function DocumentQuotes({ group, documents }: DocumentQuotesProps) {
   );
 }
 
-function QuoteCard({ item }: { item: LocatedEvidence }) {
+interface QuoteCardProps {
+  item: LocatedEvidence;
+  excerpts: Map<string, Excerpt>;
+}
+
+function QuoteCard({ item, excerpts }: QuoteCardProps) {
+  const [isExpanded, { toggle }] = useDisclosure(false);
+  const excerpt = excerpts.get(item.excerpt_id);
+  if (excerpt === undefined) {
+    throw new Error(`Evidence refers to unknown excerpt ${item.excerpt_id}`);
+  }
   return (
     <Paper withBorder p="sm">
       <Stack gap="xs">
@@ -130,8 +158,43 @@ function QuoteCard({ item }: { item: LocatedEvidence }) {
           </Text>
         </Group>
         <Text>{`“${item.quote}”`}</Text>
+        <Anchor component="button" type="button" ta="left" onClick={toggle}>
+          {isExpanded ? "Hide context" : "Show context"}
+        </Anchor>
+        {isExpanded && (
+          <ExcerptContext excerpt={excerpt} location={item.location} />
+        )}
       </Stack>
     </Paper>
+  );
+}
+
+interface ExcerptContextProps {
+  excerpt: Excerpt;
+  location: Span | null;
+}
+
+function ExcerptContext({ excerpt, location }: ExcerptContextProps) {
+  if (location === null) {
+    return (
+      <Box pl="sm" style={CONTEXT_BORDER}>
+        <Text fs="italic">
+          This quote wasn't found word for word in its excerpt, so the whole
+          excerpt is shown.
+        </Text>
+        <Text mt="xs">{excerpt.text}</Text>
+      </Box>
+    );
+  }
+  const parts = highlightWindow(excerpt.text, location, CONTEXT_CHARACTERS);
+  return (
+    <Box pl="sm" style={CONTEXT_BORDER}>
+      <Text>
+        {parts.before}
+        <Mark color="yellow.1">{parts.highlight}</Mark>
+        {parts.after}
+      </Text>
+    </Box>
   );
 }
 

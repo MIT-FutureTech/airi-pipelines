@@ -24,6 +24,9 @@ function Reviewer() {
   const documents = new Map(
     bundle.documents.map((document) => [document.document_id, document]),
   );
+  const excerpts = new Map(
+    bundle.excerpts.map((excerpt) => [excerpt.excerpt_id, excerpt]),
+  );
   const [selection, setSelection] = useState<CellSelection | null>(null);
   useHotkeys([["Escape", () => setSelection(null)]]);
 
@@ -56,6 +59,7 @@ function Reviewer() {
             key={cellKey(selection.company.company_id, selection.code.code)}
             selection={selection}
             documents={documents}
+            excerpts={excerpts}
             onClose={() => setSelection(null)}
           />
         )}
