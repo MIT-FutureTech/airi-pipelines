@@ -1,12 +1,18 @@
 import { Table } from "@mantine/core";
-import type { Company, Locus } from "@/lib/types";
+import { cellKey } from "@/lib/cells";
+import type { Company, LocatedEvidence, Locus } from "@/lib/types";
 
 interface EvidenceGridProps {
   companies: Company[];
   taxonomy: Locus[];
+  cells: Map<string, LocatedEvidence[]>;
 }
 
-export function EvidenceGrid({ companies, taxonomy }: EvidenceGridProps) {
+export function EvidenceGrid({
+  companies,
+  taxonomy,
+  cells,
+}: EvidenceGridProps) {
   const codes = taxonomy.flatMap((locus) => locus.codes);
   return (
     <Table.ScrollContainer minWidth={1100}>
@@ -37,7 +43,9 @@ export function EvidenceGrid({ companies, taxonomy }: EvidenceGridProps) {
             <Table.Tr key={company.company_id}>
               <Table.Th scope="row">{company.name}</Table.Th>
               {codes.map((code) => (
-                <Table.Td key={code.code} />
+                <Table.Td key={code.code} ta="center">
+                  {cells.get(cellKey(company.company_id, code.code))?.length}
+                </Table.Td>
               ))}
             </Table.Tr>
           ))}

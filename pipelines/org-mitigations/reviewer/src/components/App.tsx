@@ -3,6 +3,7 @@ import { Suspense, use } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { EvidenceGrid } from "@/components/EvidenceGrid";
 import { getBundle } from "@/lib/api";
+import { evidenceByCell } from "@/lib/cells";
 
 export function App() {
   return (
@@ -21,8 +22,13 @@ export function App() {
 
 function Reviewer() {
   const bundle = use(getBundle());
+  const cells = evidenceByCell(bundle.evidence, bundle.documents);
   return (
-    <EvidenceGrid companies={bundle.companies} taxonomy={bundle.taxonomy} />
+    <EvidenceGrid
+      companies={bundle.companies}
+      taxonomy={bundle.taxonomy}
+      cells={cells}
+    />
   );
 }
 
