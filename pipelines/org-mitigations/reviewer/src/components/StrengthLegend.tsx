@@ -1,12 +1,6 @@
 import { Box, Group, Stack, Text } from "@mantine/core";
-import { STRENGTH_COLORS, STRENGTHS } from "@/lib/strength";
+import { STRENGTH_COLORS, STRENGTH_LABELS, STRENGTHS } from "@/lib/strength";
 import type { Strength } from "@/lib/types";
-
-const LABELS: Record<Strength, string> = {
-  described: "Described",
-  stated: "Stated",
-  reference: "Reference",
-};
 
 const DEFINITIONS: Record<Strength, string> = {
   described: "says what the company does and how, where or by whom",
@@ -31,7 +25,7 @@ export function StrengthLegend() {
           />
           <Text>
             <Text span fw={600}>
-              {LABELS[strength]}
+              {STRENGTH_LABELS[strength]}
             </Text>{" "}
             {DEFINITIONS[strength]}
           </Text>

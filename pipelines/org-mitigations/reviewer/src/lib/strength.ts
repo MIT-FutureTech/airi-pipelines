@@ -3,6 +3,12 @@ import type { LocatedEvidence, Strength } from "@/lib/types";
 
 export const STRENGTHS: Strength[] = ["described", "stated", "reference"];
 
+export const STRENGTH_LABELS: Record<Strength, string> = {
+  described: "Described",
+  stated: "Stated",
+  reference: "Reference",
+};
+
 // Stronger is darker in light mode and lighter in dark mode
 export const STRENGTH_COLORS: Record<Strength, CSSProperties> = {
   described: {
