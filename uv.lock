@@ -650,10 +650,16 @@ version = "0.1.0"
 source = { editable = "pipelines/org-mitigations" }
 dependencies = [
     { name = "pydantic" },
+    { name = "pydantic-settings" },
+    { name = "toolbox" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "pydantic", specifier = ">=2.12.5" }]
+requires-dist = [
+    { name = "pydantic", specifier = ">=2.12.5" },
+    { name = "pydantic-settings", specifier = ">=2.13.1" },
+    { name = "toolbox", editable = "toolbox-lib" },
+]
 
 [[package]]
 name = "packaging"
