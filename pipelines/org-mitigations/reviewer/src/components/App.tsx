@@ -2,6 +2,7 @@ import { Alert, Container, Loader, Stack, Title } from "@mantine/core";
 import { Suspense, use } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { EvidenceGrid } from "@/components/EvidenceGrid";
+import { StrengthLegend } from "@/components/StrengthLegend";
 import { getBundle } from "@/lib/api";
 import { evidenceByCell } from "@/lib/cells";
 
@@ -24,11 +25,14 @@ function Reviewer() {
   const bundle = use(getBundle());
   const cells = evidenceByCell(bundle.evidence, bundle.documents);
   return (
-    <EvidenceGrid
-      companies={bundle.companies}
-      taxonomy={bundle.taxonomy}
-      cells={cells}
-    />
+    <>
+      <StrengthLegend />
+      <EvidenceGrid
+        companies={bundle.companies}
+        taxonomy={bundle.taxonomy}
+        cells={cells}
+      />
+    </>
   );
 }
 

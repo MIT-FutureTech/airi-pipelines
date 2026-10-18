@@ -1,5 +1,6 @@
 import { Table } from "@mantine/core";
 import { cellKey } from "@/lib/cells";
+import { STRENGTH_COLORS, strongest } from "@/lib/strength";
 import type { Company, LocatedEvidence, Locus } from "@/lib/types";
 
 interface EvidenceGridProps {
@@ -43,14 +44,26 @@ export function EvidenceGrid({
             <Table.Tr key={company.company_id}>
               <Table.Th scope="row">{company.name}</Table.Th>
               {codes.map((code) => (
-                <Table.Td key={code.code} ta="center">
-                  {cells.get(cellKey(company.company_id, code.code))?.length}
-                </Table.Td>
+                <GridCell
+                  key={code.code}
+                  evidence={cells.get(cellKey(company.company_id, code.code))}
+                />
               ))}
             </Table.Tr>
           ))}
         </Table.Tbody>
       </Table>
     </Table.ScrollContainer>
+  );
+}
+
+function GridCell({ evidence }: { evidence: LocatedEvidence[] | undefined }) {
+  if (evidence === undefined) {
+    return <Table.Td />;
+  }
+  return (
+    <Table.Td ta="center" style={STRENGTH_COLORS[strongest(evidence)]}>
+      {evidence.length}
+    </Table.Td>
   );
 }
