@@ -37,6 +37,7 @@ executionEnvironments = [
     { root = "toolbox-lib/tests", reportPrivateUsage = false },
     { root = "pipelines/risk-repository/tests", reportPrivateUsage = false },
     { root = "pipelines/agora-screening/tests", reportPrivateUsage = false },
+    { root = "pipelines/org-mitigations/tests", reportPrivateUsage = false },
 ]
 
 [tool.ruff]
