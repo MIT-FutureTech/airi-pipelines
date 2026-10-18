@@ -10,6 +10,8 @@
     "lint": "biome lint --write",
     "format": "biome format --write",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "check": "biome check --write && tsc --noEmit"
   },
   "dependencies": {
@@ -29,6 +31,7 @@
     "postcss-preset-mantine": "^1.17.0",
     "postcss-simple-vars": "^7.0.1",
     "typescript": "^5",
-    "vite": "^6.0.0"
+    "vite": "^6.0.0",
+    "vitest": "^4.1.12"
   }
 }
