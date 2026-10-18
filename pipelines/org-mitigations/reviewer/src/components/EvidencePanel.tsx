@@ -3,6 +3,7 @@ import {
   ActionIcon,
   Anchor,
   AppShell,
+  Checkbox,
   CloseButton,
   Collapse,
   Group,
@@ -15,7 +16,7 @@ import {
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { DecisionControls } from "@/components/DecisionControls";
-import type { CellSelection } from "@/lib/cells";
+import { type CellSelection, quoteKey } from "@/lib/cells";
 import { formatDate } from "@/lib/dates";
 import type { Decision } from "@/lib/decisions";
 import { type DocumentGroup, groupByDocument } from "@/lib/grouping";
@@ -54,6 +55,15 @@ export function EvidencePanel({
   onClose,
 }: EvidencePanelProps) {
   const { company, code, evidence } = selection;
+  const toggleSupporting = (key: string) => {
+    const supportingQuotes = new Set(decision.supportingQuotes);
+    if (supportingQuotes.has(key)) {
+      supportingQuotes.delete(key);
+    } else {
+      supportingQuotes.add(key);
+    }
+    onDecisionChange({ ...decision, supportingQuotes });
+  };
   return (
     <>
       <AppShell.Section>
@@ -77,6 +87,8 @@ export function EvidencePanel({
               group={group}
               documents={documents}
               excerpts={excerpts}
+              supportingQuotes={decision.supportingQuotes}
+              onToggleSupporting={toggleSupporting}
             />
           ))}
         </Stack>
@@ -96,9 +108,17 @@ interface DocumentQuotesProps {
   group: DocumentGroup;
   documents: Map<string, CompanyDocument>;
   excerpts: Map<string, Excerpt>;
+  supportingQuotes: ReadonlySet<string>;
+  onToggleSupporting: (key: string) => void;
 }
 
-function DocumentQuotes({ group, documents, excerpts }: DocumentQuotesProps) {
+function DocumentQuotes({
+  group,
+  documents,
+  excerpts,
+  supportingQuotes,
+  onToggleSupporting,
+}: DocumentQuotesProps) {
   const [isOpen, { toggle }] = useDisclosure(true);
   const source = documents.get(group.documentId);
   if (source === undefined) {
@@ -138,9 +158,11 @@ function DocumentQuotes({ group, documents, excerpts }: DocumentQuotesProps) {
         <Stack gap="xs">
           {group.evidence.map((item) => (
             <QuoteCard
-              key={`${item.excerpt_id} ${item.mitigation} ${item.quote}`}
+              key={quoteKey(item)}
               item={item}
               excerpts={excerpts}
+              isSupporting={supportingQuotes.has(quoteKey(item))}
+              onToggleSupporting={() => onToggleSupporting(quoteKey(item))}
             />
           ))}
         </Stack>
@@ -152,9 +174,16 @@ function DocumentQuotes({ group, documents, excerpts }: DocumentQuotesProps) {
 interface QuoteCardProps {
   item: LocatedEvidence;
   excerpts: Map<string, Excerpt>;
+  isSupporting: boolean;
+  onToggleSupporting: () => void;
 }
 
-function QuoteCard({ item, excerpts }: QuoteCardProps) {
+function QuoteCard({
+  item,
+  excerpts,
+  isSupporting,
+  onToggleSupporting,
+}: QuoteCardProps) {
   const [isExpanded, { toggle }] = useDisclosure(false);
   const excerpt = excerpts.get(item.excerpt_id);
   if (excerpt === undefined) {
@@ -173,9 +202,16 @@ function QuoteCard({ item, excerpts }: QuoteCardProps) {
           </Text>
         </Group>
         <Text>{`“${item.quote}”`}</Text>
-        <Anchor component="button" type="button" ta="left" onClick={toggle}>
-          {isExpanded ? "Hide context" : "Show context"}
-        </Anchor>
+        <Group justify="space-between" wrap="nowrap">
+          <Anchor component="button" type="button" onClick={toggle}>
+            {isExpanded ? "Hide context" : "Show context"}
+          </Anchor>
+          <Checkbox
+            label="Supports the decision"
+            checked={isSupporting}
+            onChange={onToggleSupporting}
+          />
+        </Group>
         {isExpanded && (
           <ExcerptContext excerpt={excerpt} location={item.location} />
         )}

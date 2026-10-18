@@ -11,6 +11,10 @@ export interface CellSelection {
   evidence: LocatedEvidence[];
 }
 
+export function quoteKey(item: LocatedEvidence): string {
+  return `${item.excerpt_id} ${item.mitigation} ${item.quote}`;
+}
+
 export function cellKey(companyId: string, code: string): string {
   return `${companyId} ${code}`;
 }
