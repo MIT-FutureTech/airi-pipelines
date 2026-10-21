@@ -6,17 +6,53 @@ import pytest
 
 from org_mitigations.companies import Company
 from org_mitigations.documents import DatePrecision, Document
+from org_mitigations.evidence import Evidence, Strength
 from org_mitigations.excerpts import Excerpt
 from org_mitigations.sheets.tabs import (
+    EvidenceRow,
     ExcerptRow,
+    evidence_rows,
     excerpt_rows,
     format_date,
     write_tab,
 )
+from org_mitigations.taxonomy import Code, Locus
 
 BANK = Company(company_id="recA", name="Example Bank", sector="Finance")
 RETAIL = Company(company_id="recB", name="Example Retail", sector="Trade")
 INSURER = Company(company_id="recC", name="Example Insurer", sector="Finance")
+TAXONOMY = [
+    Locus(
+        code="1",
+        name="Technical & Model",
+        short_name="Technical",
+        definition="Mitigations to the model itself.",
+        codes=[
+            Code(
+                code="1.1",
+                name="Interpretability & Transparency",
+                short_name="Interpretability",
+                definition="Mitigations that explain a model.",
+                examples=["Explainability tools"],
+            ),
+        ],
+    ),
+    Locus(
+        code="2",
+        name="Human & Organization",
+        short_name="Organization",
+        definition="Mitigations at the organizational level.",
+        codes=[
+            Code(
+                code="2.2",
+                name="Accountability & Responsibility",
+                short_name="Accountability",
+                definition="Mitigations that hold an organization to account.",
+                examples=["Board oversight"],
+            ),
+        ],
+    ),
+]
 
 
 def document(
@@ -42,6 +78,22 @@ def excerpt(excerpt_id: str, document_id: str) -> Excerpt:
         document_id=document_id,
         text=f"{excerpt_id} text",
         passage_ids=[f"{document_id}_100", f"{document_id}_900"],
+    )
+
+
+def evidence(evidence_id: str, excerpt_id: str, quote: str) -> Evidence:
+    mitigation_id, _ = evidence_id.rsplit(".", 1)
+    document_id, code, _ = mitigation_id.split("__")
+    return Evidence(
+        evidence_id=evidence_id,
+        mitigation_id=mitigation_id,
+        document_id=document_id,
+        code=code,
+        mitigation="Board oversight of AI",
+        reasoning="Board-level accountability for AI.",
+        quote=quote,
+        strength=Strength.STATED,
+        excerpt_id=excerpt_id,
     )
 
 
@@ -127,6 +179,73 @@ class TestExcerptRows:
                 documents=[],
                 excerpts=[],
             )
+
+
+class TestEvidenceRows:
+    @pytest.fixture
+    def rows(self) -> list[EvidenceRow]:
+        return evidence_rows(
+            company_names=["Example Retail", "Example Bank"],
+            taxonomy=TAXONOMY,
+            companies=[BANK, RETAIL, INSURER],
+            documents=[
+                document("Bank_001", "recA"),
+                document("Bank_002", "recA"),
+                document("Retail_001", "recB"),
+                document("Insurer_001", "recC"),
+            ],
+            excerpts=[
+                excerpt("Bank_001_excerpt1", "Bank_001"),
+                excerpt("Bank_002_excerpt1", "Bank_002"),
+                excerpt("Retail_001_excerpt1", "Retail_001"),
+                excerpt("Insurer_001_excerpt1", "Insurer_001"),
+            ],
+            evidence=[
+                evidence("Bank_002__2.2__1.1", "Bank_002_excerpt1", "excerpt1"),
+                evidence("Bank_002__2.2__1.2", "Bank_002_excerpt1", "text"),
+                evidence("Bank_001__2.2__1.1", "Bank_001_excerpt1", "Our board"),
+                evidence("Bank_001__1.1__1.1", "Bank_001_excerpt1", "text"),
+                evidence("Retail_001__2.2__1.1", "Retail_001_excerpt1", "text"),
+                evidence("Insurer_001__2.2__1.1", "Insurer_001_excerpt1", "text"),
+            ],
+        )
+
+    def test_lists_the_named_companies_by_code_then_document(
+        self, rows: list[EvidenceRow]
+    ) -> None:
+        evidence_ids = [row.evidence_id for row in rows]
+
+        assert evidence_ids == [
+            "Retail_001__2.2__1.1",
+            "Bank_001__1.1__1.1",
+            "Bank_001__2.2__1.1",
+            "Bank_002__2.2__1.1",
+            "Bank_002__2.2__1.2",
+        ]
+
+    def test_describes_each_quote(self, rows: list[EvidenceRow]) -> None:
+        assert rows[0] == EvidenceRow(
+            evidence_id="Retail_001__2.2__1.1",
+            mitigation_id="Retail_001__2.2__1",
+            company="Example Retail",
+            document_id="Retail_001",
+            excerpt_id="Retail_001_excerpt1",
+            code="2.2",
+            code_name="Accountability & Responsibility",
+            mitigation="Board oversight of AI",
+            strength=Strength.STATED,
+            quote="text",
+            quote_start=20,
+            quote_end=24,
+            reasoning="Board-level accountability for AI.",
+        )
+
+    def test_leaves_the_position_of_an_unlocated_quote_blank(
+        self, rows: list[EvidenceRow]
+    ) -> None:
+        unlocated = next(row for row in rows if row.quote == "Our board")
+
+        assert (unlocated.quote_start, unlocated.quote_end) == (None, None)
 
 
 class TestWriteTab:

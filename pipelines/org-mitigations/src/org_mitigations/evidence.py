@@ -13,9 +13,12 @@ class Strength(StrEnum):
 
 
 class Evidence(BaseModel):
+    evidence_id: str
+    mitigation_id: str
     document_id: str
     code: str
     mitigation: str
+    reasoning: str
     quote: str
     strength: Strength
     excerpt_id: str
@@ -30,6 +33,7 @@ class _Quote(BaseModel):
 class _Mitigation(BaseModel):
     mitigation: str
     evidence: list[_Quote]
+    reasoning: str
 
 
 class _Result(BaseModel):
@@ -52,16 +56,22 @@ def load_evidence(llm_output_dir: Path) -> list[Evidence]:
     for path in sorted(llm_output_dir.glob("*.json")):
         output = _LLMOutput.model_validate_json(path.read_text())
         match_id = output.input.match_id.removesuffix(f"__{output.input.code}")
-        evidence.extend(
-            Evidence(
-                document_id=output.input.document_id,
-                code=output.input.code,
-                mitigation=mitigation.mitigation,
-                quote=quote.quote,
-                strength=quote.strength,
-                excerpt_id=excerpt_id(match_id, quote.excerpt),
+        for mitigation_number, mitigation in enumerate(
+            output.result.classifications, start=1
+        ):
+            mitigation_id = f"{output.input.match_id}__{mitigation_number}"
+            evidence.extend(
+                Evidence(
+                    evidence_id=f"{mitigation_id}.{quote_number}",
+                    mitigation_id=mitigation_id,
+                    document_id=output.input.document_id,
+                    code=output.input.code,
+                    mitigation=mitigation.mitigation,
+                    reasoning=mitigation.reasoning,
+                    quote=quote.quote,
+                    strength=quote.strength,
+                    excerpt_id=excerpt_id(match_id, quote.excerpt),
+                )
+                for quote_number, quote in enumerate(mitigation.evidence, start=1)
             )
-            for mitigation in output.result.classifications
-            for quote in mitigation.evidence
-        )
     return evidence

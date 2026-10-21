@@ -6,7 +6,10 @@ from pydantic import BaseModel, Field
 
 from org_mitigations.companies import Company
 from org_mitigations.documents import DatePrecision, Document
+from org_mitigations.evidence import Evidence, Strength
 from org_mitigations.excerpts import Excerpt
+from org_mitigations.locate import locate_quote
+from org_mitigations.taxonomy import Locus
 
 
 class ExcerptRow(BaseModel):
@@ -20,6 +23,22 @@ class ExcerptRow(BaseModel):
     order_in_document: int = Field(serialization_alias="Order in document")
     passage_ids: str = Field(serialization_alias="Passage IDs")
     text: str = Field(serialization_alias="Text")
+
+
+class EvidenceRow(BaseModel):
+    evidence_id: str = Field(serialization_alias="Evidence ID")
+    mitigation_id: str = Field(serialization_alias="Mitigation ID")
+    company: str = Field(serialization_alias="Company")
+    document_id: str = Field(serialization_alias="Document ID")
+    excerpt_id: str = Field(serialization_alias="Excerpt ID")
+    code: str = Field(serialization_alias="Code")
+    code_name: str = Field(serialization_alias="Code name")
+    mitigation: str = Field(serialization_alias="Mitigation")
+    strength: Strength = Field(serialization_alias="Strength")
+    quote: str = Field(serialization_alias="Quote")
+    quote_start: int | None = Field(serialization_alias="Quote start")
+    quote_end: int | None = Field(serialization_alias="Quote end")
+    reasoning: str = Field(serialization_alias="LLM reasoning")
 
 
 def format_date(document: Document) -> str:
@@ -75,6 +94,64 @@ def excerpt_rows(
                         text=excerpt.text,
                     )
                 )
+    return rows
+
+
+def evidence_rows(
+    *,
+    company_names: list[str],
+    taxonomy: list[Locus],
+    companies: list[Company],
+    documents: list[Document],
+    excerpts: list[Excerpt],
+    evidence: list[Evidence],
+) -> list[EvidenceRow]:
+    companies_by_name = {company.name: company for company in companies}
+    company_order = {
+        companies_by_name[name].company_id: order
+        for order, name in enumerate(company_names)
+    }
+    company_names_by_id = {company.company_id: company.name for company in companies}
+    company_ids_by_document = {
+        document.document_id: document.company_id for document in documents
+    }
+    codes = [code for locus in taxonomy for code in locus.codes]
+    code_order = {code.code: order for order, code in enumerate(codes)}
+    code_names = {code.code: code.name for code in codes}
+    excerpts_by_id = {excerpt.excerpt_id: excerpt for excerpt in excerpts}
+
+    selected = sorted(
+        (
+            item
+            for item in evidence
+            if company_ids_by_document[item.document_id] in company_order
+        ),
+        key=lambda item: (
+            company_order[company_ids_by_document[item.document_id]],
+            code_order[item.code],
+            item.document_id,
+        ),
+    )
+    rows: list[EvidenceRow] = []
+    for item in selected:
+        location = locate_quote(item.quote, excerpts_by_id[item.excerpt_id].text)
+        rows.append(
+            EvidenceRow(
+                evidence_id=item.evidence_id,
+                mitigation_id=item.mitigation_id,
+                company=company_names_by_id[company_ids_by_document[item.document_id]],
+                document_id=item.document_id,
+                excerpt_id=item.excerpt_id,
+                code=item.code,
+                code_name=code_names[item.code],
+                mitigation=item.mitigation,
+                strength=item.strength,
+                quote=item.quote,
+                quote_start=location.start if location else None,
+                quote_end=location.end if location else None,
+                reasoning=item.reasoning,
+            )
+        )
     return rows
 
 
