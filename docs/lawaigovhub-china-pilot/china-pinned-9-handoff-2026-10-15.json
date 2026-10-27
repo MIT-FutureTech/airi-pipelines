@@ -1,0 +1,1492 @@
+{
+  "schema_version": 1,
+  "purpose": "Source-evidence pilot for collaborators; not a verified legal corpus",
+  "input_sha256": "127c9c95921605b57a7b3bab42cd3573a20dc621ae608bcbb5fba6717dc78c1d",
+  "evidence_bundle_sha256": "1e2825f4e34750149cd9b7c075942c36dd848f29434c4b23f713bfd6e6235947",
+  "source_queue_generated_at": "2026-10-15T22:47:55.085358+08:00",
+  "summary": {
+    "machine_confirmed": 9,
+    "human_gold": 0
+  },
+  "records": [
+    {
+      "audit_key": "cn:7498bd30d4732c64",
+      "source_row_number": 11,
+      "english_title": "AI Safety Governance Framework 3.0",
+      "original_chinese_title": "人工智能安全治理框架3.0",
+      "issuer_original_zh": "全国网络安全标准化技术委员会",
+      "document_id": null,
+      "official_document_url": "https://www.cac.gov.cn/rootimages/uploadimg/1791137114683961/1791137114683961.pdf",
+      "official_support_url": "https://www.cac.gov.cn/2026-09/14/c_1791137092283345.htm",
+      "source_checked_at": "2026-10-15T11:44:05.649491+00:00",
+      "source_sha256": "cff709d8b1b2a0dfd2ff24df4d6b942b160975331e44c918e14a47d5c86da43d",
+      "classification": {
+        "chinese_classification": "全国网安标委人工智能安全治理框架",
+        "formal_rank": "no_formal_legislative_rank",
+        "binding_status": "non_binding",
+        "ai_scope": "ai_specific",
+        "evidence_markers": [
+          "人工智能安全治理框架3.0",
+          "风险分类"
+        ],
+        "status": "source_markers_matched"
+      },
+      "date_roles": {
+        "publication": "2026-09-14"
+      },
+      "version_status": "not_checked",
+      "machine_proof": {
+        "row_number": 11,
+        "audit_key": "cn:7498bd30d4732c64",
+        "index_title": "AI Safety Governance Framework 3.0",
+        "index_url": "https://www.cac.gov.cn/rootimages/uploadimg/1791137114683961/1791137114683961.pdf",
+        "link_repair_required": false,
+        "verdict": "four_gate_evidence_passed",
+        "gates": {
+          "A": {
+            "passed": true,
+            "criterion": "official host, explicit publisher role, issuer evidence",
+            "evidence": [
+              {
+                "marker": "全国网络安全标准化技术委员会",
+                "source_url": "https://www.cac.gov.cn/rootimages/uploadimg/1791137114683961/1791137114683961.pdf"
+              }
+            ]
+          },
+          "B": {
+            "passed": true,
+            "criterion": "document-specific parseable pages and pinned byte hashes",
+            "page_results": {
+              "https://www.cac.gov.cn/rootimages/uploadimg/1791137114683961/1791137114683961.pdf": true
+            },
+            "support_page_parsed": true
+          },
+          "C": {
+            "passed": true,
+            "criterion": "Chinese title, instrument markers, and release-to-document link",
+            "evidence": [
+              {
+                "marker": "人工智能安全治理框架3.0",
+                "source_url": "https://www.cac.gov.cn/rootimages/uploadimg/1791137114683961/1791137114683961.pdf"
+              },
+              {
+                "marker": "全国网络安全标准化技术委员会",
+                "source_url": "https://www.cac.gov.cn/rootimages/uploadimg/1791137114683961/1791137114683961.pdf"
+              }
+            ],
+            "support_link_matched": "https://www.cac.gov.cn/rootimages/uploadimg/1791137114683961/1791137114683961.pdf"
+          },
+          "D": {
+            "passed": true,
+            "criterion": "source-backed class markers and separately typed dates",
+            "evidence": [
+              {
+                "marker": "人工智能安全治理框架3.0",
+                "source_url": "https://www.cac.gov.cn/rootimages/uploadimg/1791137114683961/1791137114683961.pdf"
+              },
+              {
+                "marker": "风险分类",
+                "source_url": "https://www.cac.gov.cn/rootimages/uploadimg/1791137114683961/1791137114683961.pdf"
+              }
+            ]
+          }
+        },
+        "source": {
+          "url": "https://www.cac.gov.cn/rootimages/uploadimg/1791137114683961/1791137114683961.pdf",
+          "publisher": "中央网络安全和信息化委员会办公室 / 国家互联网信息办公室",
+          "publisher_role": "official_republication",
+          "support_url": "https://www.cac.gov.cn/2026-09/14/c_1791137092283345.htm",
+          "observed_sha256": "cff709d8b1b2a0dfd2ff24df4d6b942b160975331e44c918e14a47d5c86da43d",
+          "http_status": 200,
+          "checked_at": "2026-10-15T11:44:05.649491+00:00",
+          "content_kind": "pdf",
+          "extracted_characters": 175810,
+          "required_page_sha256": {
+            "https://www.cac.gov.cn/rootimages/uploadimg/1791137114683961/1791137114683961.pdf": "cff709d8b1b2a0dfd2ff24df4d6b942b160975331e44c918e14a47d5c86da43d"
+          },
+          "pages": [
+            {
+              "url": "https://www.cac.gov.cn/rootimages/uploadimg/1791137114683961/1791137114683961.pdf",
+              "expected_sha256": "cff709d8b1b2a0dfd2ff24df4d6b942b160975331e44c918e14a47d5c86da43d",
+              "observed_sha256": "cff709d8b1b2a0dfd2ff24df4d6b942b160975331e44c918e14a47d5c86da43d",
+              "http_status": 200,
+              "checked_at": "2026-10-15T11:44:05.649491+00:00",
+              "content_kind": "pdf",
+              "extracted_characters": 175810
+            }
+          ],
+          "support_page": {
+            "url": "https://www.cac.gov.cn/2026-09/14/c_1791137092283345.htm",
+            "http_status": 200,
+            "sha256": "72415a6f4f8cd2a7b3d2b8b8080247676393d12a7711f81e8907ef3e3c19f24a",
+            "checked_at": "2026-10-15T11:44:05.027422+00:00",
+            "extracted_characters": 1094
+          },
+          "support_link_url": "https://www.cac.gov.cn/rootimages/uploadimg/1791137114683961/1791137114683961.pdf",
+          "support_observed_sha256": "72415a6f4f8cd2a7b3d2b8b8080247676393d12a7711f81e8907ef3e3c19f24a"
+        },
+        "original_chinese_title": "人工智能安全治理框架3.0",
+        "issuer": "National Technical Committee 260 on Cybersecurity Standardization (China)",
+        "issuer_original_zh": "全国网络安全标准化技术委员会",
+        "document_id": null,
+        "classification": {
+          "chinese_classification": "全国网安标委人工智能安全治理框架",
+          "formal_rank": "no_formal_legislative_rank",
+          "binding_status": "non_binding",
+          "ai_scope": "ai_specific",
+          "evidence_markers": [
+            "人工智能安全治理框架3.0",
+            "风险分类"
+          ],
+          "status": "source_markers_matched"
+        },
+        "version_context": {
+          "status": "not_checked",
+          "assessed_at": "2026-10-15T11:44:50.131034+00:00"
+        },
+        "dates": {
+          "publication": {
+            "value": "2026-09-14",
+            "source_url": "https://www.cac.gov.cn/2026-09/14/c_1791137092283345.htm",
+            "source_marker": "2026年09月14日",
+            "marker_found": true
+          }
+        },
+        "index_date_role": "publication",
+        "manifest_path": "pipeline/verified_china_singapore_docs.json"
+      },
+      "agora_scope_status": "not_screened",
+      "current_legal_force_status": "not_verified",
+      "human_review_status": "not_reviewed"
+    },
+    {
+      "audit_key": "cn:17c5ffc922e71004",
+      "source_row_number": 12,
+      "english_title": "Ethical Guidelines for Artificial Intelligence Medical Imaging Research",
+      "original_chinese_title": "人工智能医学影像研究伦理指引",
+      "issuer_original_zh": "国家科技伦理委员会医学伦理分委员会",
+      "document_id": null,
+      "official_document_url": "https://www.most.gov.cn/kjbgz/202608/P020260827537798488476.pdf",
+      "official_support_url": "https://www.most.gov.cn/kjbgz/202608/t20260827_197206.html",
+      "source_checked_at": "2026-10-15T11:44:16.191507+00:00",
+      "source_sha256": "33c0ea6a4ef88e5f900f8413a4f0475c22a532bfffcabda48c8c1c3575bd0339",
+      "classification": {
+        "chinese_classification": "科技伦理研究指引",
+        "formal_rank": "no_formal_legislative_rank",
+        "binding_status": "non_binding",
+        "ai_scope": "ai_specific",
+        "evidence_markers": [
+          "人工智能医学影像研究伦理指引",
+          "供相关科研机构和科研人员参考使用"
+        ],
+        "status": "source_markers_matched"
+      },
+      "date_roles": {
+        "publication": "2026-08-27"
+      },
+      "version_status": "not_checked",
+      "machine_proof": {
+        "row_number": 12,
+        "audit_key": "cn:17c5ffc922e71004",
+        "index_title": "Ethical Guidelines for Artificial Intelligence Medical Imaging Research",
+        "index_url": "https://www.most.gov.cn/kjbgz/202608/P020260827537798488476.pdf",
+        "link_repair_required": false,
+        "verdict": "four_gate_evidence_passed",
+        "gates": {
+          "A": {
+            "passed": true,
+            "criterion": "official host, explicit publisher role, issuer evidence",
+            "evidence": [
+              {
+                "marker": "国家科技伦理委员会医学伦理分委员会",
+                "source_url": "https://www.most.gov.cn/kjbgz/202608/P020260827537798488476.pdf"
+              }
+            ]
+          },
+          "B": {
+            "passed": true,
+            "criterion": "document-specific parseable pages and pinned byte hashes",
+            "page_results": {
+              "https://www.most.gov.cn/kjbgz/202608/P020260827537798488476.pdf": true
+            },
+            "support_page_parsed": true
+          },
+          "C": {
+            "passed": true,
+            "criterion": "Chinese title, instrument markers, and release-to-document link",
+            "evidence": [
+              {
+                "marker": "人工智能医学影像研究伦理指引",
+                "source_url": "https://www.most.gov.cn/kjbgz/202608/P020260827537798488476.pdf"
+              },
+              {
+                "marker": "目的及范围",
+                "source_url": "https://www.most.gov.cn/kjbgz/202608/P020260827537798488476.pdf"
+              }
+            ],
+            "support_link_matched": "https://www.most.gov.cn/kjbgz/202608/P020260827537798488476.pdf"
+          },
+          "D": {
+            "passed": true,
+            "criterion": "source-backed class markers and separately typed dates",
+            "evidence": [
+              {
+                "marker": "人工智能医学影像研究伦理指引",
+                "source_url": "https://www.most.gov.cn/kjbgz/202608/P020260827537798488476.pdf"
+              },
+              {
+                "marker": "供相关科研机构和科研人员参考使用",
+                "source_url": "https://www.most.gov.cn/kjbgz/202608/t20260827_197206.html"
+              }
+            ]
+          }
+        },
+        "source": {
+          "url": "https://www.most.gov.cn/kjbgz/202608/P020260827537798488476.pdf",
+          "publisher": "中华人民共和国科学技术部",
+          "publisher_role": "official_republication",
+          "support_url": "https://www.most.gov.cn/kjbgz/202608/t20260827_197206.html",
+          "observed_sha256": "33c0ea6a4ef88e5f900f8413a4f0475c22a532bfffcabda48c8c1c3575bd0339",
+          "http_status": 200,
+          "checked_at": "2026-10-15T11:44:16.191507+00:00",
+          "content_kind": "pdf",
+          "extracted_characters": 6428,
+          "required_page_sha256": {
+            "https://www.most.gov.cn/kjbgz/202608/P020260827537798488476.pdf": "33c0ea6a4ef88e5f900f8413a4f0475c22a532bfffcabda48c8c1c3575bd0339"
+          },
+          "pages": [
+            {
+              "url": "https://www.most.gov.cn/kjbgz/202608/P020260827537798488476.pdf",
+              "expected_sha256": "33c0ea6a4ef88e5f900f8413a4f0475c22a532bfffcabda48c8c1c3575bd0339",
+              "observed_sha256": "33c0ea6a4ef88e5f900f8413a4f0475c22a532bfffcabda48c8c1c3575bd0339",
+              "http_status": 200,
+              "checked_at": "2026-10-15T11:44:16.191507+00:00",
+              "content_kind": "pdf",
+              "extracted_characters": 6428
+            }
+          ],
+          "support_page": {
+            "url": "https://www.most.gov.cn/kjbgz/202608/t20260827_197206.html",
+            "http_status": 200,
+            "sha256": "64a56d965a2fd02e4638690ea25a287c71f671ec19bc1501578271856e7b4ade",
+            "checked_at": "2026-10-15T11:44:22.004375+00:00",
+            "extracted_characters": 347
+          },
+          "support_link_url": "https://www.most.gov.cn/kjbgz/202608/P020260827537798488476.pdf",
+          "support_observed_sha256": "64a56d965a2fd02e4638690ea25a287c71f671ec19bc1501578271856e7b4ade"
+        },
+        "original_chinese_title": "人工智能医学影像研究伦理指引",
+        "issuer": "国家科技伦理委员会医学伦理分委员会",
+        "issuer_original_zh": "国家科技伦理委员会医学伦理分委员会",
+        "document_id": null,
+        "classification": {
+          "chinese_classification": "科技伦理研究指引",
+          "formal_rank": "no_formal_legislative_rank",
+          "binding_status": "non_binding",
+          "ai_scope": "ai_specific",
+          "evidence_markers": [
+            "人工智能医学影像研究伦理指引",
+            "供相关科研机构和科研人员参考使用"
+          ],
+          "status": "source_markers_matched"
+        },
+        "version_context": {
+          "status": "not_checked",
+          "assessed_at": "2026-10-15T11:44:50.164948+00:00"
+        },
+        "dates": {
+          "publication": {
+            "value": "2026-08-27",
+            "source_url": "https://www.most.gov.cn/kjbgz/202608/t20260827_197206.html",
+            "source_marker": "2026年08月27日",
+            "marker_found": true
+          }
+        },
+        "index_date_role": "publication",
+        "manifest_path": "pipeline/verified_china_singapore_docs.json"
+      },
+      "agora_scope_status": "not_screened",
+      "current_legal_force_status": "not_verified",
+      "human_review_status": "not_reviewed"
+    },
+    {
+      "audit_key": "cn:e21276a7efce15f3",
+      "source_row_number": 13,
+      "english_title": "Ethical Guidelines for Research and Development of Driving Automation Technology",
+      "original_chinese_title": "驾驶自动化技术研发伦理指引",
+      "issuer_original_zh": "国家科技伦理委员会人工智能伦理分委员会",
+      "document_id": null,
+      "official_document_url": "https://www.most.gov.cn/kjbgz/202507/P020250723532256831666.pdf",
+      "official_support_url": "https://www.most.gov.cn/kjbgz/202507/t20250723_194243.html",
+      "source_checked_at": "2026-10-15T11:44:07.814840+00:00",
+      "source_sha256": "dbbf775e3c6ab4f663fb2660a14825d3f2c89cbf3509ac6ae55a3e1d3f5850c1",
+      "classification": {
+        "chinese_classification": "科技伦理研究指引",
+        "formal_rank": "no_formal_legislative_rank",
+        "binding_status": "non_binding",
+        "ai_scope": "ai_related_driving_automation",
+        "evidence_markers": [
+          "驾驶自动化技术研发伦理指引",
+          "供相关科研机构和科研人员参考使用"
+        ],
+        "status": "source_markers_matched"
+      },
+      "date_roles": {
+        "publication": "2025-07-23"
+      },
+      "version_status": "not_checked",
+      "machine_proof": {
+        "row_number": 13,
+        "audit_key": "cn:e21276a7efce15f3",
+        "index_title": "Ethical Guidelines for Research and Development of Driving Automation Technology",
+        "index_url": "https://www.most.gov.cn/kjbgz/202507/P020250723532256831666.pdf",
+        "link_repair_required": false,
+        "verdict": "four_gate_evidence_passed",
+        "gates": {
+          "A": {
+            "passed": true,
+            "criterion": "official host, explicit publisher role, issuer evidence",
+            "evidence": [
+              {
+                "marker": "国家科技伦理委员会人工智能伦理分委员会",
+                "source_url": "https://www.most.gov.cn/kjbgz/202507/P020250723532256831666.pdf"
+              }
+            ]
+          },
+          "B": {
+            "passed": true,
+            "criterion": "document-specific parseable pages and pinned byte hashes",
+            "page_results": {
+              "https://www.most.gov.cn/kjbgz/202507/P020250723532256831666.pdf": true
+            },
+            "support_page_parsed": true
+          },
+          "C": {
+            "passed": true,
+            "criterion": "Chinese title, instrument markers, and release-to-document link",
+            "evidence": [
+              {
+                "marker": "驾驶自动化技术研发伦理指引",
+                "source_url": "https://www.most.gov.cn/kjbgz/202507/P020250723532256831666.pdf"
+              },
+              {
+                "marker": "目的",
+                "source_url": "https://www.most.gov.cn/kjbgz/202507/P020250723532256831666.pdf"
+              }
+            ],
+            "support_link_matched": "https://www.most.gov.cn/kjbgz/202507/P020250723532256831666.pdf"
+          },
+          "D": {
+            "passed": true,
+            "criterion": "source-backed class markers and separately typed dates",
+            "evidence": [
+              {
+                "marker": "驾驶自动化技术研发伦理指引",
+                "source_url": "https://www.most.gov.cn/kjbgz/202507/P020250723532256831666.pdf"
+              },
+              {
+                "marker": "供相关科研机构和科研人员参考使用",
+                "source_url": "https://www.most.gov.cn/kjbgz/202507/t20250723_194243.html"
+              }
+            ]
+          }
+        },
+        "source": {
+          "url": "https://www.most.gov.cn/kjbgz/202507/P020250723532256831666.pdf",
+          "publisher": "中华人民共和国科学技术部",
+          "publisher_role": "official_republication",
+          "support_url": "https://www.most.gov.cn/kjbgz/202507/t20250723_194243.html",
+          "observed_sha256": "dbbf775e3c6ab4f663fb2660a14825d3f2c89cbf3509ac6ae55a3e1d3f5850c1",
+          "http_status": 200,
+          "checked_at": "2026-10-15T11:44:07.814840+00:00",
+          "content_kind": "pdf",
+          "extracted_characters": 6439,
+          "required_page_sha256": {
+            "https://www.most.gov.cn/kjbgz/202507/P020250723532256831666.pdf": "dbbf775e3c6ab4f663fb2660a14825d3f2c89cbf3509ac6ae55a3e1d3f5850c1"
+          },
+          "pages": [
+            {
+              "url": "https://www.most.gov.cn/kjbgz/202507/P020250723532256831666.pdf",
+              "expected_sha256": "dbbf775e3c6ab4f663fb2660a14825d3f2c89cbf3509ac6ae55a3e1d3f5850c1",
+              "observed_sha256": "dbbf775e3c6ab4f663fb2660a14825d3f2c89cbf3509ac6ae55a3e1d3f5850c1",
+              "http_status": 200,
+              "checked_at": "2026-10-15T11:44:07.814840+00:00",
+              "content_kind": "pdf",
+              "extracted_characters": 6439
+            }
+          ],
+          "support_page": {
+            "url": "https://www.most.gov.cn/kjbgz/202507/t20250723_194243.html",
+            "http_status": 200,
+            "sha256": "05ed2dbf3b61ed6668e9a611888f5d8e79a682fac72ccfae90ccdc7d0d605343",
+            "checked_at": "2026-10-15T11:44:15.418837+00:00",
+            "extracted_characters": 405
+          },
+          "support_link_url": "https://www.most.gov.cn/kjbgz/202507/P020250723532256831666.pdf",
+          "support_observed_sha256": "05ed2dbf3b61ed6668e9a611888f5d8e79a682fac72ccfae90ccdc7d0d605343"
+        },
+        "original_chinese_title": "驾驶自动化技术研发伦理指引",
+        "issuer": "国家科技伦理委员会人工智能伦理分委员会",
+        "issuer_original_zh": "国家科技伦理委员会人工智能伦理分委员会",
+        "document_id": null,
+        "classification": {
+          "chinese_classification": "科技伦理研究指引",
+          "formal_rank": "no_formal_legislative_rank",
+          "binding_status": "non_binding",
+          "ai_scope": "ai_related_driving_automation",
+          "evidence_markers": [
+            "驾驶自动化技术研发伦理指引",
+            "供相关科研机构和科研人员参考使用"
+          ],
+          "status": "source_markers_matched"
+        },
+        "version_context": {
+          "status": "not_checked",
+          "assessed_at": "2026-10-15T11:44:50.180400+00:00"
+        },
+        "dates": {
+          "publication": {
+            "value": "2025-07-23",
+            "source_url": "https://www.most.gov.cn/kjbgz/202507/t20250723_194243.html",
+            "source_marker": "2025年07月23日",
+            "marker_found": true
+          }
+        },
+        "index_date_role": "publication",
+        "manifest_path": "pipeline/verified_china_singapore_docs.json"
+      },
+      "agora_scope_status": "not_screened",
+      "current_legal_force_status": "not_verified",
+      "human_review_status": "not_reviewed"
+    },
+    {
+      "audit_key": "cn:cbdce0aae75c4a1e",
+      "source_row_number": 25,
+      "english_title": "TC260 Practice Guide: Secure Deployment and Use of AI Agents",
+      "original_chinese_title": "网络安全标准实践指南——智能体部署使用安全指引",
+      "issuer_original_zh": "全国网络安全标准化技术委员会秘书处",
+      "document_id": "TC260-PG-20266A",
+      "official_document_url": "https://www.tc260.org.cn/tc260/tzgg/202607/98b6f259f8a3428b8fe1cfea3c0fb19e/files/《网络安全标准实践指南——智能体部署使用安全指引》.pdf.pdf",
+      "official_support_url": "https://www.tc260.org.cn/tc260/tzgg/202607/98b6f259f8a3428b8fe1cfea3c0fb19e.shtml",
+      "source_checked_at": "2026-10-15T11:44:48.278793+00:00",
+      "source_sha256": "11124dbe739eebd438a6ed5e9b612fae599aa116d74ceab05a9d1c426f101ec4",
+      "classification": {
+        "chinese_classification": "网络安全标准实践指南",
+        "formal_rank": "technical_guidance_not_prc_statute",
+        "binding_status": "non_binding",
+        "ai_scope": "ai_specific_agents",
+        "evidence_markers": [
+          "TC260-PG-20266A",
+          "网络安全标准实践指南"
+        ],
+        "status": "source_markers_matched"
+      },
+      "date_roles": {
+        "publication": "2026-07-01"
+      },
+      "version_status": "not_checked",
+      "machine_proof": {
+        "row_number": 25,
+        "audit_key": "cn:cbdce0aae75c4a1e",
+        "index_title": "TC260 Practice Guide: Secure Deployment and Use of AI Agents",
+        "index_url": "https://www.tc260.org.cn/tc260/tzgg/202607/98b6f259f8a3428b8fe1cfea3c0fb19e/files/《网络安全标准实践指南——智能体部署使用安全指引》.pdf.pdf",
+        "link_repair_required": false,
+        "verdict": "four_gate_evidence_passed",
+        "gates": {
+          "A": {
+            "passed": true,
+            "criterion": "official host, explicit publisher role, issuer evidence",
+            "evidence": [
+              {
+                "marker": "全国网络安全标准化技术委员会秘书处",
+                "source_url": "https://www.tc260.org.cn/tc260/tzgg/202607/98b6f259f8a3428b8fe1cfea3c0fb19e/files/《网络安全标准实践指南——智能体部署使用安全指引》.pdf.pdf"
+              }
+            ]
+          },
+          "B": {
+            "passed": true,
+            "criterion": "document-specific parseable pages and pinned byte hashes",
+            "page_results": {
+              "https://www.tc260.org.cn/tc260/tzgg/202607/98b6f259f8a3428b8fe1cfea3c0fb19e/files/《网络安全标准实践指南——智能体部署使用安全指引》.pdf.pdf": true
+            },
+            "support_page_parsed": true
+          },
+          "C": {
+            "passed": true,
+            "criterion": "Chinese title, instrument markers, and release-to-document link",
+            "evidence": [
+              {
+                "marker": "网络安全标准实践指南——智能体部署使用安全指引",
+                "source_url": "https://www.tc260.org.cn/tc260/tzgg/202607/98b6f259f8a3428b8fe1cfea3c0fb19e/files/《网络安全标准实践指南——智能体部署使用安全指引》.pdf.pdf"
+              },
+              {
+                "marker": "TC260-PG-20266A",
+                "source_url": "https://www.tc260.org.cn/tc260/tzgg/202607/98b6f259f8a3428b8fe1cfea3c0fb19e/files/《网络安全标准实践指南——智能体部署使用安全指引》.pdf.pdf"
+              }
+            ],
+            "support_link_matched": "https://www.tc260.org.cn/tc260/tzgg/202607/98b6f259f8a3428b8fe1cfea3c0fb19e/files/《网络安全标准实践指南——智能体部署使用安全指引》.pdf.pdf"
+          },
+          "D": {
+            "passed": true,
+            "criterion": "source-backed class markers and separately typed dates",
+            "evidence": [
+              {
+                "marker": "TC260-PG-20266A",
+                "source_url": "https://www.tc260.org.cn/tc260/tzgg/202607/98b6f259f8a3428b8fe1cfea3c0fb19e/files/《网络安全标准实践指南——智能体部署使用安全指引》.pdf.pdf"
+              },
+              {
+                "marker": "网络安全标准实践指南",
+                "source_url": "https://www.tc260.org.cn/tc260/tzgg/202607/98b6f259f8a3428b8fe1cfea3c0fb19e/files/《网络安全标准实践指南——智能体部署使用安全指引》.pdf.pdf"
+              }
+            ]
+          }
+        },
+        "source": {
+          "url": "https://www.tc260.org.cn/tc260/tzgg/202607/98b6f259f8a3428b8fe1cfea3c0fb19e/files/《网络安全标准实践指南——智能体部署使用安全指引》.pdf.pdf",
+          "publisher": "全国网络安全标准化技术委员会",
+          "publisher_role": "issuing_body_site",
+          "support_url": "https://www.tc260.org.cn/tc260/tzgg/202607/98b6f259f8a3428b8fe1cfea3c0fb19e.shtml",
+          "observed_sha256": "11124dbe739eebd438a6ed5e9b612fae599aa116d74ceab05a9d1c426f101ec4",
+          "http_status": 200,
+          "checked_at": "2026-10-15T11:44:48.278793+00:00",
+          "content_kind": "pdf",
+          "extracted_characters": 10558,
+          "required_page_sha256": {
+            "https://www.tc260.org.cn/tc260/tzgg/202607/98b6f259f8a3428b8fe1cfea3c0fb19e/files/《网络安全标准实践指南——智能体部署使用安全指引》.pdf.pdf": "11124dbe739eebd438a6ed5e9b612fae599aa116d74ceab05a9d1c426f101ec4"
+          },
+          "pages": [
+            {
+              "url": "https://www.tc260.org.cn/tc260/tzgg/202607/98b6f259f8a3428b8fe1cfea3c0fb19e/files/《网络安全标准实践指南——智能体部署使用安全指引》.pdf.pdf",
+              "expected_sha256": "11124dbe739eebd438a6ed5e9b612fae599aa116d74ceab05a9d1c426f101ec4",
+              "observed_sha256": "11124dbe739eebd438a6ed5e9b612fae599aa116d74ceab05a9d1c426f101ec4",
+              "http_status": 200,
+              "checked_at": "2026-10-15T11:44:48.278793+00:00",
+              "content_kind": "pdf",
+              "extracted_characters": 10558
+            }
+          ],
+          "support_page": {
+            "url": "https://www.tc260.org.cn/tc260/tzgg/202607/98b6f259f8a3428b8fe1cfea3c0fb19e.shtml",
+            "http_status": 200,
+            "sha256": "546455bcabe776d8ad12c143718a41f066014fc4c1b9b5d5ac90dec854f07c37",
+            "checked_at": "2026-10-15T11:44:46.423679+00:00",
+            "extracted_characters": 602
+          },
+          "support_link_url": "https://www.tc260.org.cn/tc260/tzgg/202607/98b6f259f8a3428b8fe1cfea3c0fb19e/files/《网络安全标准实践指南——智能体部署使用安全指引》.pdf.pdf",
+          "support_observed_sha256": "546455bcabe776d8ad12c143718a41f066014fc4c1b9b5d5ac90dec854f07c37"
+        },
+        "original_chinese_title": "网络安全标准实践指南——智能体部署使用安全指引",
+        "issuer": "全国网络安全标准化技术委员会秘书处",
+        "issuer_original_zh": "全国网络安全标准化技术委员会秘书处",
+        "document_id": "TC260-PG-20266A",
+        "classification": {
+          "chinese_classification": "网络安全标准实践指南",
+          "formal_rank": "technical_guidance_not_prc_statute",
+          "binding_status": "non_binding",
+          "ai_scope": "ai_specific_agents",
+          "evidence_markers": [
+            "TC260-PG-20266A",
+            "网络安全标准实践指南"
+          ],
+          "status": "source_markers_matched"
+        },
+        "version_context": {
+          "status": "not_checked",
+          "assessed_at": "2026-10-15T11:44:50.203391+00:00"
+        },
+        "dates": {
+          "publication": {
+            "value": "2026-07-01",
+            "source_url": "https://www.tc260.org.cn/tc260/tzgg/202607/98b6f259f8a3428b8fe1cfea3c0fb19e.shtml",
+            "source_marker": "2026-07-01",
+            "marker_found": true
+          }
+        },
+        "index_date_role": "publication",
+        "manifest_path": "pipeline/verified_china_singapore_docs.json"
+      },
+      "agora_scope_status": "not_screened",
+      "current_legal_force_status": "not_verified",
+      "human_review_status": "not_reviewed"
+    },
+    {
+      "audit_key": "cn:124e9aed2efa841f",
+      "source_row_number": 557,
+      "english_title": "Cybersecurity Law of the People's Republic of China",
+      "original_chinese_title": "中华人民共和国网络安全法",
+      "issuer_original_zh": "全国人民代表大会常务委员会",
+      "document_id": null,
+      "official_document_url": "https://www.cac.gov.cn/2016-11/07/c_1119867116.htm",
+      "official_support_url": null,
+      "source_checked_at": "2026-10-15T11:43:59.919662+00:00",
+      "source_sha256": "5c9a0f43059b5e2a5ab177a9aadd05aaaead9e5bc186f05e4451c94392a0f195",
+      "classification": {
+        "chinese_classification": "全国人大常委会法律（2016年原始文本）",
+        "formal_rank": "npc_law",
+        "binding_status": "binding_original_text_current_consolidation_not_checked",
+        "ai_scope": "cross_cutting_not_ai_specific",
+        "evidence_markers": [
+          "第十二届全国人民代表大会常务委员会第二十四次会议通过",
+          "本法自2017年6月1日起施行"
+        ],
+        "status": "source_markers_matched"
+      },
+      "date_roles": {
+        "adoption": "2016-11-07",
+        "effective": "2017-06-01"
+      },
+      "version_status": "historical_original_text",
+      "machine_proof": {
+        "row_number": 557,
+        "audit_key": "cn:124e9aed2efa841f",
+        "index_title": "Cybersecurity Law of the People's Republic of China",
+        "index_url": "https://www.cac.gov.cn/2016-11/07/c_1119867116.htm",
+        "link_repair_required": false,
+        "verdict": "four_gate_evidence_passed",
+        "gates": {
+          "A": {
+            "passed": true,
+            "criterion": "official host, explicit publisher role, issuer evidence",
+            "evidence": [
+              {
+                "marker": "第十二届全国人民代表大会常务委员会第二十四次会议通过",
+                "source_url": "https://www.cac.gov.cn/2016-11/07/c_1119867116.htm"
+              }
+            ]
+          },
+          "B": {
+            "passed": true,
+            "criterion": "document-specific parseable pages and pinned byte hashes",
+            "page_results": {
+              "https://www.cac.gov.cn/2016-11/07/c_1119867116.htm": true,
+              "https://www.cac.gov.cn/2016-11/07/c_1119867116_2.htm": true,
+              "https://www.cac.gov.cn/2016-11/07/c_1119867116_3.htm": true
+            },
+            "support_page_parsed": true
+          },
+          "C": {
+            "passed": true,
+            "criterion": "Chinese title, instrument markers, and release-to-document link",
+            "evidence": [
+              {
+                "marker": "中华人民共和国网络安全法",
+                "source_url": "https://www.cac.gov.cn/2016-11/07/c_1119867116.htm"
+              },
+              {
+                "marker": "第一条",
+                "source_url": "https://www.cac.gov.cn/2016-11/07/c_1119867116.htm"
+              }
+            ],
+            "support_link_matched": null
+          },
+          "D": {
+            "passed": true,
+            "criterion": "source-backed class markers and separately typed dates",
+            "evidence": [
+              {
+                "marker": "第十二届全国人民代表大会常务委员会第二十四次会议通过",
+                "source_url": "https://www.cac.gov.cn/2016-11/07/c_1119867116.htm"
+              },
+              {
+                "marker": "本法自2017年6月1日起施行",
+                "source_url": "https://www.cac.gov.cn/2016-11/07/c_1119867116_3.htm"
+              }
+            ]
+          }
+        },
+        "source": {
+          "url": "https://www.cac.gov.cn/2016-11/07/c_1119867116.htm",
+          "publisher": "中央网络安全和信息化委员会办公室 / 国家互联网信息办公室",
+          "publisher_role": "official_republication",
+          "support_url": null,
+          "observed_sha256": "5c9a0f43059b5e2a5ab177a9aadd05aaaead9e5bc186f05e4451c94392a0f195",
+          "http_status": 200,
+          "checked_at": "2026-10-15T11:43:59.919662+00:00",
+          "content_kind": "html",
+          "extracted_characters": 2646,
+          "required_page_sha256": {
+            "https://www.cac.gov.cn/2016-11/07/c_1119867116.htm": "5c9a0f43059b5e2a5ab177a9aadd05aaaead9e5bc186f05e4451c94392a0f195",
+            "https://www.cac.gov.cn/2016-11/07/c_1119867116_2.htm": "dc961e2324284323bc5a3d42092bc460adb5b5ff51201de3b9b2c0c016123e85",
+            "https://www.cac.gov.cn/2016-11/07/c_1119867116_3.htm": "42b8a163752f25a9a2c0979743522a69c1f27a65af3609012689a29a8bff20d7"
+          },
+          "pages": [
+            {
+              "url": "https://www.cac.gov.cn/2016-11/07/c_1119867116.htm",
+              "expected_sha256": "5c9a0f43059b5e2a5ab177a9aadd05aaaead9e5bc186f05e4451c94392a0f195",
+              "observed_sha256": "5c9a0f43059b5e2a5ab177a9aadd05aaaead9e5bc186f05e4451c94392a0f195",
+              "http_status": 200,
+              "checked_at": "2026-10-15T11:43:59.919662+00:00",
+              "content_kind": "html",
+              "extracted_characters": 2646
+            },
+            {
+              "url": "https://www.cac.gov.cn/2016-11/07/c_1119867116_2.htm",
+              "expected_sha256": "dc961e2324284323bc5a3d42092bc460adb5b5ff51201de3b9b2c0c016123e85",
+              "observed_sha256": "dc961e2324284323bc5a3d42092bc460adb5b5ff51201de3b9b2c0c016123e85",
+              "http_status": 200,
+              "checked_at": "2026-10-15T11:44:01.017997+00:00",
+              "content_kind": "html",
+              "extracted_characters": 4246
+            },
+            {
+              "url": "https://www.cac.gov.cn/2016-11/07/c_1119867116_3.htm",
+              "expected_sha256": "42b8a163752f25a9a2c0979743522a69c1f27a65af3609012689a29a8bff20d7",
+              "observed_sha256": "42b8a163752f25a9a2c0979743522a69c1f27a65af3609012689a29a8bff20d7",
+              "http_status": 200,
+              "checked_at": "2026-10-15T11:44:01.648036+00:00",
+              "content_kind": "html",
+              "extracted_characters": 4751
+            }
+          ],
+          "support_page": null,
+          "support_link_url": "https://www.cac.gov.cn/2016-11/07/c_1119867116.htm",
+          "support_observed_sha256": null
+        },
+        "original_chinese_title": "中华人民共和国网络安全法",
+        "issuer": "Standing Committee of the National People's Congress",
+        "issuer_original_zh": "全国人民代表大会常务委员会",
+        "document_id": null,
+        "classification": {
+          "chinese_classification": "全国人大常委会法律（2016年原始文本）",
+          "formal_rank": "npc_law",
+          "binding_status": "binding_original_text_current_consolidation_not_checked",
+          "ai_scope": "cross_cutting_not_ai_specific",
+          "evidence_markers": [
+            "第十二届全国人民代表大会常务委员会第二十四次会议通过",
+            "本法自2017年6月1日起施行"
+          ],
+          "status": "source_markers_matched"
+        },
+        "version_context": {
+          "status": "historical_original_text",
+          "current_text_url": "https://www.cac.gov.cn/2025-12/29/c_1768735112911946.htm",
+          "basis_url": "https://www.cac.gov.cn/2025-12/29/c_1768735112911946.htm",
+          "note": "The 2025-amended consolidated law took effect on 2026-01-01; this proof pins the 2016 original.",
+          "assessed_at": "2026-10-15T11:44:50.329059+00:00"
+        },
+        "dates": {
+          "adoption": {
+            "value": "2016-11-07",
+            "source_url": "https://www.cac.gov.cn/2016-11/07/c_1119867116.htm",
+            "source_marker": "2016年11月7日",
+            "marker_found": true
+          },
+          "effective": {
+            "value": "2017-06-01",
+            "source_url": "https://www.cac.gov.cn/2016-11/07/c_1119867116_3.htm",
+            "source_marker": "本法自2017年6月1日起施行",
+            "marker_found": true
+          }
+        },
+        "index_date_role": "adoption",
+        "manifest_path": "pipeline/verified_china_legacy_repairs.json"
+      },
+      "agora_scope_status": "not_screened",
+      "current_legal_force_status": "not_verified",
+      "human_review_status": "not_reviewed"
+    },
+    {
+      "audit_key": "cn:29ccf006d486883b",
+      "source_row_number": 562,
+      "english_title": "Provisions on the Management of Algorithmic Recommendations in Internet Information Services",
+      "original_chinese_title": "互联网信息服务算法推荐管理规定",
+      "issuer_original_zh": "国家互联网信息办公室、工业和信息化部、公安部、国家市场监督管理总局",
+      "document_id": "Order No. 9",
+      "official_document_url": "https://www.cac.gov.cn/2022-01/04/c_1642894606364259.htm",
+      "official_support_url": null,
+      "source_checked_at": "2026-10-15T11:44:03.094407+00:00",
+      "source_sha256": "89aa514b53377b1cda3742f74addddbbc9f44bb2927c9eaf65793f55ce19eda9",
+      "classification": {
+        "chinese_classification": "多部门联合部门规章",
+        "formal_rank": "departmental_rule",
+        "binding_status": "binding",
+        "ai_scope": "algorithmic_recommendations",
+        "evidence_markers": [
+          "第9号",
+          "现予公布",
+          "第一条"
+        ],
+        "status": "source_markers_matched"
+      },
+      "date_roles": {
+        "promulgation": "2021-12-31",
+        "publication": "2022-01-04",
+        "effective": "2022-03-01"
+      },
+      "version_status": "not_checked",
+      "machine_proof": {
+        "row_number": 562,
+        "audit_key": "cn:29ccf006d486883b",
+        "index_title": "Provisions on the Management of Algorithmic Recommendations in Internet Information Services",
+        "index_url": "https://www.cac.gov.cn/2022-01/04/c_1642894606364259.htm",
+        "link_repair_required": false,
+        "verdict": "four_gate_evidence_passed",
+        "gates": {
+          "A": {
+            "passed": true,
+            "criterion": "official host, explicit publisher role, issuer evidence",
+            "evidence": [
+              {
+                "marker": "国家互联网信息办公室",
+                "source_url": "https://www.cac.gov.cn/2022-01/04/c_1642894606364259.htm"
+              },
+              {
+                "marker": "中华人民共和国工业和信息化部",
+                "source_url": "https://www.cac.gov.cn/2022-01/04/c_1642894606364259.htm"
+              },
+              {
+                "marker": "中华人民共和国公安部",
+                "source_url": "https://www.cac.gov.cn/2022-01/04/c_1642894606364259.htm"
+              },
+              {
+                "marker": "国家市场监督管理总局",
+                "source_url": "https://www.cac.gov.cn/2022-01/04/c_1642894606364259.htm"
+              }
+            ]
+          },
+          "B": {
+            "passed": true,
+            "criterion": "document-specific parseable pages and pinned byte hashes",
+            "page_results": {
+              "https://www.cac.gov.cn/2022-01/04/c_1642894606364259.htm": true
+            },
+            "support_page_parsed": true
+          },
+          "C": {
+            "passed": true,
+            "criterion": "Chinese title, instrument markers, and release-to-document link",
+            "evidence": [
+              {
+                "marker": "互联网信息服务算法推荐管理规定",
+                "source_url": "https://www.cac.gov.cn/2022-01/04/c_1642894606364259.htm"
+              },
+              {
+                "marker": "第9号",
+                "source_url": "https://www.cac.gov.cn/2022-01/04/c_1642894606364259.htm"
+              },
+              {
+                "marker": "第一条",
+                "source_url": "https://www.cac.gov.cn/2022-01/04/c_1642894606364259.htm"
+              }
+            ],
+            "support_link_matched": null
+          },
+          "D": {
+            "passed": true,
+            "criterion": "source-backed class markers and separately typed dates",
+            "evidence": [
+              {
+                "marker": "第9号",
+                "source_url": "https://www.cac.gov.cn/2022-01/04/c_1642894606364259.htm"
+              },
+              {
+                "marker": "现予公布",
+                "source_url": "https://www.cac.gov.cn/2022-01/04/c_1642894606364259.htm"
+              },
+              {
+                "marker": "第一条",
+                "source_url": "https://www.cac.gov.cn/2022-01/04/c_1642894606364259.htm"
+              }
+            ]
+          }
+        },
+        "source": {
+          "url": "https://www.cac.gov.cn/2022-01/04/c_1642894606364259.htm",
+          "publisher": "国家互联网信息办公室",
+          "publisher_role": "issuing_body_site",
+          "support_url": null,
+          "observed_sha256": "89aa514b53377b1cda3742f74addddbbc9f44bb2927c9eaf65793f55ce19eda9",
+          "http_status": 200,
+          "checked_at": "2026-10-15T11:44:03.094407+00:00",
+          "content_kind": "html",
+          "extracted_characters": 4838,
+          "required_page_sha256": {
+            "https://www.cac.gov.cn/2022-01/04/c_1642894606364259.htm": "89aa514b53377b1cda3742f74addddbbc9f44bb2927c9eaf65793f55ce19eda9"
+          },
+          "pages": [
+            {
+              "url": "https://www.cac.gov.cn/2022-01/04/c_1642894606364259.htm",
+              "expected_sha256": "89aa514b53377b1cda3742f74addddbbc9f44bb2927c9eaf65793f55ce19eda9",
+              "observed_sha256": "89aa514b53377b1cda3742f74addddbbc9f44bb2927c9eaf65793f55ce19eda9",
+              "http_status": 200,
+              "checked_at": "2026-10-15T11:44:03.094407+00:00",
+              "content_kind": "html",
+              "extracted_characters": 4838
+            }
+          ],
+          "support_page": null,
+          "support_link_url": "https://www.cac.gov.cn/2022-01/04/c_1642894606364259.htm",
+          "support_observed_sha256": null
+        },
+        "original_chinese_title": "互联网信息服务算法推荐管理规定",
+        "issuer": "Cyberspace Administration of China, Ministry of Industry and Information Technology, Ministry of Public Security, and State Administration for Market Regulation",
+        "issuer_original_zh": "国家互联网信息办公室、工业和信息化部、公安部、国家市场监督管理总局",
+        "document_id": "Order No. 9",
+        "classification": {
+          "chinese_classification": "多部门联合部门规章",
+          "formal_rank": "departmental_rule",
+          "binding_status": "binding",
+          "ai_scope": "algorithmic_recommendations",
+          "evidence_markers": [
+            "第9号",
+            "现予公布",
+            "第一条"
+          ],
+          "status": "source_markers_matched"
+        },
+        "version_context": {
+          "status": "not_checked",
+          "assessed_at": "2026-10-15T11:44:50.298834+00:00"
+        },
+        "dates": {
+          "promulgation": {
+            "value": "2021-12-31",
+            "source_url": "https://www.cac.gov.cn/2022-01/04/c_1642894606364259.htm",
+            "source_marker": "2021年12月31日",
+            "marker_found": true
+          },
+          "publication": {
+            "value": "2022-01-04",
+            "source_url": "https://www.cac.gov.cn/2022-01/04/c_1642894606364259.htm",
+            "source_marker": "2022年01月04日",
+            "marker_found": true
+          },
+          "effective": {
+            "value": "2022-03-01",
+            "source_url": "https://www.cac.gov.cn/2022-01/04/c_1642894606364259.htm",
+            "source_marker": "本规定自2022年3月1日起施行",
+            "marker_found": true
+          }
+        },
+        "index_date_role": "promulgation",
+        "manifest_path": "pipeline/verified_china_legacy_repairs.json"
+      },
+      "agora_scope_status": "not_screened",
+      "current_legal_force_status": "not_verified",
+      "human_review_status": "not_reviewed"
+    },
+    {
+      "audit_key": "cn:b29f0731f1b031f4",
+      "source_row_number": 564,
+      "english_title": "Personal Information Protection Law of the People's Republic of China",
+      "original_chinese_title": "中华人民共和国个人信息保护法",
+      "issuer_original_zh": "全国人民代表大会常务委员会",
+      "document_id": null,
+      "official_document_url": "https://www.cac.gov.cn/2021-08/20/c_1631050028355286.htm",
+      "official_support_url": null,
+      "source_checked_at": "2026-10-15T11:44:02.419901+00:00",
+      "source_sha256": "50b62bb9868648fe0417d8757a8cff62641eba6d879403f363d771f8c6d3acff",
+      "classification": {
+        "chinese_classification": "全国人大常委会法律",
+        "formal_rank": "npc_law",
+        "binding_status": "binding",
+        "ai_scope": "cross_cutting_with_automated_decision_provisions",
+        "evidence_markers": [
+          "第十三届全国人民代表大会常务委员会第三十次会议通过",
+          "自动化决策"
+        ],
+        "status": "source_markers_matched"
+      },
+      "date_roles": {
+        "adoption": "2021-08-20",
+        "effective": "2021-11-01"
+      },
+      "version_status": "not_checked",
+      "machine_proof": {
+        "row_number": 564,
+        "audit_key": "cn:b29f0731f1b031f4",
+        "index_title": "Personal Information Protection Law of the People's Republic of China",
+        "index_url": "https://www.cac.gov.cn/2021-08/20/c_1631050028355286.htm",
+        "link_repair_required": false,
+        "verdict": "four_gate_evidence_passed",
+        "gates": {
+          "A": {
+            "passed": true,
+            "criterion": "official host, explicit publisher role, issuer evidence",
+            "evidence": [
+              {
+                "marker": "第十三届全国人民代表大会常务委员会第三十次会议通过",
+                "source_url": "https://www.cac.gov.cn/2021-08/20/c_1631050028355286.htm"
+              }
+            ]
+          },
+          "B": {
+            "passed": true,
+            "criterion": "document-specific parseable pages and pinned byte hashes",
+            "page_results": {
+              "https://www.cac.gov.cn/2021-08/20/c_1631050028355286.htm": true
+            },
+            "support_page_parsed": true
+          },
+          "C": {
+            "passed": true,
+            "criterion": "Chinese title, instrument markers, and release-to-document link",
+            "evidence": [
+              {
+                "marker": "中华人民共和国个人信息保护法",
+                "source_url": "https://www.cac.gov.cn/2021-08/20/c_1631050028355286.htm"
+              },
+              {
+                "marker": "第一条",
+                "source_url": "https://www.cac.gov.cn/2021-08/20/c_1631050028355286.htm"
+              },
+              {
+                "marker": "第七十四条",
+                "source_url": "https://www.cac.gov.cn/2021-08/20/c_1631050028355286.htm"
+              }
+            ],
+            "support_link_matched": null
+          },
+          "D": {
+            "passed": true,
+            "criterion": "source-backed class markers and separately typed dates",
+            "evidence": [
+              {
+                "marker": "第十三届全国人民代表大会常务委员会第三十次会议通过",
+                "source_url": "https://www.cac.gov.cn/2021-08/20/c_1631050028355286.htm"
+              },
+              {
+                "marker": "自动化决策",
+                "source_url": "https://www.cac.gov.cn/2021-08/20/c_1631050028355286.htm"
+              }
+            ]
+          }
+        },
+        "source": {
+          "url": "https://www.cac.gov.cn/2021-08/20/c_1631050028355286.htm",
+          "publisher": "中央网络安全和信息化委员会办公室 / 国家互联网信息办公室",
+          "publisher_role": "official_republication",
+          "support_url": null,
+          "observed_sha256": "50b62bb9868648fe0417d8757a8cff62641eba6d879403f363d771f8c6d3acff",
+          "http_status": 200,
+          "checked_at": "2026-10-15T11:44:02.419901+00:00",
+          "content_kind": "html",
+          "extracted_characters": 9859,
+          "required_page_sha256": {
+            "https://www.cac.gov.cn/2021-08/20/c_1631050028355286.htm": "50b62bb9868648fe0417d8757a8cff62641eba6d879403f363d771f8c6d3acff"
+          },
+          "pages": [
+            {
+              "url": "https://www.cac.gov.cn/2021-08/20/c_1631050028355286.htm",
+              "expected_sha256": "50b62bb9868648fe0417d8757a8cff62641eba6d879403f363d771f8c6d3acff",
+              "observed_sha256": "50b62bb9868648fe0417d8757a8cff62641eba6d879403f363d771f8c6d3acff",
+              "http_status": 200,
+              "checked_at": "2026-10-15T11:44:02.419901+00:00",
+              "content_kind": "html",
+              "extracted_characters": 9859
+            }
+          ],
+          "support_page": null,
+          "support_link_url": "https://www.cac.gov.cn/2021-08/20/c_1631050028355286.htm",
+          "support_observed_sha256": null
+        },
+        "original_chinese_title": "中华人民共和国个人信息保护法",
+        "issuer": "Standing Committee of the National People's Congress",
+        "issuer_original_zh": "全国人民代表大会常务委员会",
+        "document_id": null,
+        "classification": {
+          "chinese_classification": "全国人大常委会法律",
+          "formal_rank": "npc_law",
+          "binding_status": "binding",
+          "ai_scope": "cross_cutting_with_automated_decision_provisions",
+          "evidence_markers": [
+            "第十三届全国人民代表大会常务委员会第三十次会议通过",
+            "自动化决策"
+          ],
+          "status": "source_markers_matched"
+        },
+        "version_context": {
+          "status": "not_checked",
+          "assessed_at": "2026-10-15T11:44:50.371428+00:00"
+        },
+        "dates": {
+          "adoption": {
+            "value": "2021-08-20",
+            "source_url": "https://www.cac.gov.cn/2021-08/20/c_1631050028355286.htm",
+            "source_marker": "2021年8月20日",
+            "marker_found": true
+          },
+          "effective": {
+            "value": "2021-11-01",
+            "source_url": "https://www.cac.gov.cn/2021-08/20/c_1631050028355286.htm",
+            "source_marker": "本法自2021年11月1日起施行",
+            "marker_found": true
+          }
+        },
+        "index_date_role": "adoption",
+        "manifest_path": "pipeline/verified_china_legacy_repairs.json"
+      },
+      "agora_scope_status": "not_screened",
+      "current_legal_force_status": "not_verified",
+      "human_review_status": "not_reviewed"
+    },
+    {
+      "audit_key": "cn:c0e9036d0f0a138a",
+      "source_row_number": 653,
+      "english_title": "Interim Measures for the Management of Generative Artificial Intelligence Services",
+      "original_chinese_title": "生成式人工智能服务管理暂行办法",
+      "issuer_original_zh": "国家互联网信息办公室、国家发展和改革委员会、教育部、科学技术部、工业和信息化部、公安部、国家广播电视总局",
+      "document_id": "Order No. 15",
+      "official_document_url": "https://www.cac.gov.cn/2023-07/13/c_1690898327029107.htm",
+      "official_support_url": null,
+      "source_checked_at": "2026-10-15T11:44:04.372623+00:00",
+      "source_sha256": "7fae988c064dde72c95e96e5727bf9abee4b3a5a1ea817606a9ca1f97ffac54b",
+      "classification": {
+        "chinese_classification": "多部门联合部门规章",
+        "formal_rank": "departmental_rule",
+        "binding_status": "binding",
+        "ai_scope": "ai_specific",
+        "evidence_markers": [
+          "第15号",
+          "现予公布",
+          "第一条"
+        ],
+        "status": "source_markers_matched"
+      },
+      "date_roles": {
+        "promulgation": "2023-07-10",
+        "publication": "2023-07-13",
+        "effective": "2023-08-15"
+      },
+      "version_status": "not_checked",
+      "machine_proof": {
+        "row_number": 653,
+        "audit_key": "cn:c0e9036d0f0a138a",
+        "index_title": "Interim Measures for the Management of Generative Artificial Intelligence Services",
+        "index_url": "https://www.cac.gov.cn/2023-07/13/c_1690898327029107.htm",
+        "link_repair_required": false,
+        "verdict": "four_gate_evidence_passed",
+        "gates": {
+          "A": {
+            "passed": true,
+            "criterion": "official host, explicit publisher role, issuer evidence",
+            "evidence": [
+              {
+                "marker": "国家互联网信息办公室",
+                "source_url": "https://www.cac.gov.cn/2023-07/13/c_1690898327029107.htm"
+              },
+              {
+                "marker": "中华人民共和国国家发展和改革委员会",
+                "source_url": "https://www.cac.gov.cn/2023-07/13/c_1690898327029107.htm"
+              },
+              {
+                "marker": "中华人民共和国教育部",
+                "source_url": "https://www.cac.gov.cn/2023-07/13/c_1690898327029107.htm"
+              },
+              {
+                "marker": "中华人民共和国科学技术部",
+                "source_url": "https://www.cac.gov.cn/2023-07/13/c_1690898327029107.htm"
+              },
+              {
+                "marker": "中华人民共和国工业和信息化部",
+                "source_url": "https://www.cac.gov.cn/2023-07/13/c_1690898327029107.htm"
+              },
+              {
+                "marker": "中华人民共和国公安部",
+                "source_url": "https://www.cac.gov.cn/2023-07/13/c_1690898327029107.htm"
+              },
+              {
+                "marker": "国家广播电视总局",
+                "source_url": "https://www.cac.gov.cn/2023-07/13/c_1690898327029107.htm"
+              }
+            ]
+          },
+          "B": {
+            "passed": true,
+            "criterion": "document-specific parseable pages and pinned byte hashes",
+            "page_results": {
+              "https://www.cac.gov.cn/2023-07/13/c_1690898327029107.htm": true
+            },
+            "support_page_parsed": true
+          },
+          "C": {
+            "passed": true,
+            "criterion": "Chinese title, instrument markers, and release-to-document link",
+            "evidence": [
+              {
+                "marker": "生成式人工智能服务管理暂行办法",
+                "source_url": "https://www.cac.gov.cn/2023-07/13/c_1690898327029107.htm"
+              },
+              {
+                "marker": "第15号",
+                "source_url": "https://www.cac.gov.cn/2023-07/13/c_1690898327029107.htm"
+              },
+              {
+                "marker": "第一条",
+                "source_url": "https://www.cac.gov.cn/2023-07/13/c_1690898327029107.htm"
+              }
+            ],
+            "support_link_matched": null
+          },
+          "D": {
+            "passed": true,
+            "criterion": "source-backed class markers and separately typed dates",
+            "evidence": [
+              {
+                "marker": "第15号",
+                "source_url": "https://www.cac.gov.cn/2023-07/13/c_1690898327029107.htm"
+              },
+              {
+                "marker": "现予公布",
+                "source_url": "https://www.cac.gov.cn/2023-07/13/c_1690898327029107.htm"
+              },
+              {
+                "marker": "第一条",
+                "source_url": "https://www.cac.gov.cn/2023-07/13/c_1690898327029107.htm"
+              }
+            ]
+          }
+        },
+        "source": {
+          "url": "https://www.cac.gov.cn/2023-07/13/c_1690898327029107.htm",
+          "publisher": "国家互联网信息办公室",
+          "publisher_role": "issuing_body_site",
+          "support_url": null,
+          "observed_sha256": "7fae988c064dde72c95e96e5727bf9abee4b3a5a1ea817606a9ca1f97ffac54b",
+          "http_status": 200,
+          "checked_at": "2026-10-15T11:44:04.372623+00:00",
+          "content_kind": "html",
+          "extracted_characters": 4075,
+          "required_page_sha256": {
+            "https://www.cac.gov.cn/2023-07/13/c_1690898327029107.htm": "7fae988c064dde72c95e96e5727bf9abee4b3a5a1ea817606a9ca1f97ffac54b"
+          },
+          "pages": [
+            {
+              "url": "https://www.cac.gov.cn/2023-07/13/c_1690898327029107.htm",
+              "expected_sha256": "7fae988c064dde72c95e96e5727bf9abee4b3a5a1ea817606a9ca1f97ffac54b",
+              "observed_sha256": "7fae988c064dde72c95e96e5727bf9abee4b3a5a1ea817606a9ca1f97ffac54b",
+              "http_status": 200,
+              "checked_at": "2026-10-15T11:44:04.372623+00:00",
+              "content_kind": "html",
+              "extracted_characters": 4075
+            }
+          ],
+          "support_page": null,
+          "support_link_url": "https://www.cac.gov.cn/2023-07/13/c_1690898327029107.htm",
+          "support_observed_sha256": null
+        },
+        "original_chinese_title": "生成式人工智能服务管理暂行办法",
+        "issuer": "Cyberspace Administration of China and six other departments",
+        "issuer_original_zh": "国家互联网信息办公室、国家发展和改革委员会、教育部、科学技术部、工业和信息化部、公安部、国家广播电视总局",
+        "document_id": "Order No. 15",
+        "classification": {
+          "chinese_classification": "多部门联合部门规章",
+          "formal_rank": "departmental_rule",
+          "binding_status": "binding",
+          "ai_scope": "ai_specific",
+          "evidence_markers": [
+            "第15号",
+            "现予公布",
+            "第一条"
+          ],
+          "status": "source_markers_matched"
+        },
+        "version_context": {
+          "status": "not_checked",
+          "assessed_at": "2026-10-15T11:44:50.238081+00:00"
+        },
+        "dates": {
+          "promulgation": {
+            "value": "2023-07-10",
+            "source_url": "https://www.cac.gov.cn/2023-07/13/c_1690898327029107.htm",
+            "source_marker": "2023年7月10日",
+            "marker_found": true
+          },
+          "publication": {
+            "value": "2023-07-13",
+            "source_url": "https://www.cac.gov.cn/2023-07/13/c_1690898327029107.htm",
+            "source_marker": "2023年07月13日",
+            "marker_found": true
+          },
+          "effective": {
+            "value": "2023-08-15",
+            "source_url": "https://www.cac.gov.cn/2023-07/13/c_1690898327029107.htm",
+            "source_marker": "本办法自2023年8月15日起施行",
+            "marker_found": true
+          }
+        },
+        "index_date_role": "promulgation",
+        "manifest_path": "pipeline/verified_china_legacy_repairs.json"
+      },
+      "agora_scope_status": "not_screened",
+      "current_legal_force_status": "not_verified",
+      "human_review_status": "not_reviewed"
+    },
+    {
+      "audit_key": "cn:12fa7ce557d531a8",
+      "source_row_number": 656,
+      "english_title": "Provisions on the Administration of Deep Synthesis Internet Information Services",
+      "original_chinese_title": "互联网信息服务深度合成管理规定",
+      "issuer_original_zh": "国家互联网信息办公室、工业和信息化部、公安部",
+      "document_id": "Order No. 12",
+      "official_document_url": "https://www.cac.gov.cn/2022-12/11/c_1672221949354811.htm",
+      "official_support_url": null,
+      "source_checked_at": "2026-10-15T11:44:03.740471+00:00",
+      "source_sha256": "92e2f7b5478f9b32247276c456df0adaafa149f8f9dd8bbc6068f89e9952c0e0",
+      "classification": {
+        "chinese_classification": "多部门联合部门规章",
+        "formal_rank": "departmental_rule",
+        "binding_status": "binding",
+        "ai_scope": "ai_specific_deep_synthesis",
+        "evidence_markers": [
+          "第12号",
+          "现予公布",
+          "第一条"
+        ],
+        "status": "source_markers_matched"
+      },
+      "date_roles": {
+        "promulgation": "2022-11-25",
+        "publication": "2022-12-11",
+        "effective": "2023-01-10"
+      },
+      "version_status": "not_checked",
+      "machine_proof": {
+        "row_number": 656,
+        "audit_key": "cn:12fa7ce557d531a8",
+        "index_title": "Provisions on the Administration of Deep Synthesis Internet Information Services",
+        "index_url": "https://www.cac.gov.cn/2022-12/11/c_1672221949354811.htm",
+        "link_repair_required": false,
+        "verdict": "four_gate_evidence_passed",
+        "gates": {
+          "A": {
+            "passed": true,
+            "criterion": "official host, explicit publisher role, issuer evidence",
+            "evidence": [
+              {
+                "marker": "国家互联网信息办公室",
+                "source_url": "https://www.cac.gov.cn/2022-12/11/c_1672221949354811.htm"
+              },
+              {
+                "marker": "中华人民共和国工业和信息化部",
+                "source_url": "https://www.cac.gov.cn/2022-12/11/c_1672221949354811.htm"
+              },
+              {
+                "marker": "中华人民共和国公安部",
+                "source_url": "https://www.cac.gov.cn/2022-12/11/c_1672221949354811.htm"
+              }
+            ]
+          },
+          "B": {
+            "passed": true,
+            "criterion": "document-specific parseable pages and pinned byte hashes",
+            "page_results": {
+              "https://www.cac.gov.cn/2022-12/11/c_1672221949354811.htm": true
+            },
+            "support_page_parsed": true
+          },
+          "C": {
+            "passed": true,
+            "criterion": "Chinese title, instrument markers, and release-to-document link",
+            "evidence": [
+              {
+                "marker": "互联网信息服务深度合成管理规定",
+                "source_url": "https://www.cac.gov.cn/2022-12/11/c_1672221949354811.htm"
+              },
+              {
+                "marker": "第12号",
+                "source_url": "https://www.cac.gov.cn/2022-12/11/c_1672221949354811.htm"
+              },
+              {
+                "marker": "第一条",
+                "source_url": "https://www.cac.gov.cn/2022-12/11/c_1672221949354811.htm"
+              }
+            ],
+            "support_link_matched": null
+          },
+          "D": {
+            "passed": true,
+            "criterion": "source-backed class markers and separately typed dates",
+            "evidence": [
+              {
+                "marker": "第12号",
+                "source_url": "https://www.cac.gov.cn/2022-12/11/c_1672221949354811.htm"
+              },
+              {
+                "marker": "现予公布",
+                "source_url": "https://www.cac.gov.cn/2022-12/11/c_1672221949354811.htm"
+              },
+              {
+                "marker": "第一条",
+                "source_url": "https://www.cac.gov.cn/2022-12/11/c_1672221949354811.htm"
+              }
+            ]
+          }
+        },
+        "source": {
+          "url": "https://www.cac.gov.cn/2022-12/11/c_1672221949354811.htm",
+          "publisher": "国家互联网信息办公室",
+          "publisher_role": "issuing_body_site",
+          "support_url": null,
+          "observed_sha256": "92e2f7b5478f9b32247276c456df0adaafa149f8f9dd8bbc6068f89e9952c0e0",
+          "http_status": 200,
+          "checked_at": "2026-10-15T11:44:03.740471+00:00",
+          "content_kind": "html",
+          "extracted_characters": 4131,
+          "required_page_sha256": {
+            "https://www.cac.gov.cn/2022-12/11/c_1672221949354811.htm": "92e2f7b5478f9b32247276c456df0adaafa149f8f9dd8bbc6068f89e9952c0e0"
+          },
+          "pages": [
+            {
+              "url": "https://www.cac.gov.cn/2022-12/11/c_1672221949354811.htm",
+              "expected_sha256": "92e2f7b5478f9b32247276c456df0adaafa149f8f9dd8bbc6068f89e9952c0e0",
+              "observed_sha256": "92e2f7b5478f9b32247276c456df0adaafa149f8f9dd8bbc6068f89e9952c0e0",
+              "http_status": 200,
+              "checked_at": "2026-10-15T11:44:03.740471+00:00",
+              "content_kind": "html",
+              "extracted_characters": 4131
+            }
+          ],
+          "support_page": null,
+          "support_link_url": "https://www.cac.gov.cn/2022-12/11/c_1672221949354811.htm",
+          "support_observed_sha256": null
+        },
+        "original_chinese_title": "互联网信息服务深度合成管理规定",
+        "issuer": "Cyberspace Administration of China, Ministry of Industry and Information Technology, and Ministry of Public Security",
+        "issuer_original_zh": "国家互联网信息办公室、工业和信息化部、公安部",
+        "document_id": "Order No. 12",
+        "classification": {
+          "chinese_classification": "多部门联合部门规章",
+          "formal_rank": "departmental_rule",
+          "binding_status": "binding",
+          "ai_scope": "ai_specific_deep_synthesis",
+          "evidence_markers": [
+            "第12号",
+            "现予公布",
+            "第一条"
+          ],
+          "status": "source_markers_matched"
+        },
+        "version_context": {
+          "status": "not_checked",
+          "assessed_at": "2026-10-15T11:44:50.264595+00:00"
+        },
+        "dates": {
+          "promulgation": {
+            "value": "2022-11-25",
+            "source_url": "https://www.cac.gov.cn/2022-12/11/c_1672221949354811.htm",
+            "source_marker": "2022年11月25日",
+            "marker_found": true
+          },
+          "publication": {
+            "value": "2022-12-11",
+            "source_url": "https://www.cac.gov.cn/2022-12/11/c_1672221949354811.htm",
+            "source_marker": "2022年12月11日",
+            "marker_found": true
+          },
+          "effective": {
+            "value": "2023-01-10",
+            "source_url": "https://www.cac.gov.cn/2022-12/11/c_1672221949354811.htm",
+            "source_marker": "本规定自2023年1月10日起施行",
+            "marker_found": true
+          }
+        },
+        "index_date_role": "promulgation",
+        "manifest_path": "pipeline/verified_china_legacy_repairs.json"
+      },
+      "agora_scope_status": "not_screened",
+      "current_legal_force_status": "not_verified",
+      "human_review_status": "not_reviewed"
+    }
+  ]
+}
