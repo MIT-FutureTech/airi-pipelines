@@ -2,7 +2,7 @@ import json
 import logging
 from collections.abc import Sequence
 from types import TracebackType
-from typing import Self, TypeVar
+from typing import Self, TypeVar, override
 
 from openai import (
     APIConnectionError,
@@ -27,6 +27,7 @@ from tenacity import (
     wait_exponential,
 )
 
+from toolbox.llm.client import LLMClient
 from toolbox.llm.data_types import (
     Message,
     ReasoningEffort,
@@ -57,7 +58,7 @@ _GENERATION_RETRY_CONFIG = retry(
 )
 
 
-class OpenAIClient:
+class OpenAIClient(LLMClient):
     """LLM client using the OpenAI library.
 
     Works with OpenAI directly and with OpenAI-compatible APIs like OpenRouter by
@@ -99,6 +100,7 @@ class OpenAIClient:
         )
         self._rate_limiter = RateLimiter(rate_limit_rps)
 
+    @override
     @_GENERATION_RETRY_CONFIG
     async def generate(
         self,
@@ -121,6 +123,7 @@ class OpenAIClient:
             usage=_extract_usage(response.usage),
         )
 
+    @override
     @_GENERATION_RETRY_CONFIG
     async def generate_structured(
         self,
@@ -156,12 +159,15 @@ class OpenAIClient:
             usage=_extract_usage(response.usage),
         )
 
+    @override
     async def close(self) -> None:
         await self._client.close()
 
+    @override
     async def __aenter__(self) -> Self:
         return self
 
+    @override
     async def __aexit__(
         self,
         exc_type: type[BaseException] | None,
