@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 from httpx import Request, Response
-from openai import RateLimitError
+from openai import Omit, RateLimitError
 from pydantic import BaseModel
 
 from toolbox.llm import Message, OpenAIClient
@@ -49,6 +49,23 @@ class TestGenerate:
             call_kwargs = mock_create.call_args.kwargs
             assert call_kwargs["temperature"] == 0.5
             assert call_kwargs["max_output_tokens"] == 200
+
+    async def test_passes_reasoning_effort(self) -> None:
+        response = make_unstructured_response("ok")
+        async with make_mock_openai_client([response]) as client:
+            client._reasoning_effort = "medium"
+            await client.generate([Message(role="user", content="test")])
+
+            mock_create = cast(AsyncMock, client._client.responses.create)
+            assert mock_create.call_args.kwargs["reasoning"] == {"effort": "medium"}
+
+    async def test_omits_reasoning_by_default(self) -> None:
+        response = make_unstructured_response("ok")
+        async with make_mock_openai_client([response]) as client:
+            await client.generate([Message(role="user", content="test")])
+
+            mock_create = cast(AsyncMock, client._client.responses.create)
+            assert isinstance(mock_create.call_args.kwargs["reasoning"], Omit)
 
     async def test_handles_empty_text_string(self) -> None:
         response = make_unstructured_response("")
@@ -99,6 +116,18 @@ class TestGenerateStructured:
             call_kwargs = mock_create.call_args.kwargs
             assert call_kwargs["temperature"] == 0.5
             assert call_kwargs["max_output_tokens"] == 200
+
+    async def test_passes_reasoning_effort(self) -> None:
+        response = make_structured_response(SENTIMENT_RESPONSE)
+        async with make_mock_openai_client([response]) as client:
+            client._reasoning_effort = "medium"
+            await client.generate_structured(
+                messages=[Message(role="user", content="test")],
+                schema=Sentiment,
+            )
+
+            mock_parse = cast(AsyncMock, client._client.responses.parse)
+            assert mock_parse.call_args.kwargs["reasoning"] == {"effort": "medium"}
 
     async def test_sends_json_schema_response_format(self) -> None:
         response = make_structured_response(SENTIMENT_RESPONSE)

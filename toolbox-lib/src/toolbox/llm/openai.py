@@ -4,12 +4,20 @@ from collections.abc import Sequence
 from types import TracebackType
 from typing import Self, TypeVar
 
-from openai import APIConnectionError, APITimeoutError, AsyncOpenAI, RateLimitError
+from openai import (
+    APIConnectionError,
+    APITimeoutError,
+    AsyncOpenAI,
+    Omit,
+    RateLimitError,
+    omit,
+)
 from openai.types.responses import (
     EasyInputMessageParam,
     ResponseInputParam,
     ResponseUsage,
 )
+from openai.types.shared_params import Reasoning
 from pydantic import BaseModel, ValidationError
 from tenacity import (
     after_log,
@@ -21,6 +29,7 @@ from tenacity import (
 
 from toolbox.llm.data_types import (
     Message,
+    ReasoningEffort,
     StructuredResult,
     TextResult,
     TokenUsage,
@@ -62,6 +71,7 @@ class OpenAIClient:
 
     _model: str
     _temperature: float | None
+    _reasoning_effort: ReasoningEffort | None
     _output_token_limit: int | None
     _client: AsyncOpenAI
     _rate_limiter: RateLimiter
@@ -75,10 +85,12 @@ class OpenAIClient:
         base_url: str | None = None,
         timeout: float = 60.0,
         temperature: float | None = None,
+        reasoning_effort: ReasoningEffort | None = None,
         output_token_limit: int | None = None,
     ) -> None:
         self._model = model
         self._temperature = temperature
+        self._reasoning_effort = reasoning_effort
         self._output_token_limit = output_token_limit
         self._client = AsyncOpenAI(
             api_key=api_key,
@@ -99,6 +111,7 @@ class OpenAIClient:
             input=_to_api_messages(messages),
             model=self._model,
             temperature=self._temperature,
+            reasoning=_to_api_reasoning(self._reasoning_effort),
             max_output_tokens=self._output_token_limit,
             text={"format": {"type": "text"}},
         )
@@ -121,6 +134,7 @@ class OpenAIClient:
             input=_to_api_messages(messages),
             model=self._model,
             temperature=self._temperature,
+            reasoning=_to_api_reasoning(self._reasoning_effort),
             max_output_tokens=self._output_token_limit,
             text_format=schema,
         )
@@ -168,6 +182,12 @@ def _to_api_messages(messages: Sequence[Message]) -> ResponseInputParam:
         )
         for m in messages
     ]
+
+
+def _to_api_reasoning(effort: ReasoningEffort | None) -> Reasoning | Omit:
+    if effort is None:
+        return omit
+    return Reasoning(effort=effort)
 
 
 def _extract_usage(usage: ResponseUsage | None) -> TokenUsage | None:
