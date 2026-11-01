@@ -10,14 +10,14 @@ class BundleSettings(
     cli_enforce_required=True,
     cli_kebab_case=True,
     cli_hide_none_type=True,
-    cli_prog_name="org_mitigations",
+    cli_prog_name="org_mitigations.bundle",
 ):
     r"""
     Bundle an LLM run's evidence for the reviewer app.
 
     Example usage:
 
-      uv run python -m org_mitigations \
+      uv run python -m org_mitigations.bundle \
         --export-dir /path/to/exports/ \
         --excerpt-files /path/to/documents-excerpts.csv \
         --excerpt-files /path/to/companies-excerpts.csv \
