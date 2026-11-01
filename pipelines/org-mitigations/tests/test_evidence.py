@@ -1,7 +1,8 @@
 import json
 from pathlib import Path
 
-from org_mitigations.evidence import Evidence, Strength, load_evidence
+from org_mitigations.answer import Strength
+from org_mitigations.evidence import Evidence, load_evidence
 
 WITH_MITIGATIONS: dict[str, object] = {
     "input": {

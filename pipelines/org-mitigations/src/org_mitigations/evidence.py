@@ -1,15 +1,9 @@
-from enum import StrEnum
 from pathlib import Path
 
 from pydantic import BaseModel
 
+from org_mitigations.answer import Strength
 from org_mitigations.excerpts import excerpt_id
-
-
-class Strength(StrEnum):
-    DESCRIBED = "described"
-    STATED = "stated"
-    REFERENCE = "reference"
 
 
 class Evidence(BaseModel):

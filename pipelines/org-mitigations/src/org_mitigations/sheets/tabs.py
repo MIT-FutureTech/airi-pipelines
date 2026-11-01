@@ -4,9 +4,10 @@ from pathlib import Path
 
 from pydantic import BaseModel, Field
 
+from org_mitigations.answer import Strength
 from org_mitigations.companies import Company
 from org_mitigations.documents import DatePrecision, Document
-from org_mitigations.evidence import Evidence, Strength
+from org_mitigations.evidence import Evidence
 from org_mitigations.excerpts import Excerpt
 from org_mitigations.locate import locate_quote
 from org_mitigations.taxonomy import Locus

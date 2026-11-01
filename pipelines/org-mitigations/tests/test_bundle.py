@@ -1,9 +1,10 @@
 import pytest
 
+from org_mitigations.answer import Strength
 from org_mitigations.bundle import Bundle, LocatedEvidence, assemble_bundle
 from org_mitigations.companies import Company
 from org_mitigations.documents import Document
-from org_mitigations.evidence import Evidence, Strength
+from org_mitigations.evidence import Evidence
 from org_mitigations.excerpts import Excerpt
 from org_mitigations.locate import Span
 from org_mitigations.run import Run
