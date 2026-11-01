@@ -18,7 +18,6 @@ class BundleSettings(
     Example usage:
 
       uv run python -m org_mitigations \
-        --taxonomy-file /path/to/taxonomy.json \
         --export-dir /path/to/exports/ \
         --excerpt-files /path/to/documents-excerpts.csv \
         --excerpt-files /path/to/companies-excerpts.csv \
@@ -29,10 +28,6 @@ class BundleSettings(
         --output-path pipelines/org-mitigations/reviewer/public/data/bundle.json
     """
 
-    taxonomy_file: Path = Field(
-        default=...,
-        description="The mitigation taxonomy file in JSON format",
-    )
     export_dir: Path = Field(
         default=...,
         description="A folder with companies.csv and documents.csv exports",
