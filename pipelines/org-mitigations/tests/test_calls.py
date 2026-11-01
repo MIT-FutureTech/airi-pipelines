@@ -2,7 +2,7 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from org_mitigations.answer import Answer
-from org_mitigations.calls import CallResult, run_calls
+from org_mitigations.calls import CallResult, plan_calls, run_calls
 from org_mitigations.companies import Company
 from org_mitigations.context import Context
 from org_mitigations.prompt import Prompt
@@ -51,14 +51,31 @@ def _stub(*, failing: set[str]) -> StubLLMClient:
 
 async def _run(llm: StubLLMClient, store: ResultStore[CallResult]) -> None:
     await run_calls(
-        CONTEXTS,
-        ["1.1", "2.1"],
-        companies=COMPANIES,
+        plan_calls(CONTEXTS, ["1.1", "2.1"], companies=COMPANIES),
         prompt=PROMPT,
         llm=llm,
         store=store,
         max_concurrency=2,
     )
+
+
+class TestPlanCalls:
+    def test_makes_a_call_for_each_context_and_code(self) -> None:
+        calls = plan_calls(CONTEXTS, ["1.1", "2.1"], companies=COMPANIES)
+
+        assert [(call.call_id, call.company) for call in calls] == [
+            ("Example_Bank__1.1", "Example Bank"),
+            ("Example_Bank__2.1", "Example Bank"),
+            ("Example_Retail__1.1", "Example Retail"),
+            ("Example_Retail__2.1", "Example Retail"),
+        ]
+
+    def test_fills_in_the_user_prompt_for_a_call(self) -> None:
+        [call] = plan_calls(CONTEXTS[:1], ["2.1"], companies=COMPANIES)
+
+        assert call.user_prompt(PROMPT) == (
+            "Example Bank|2.1|Example_Bank__2.1|<document>bank</document>"
+        )
 
 
 class TestRunCalls:

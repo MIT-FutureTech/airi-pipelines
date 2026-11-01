@@ -23,26 +23,30 @@ class CallResult(BaseModel):
     usage: TokenUsage | None
 
 
-class _Call(BaseModel):
+class Call(BaseModel):
     call_id: str
     company: str
     context: Context
     code: str
 
+    def user_prompt(self, prompt: Prompt) -> str:
+        return prompt.render_user(
+            company=self.company,
+            context=self.context.text,
+            code=self.code,
+            match_id=self.call_id,
+        )
 
-async def run_calls(
+
+def plan_calls(
     contexts: list[Context],
     codes: list[str],
     *,
     companies: list[Company],
-    prompt: Prompt,
-    llm: LLMClient,
-    store: ResultStore[CallResult],
-    max_concurrency: int,
-) -> None:
+) -> list[Call]:
     company_names = {company.company_id: company.name for company in companies}
-    calls = [
-        _Call(
+    return [
+        Call(
             call_id=f"{context.context_id}__{code}",
             company=company_names[context.company_id],
             context=context,
@@ -51,6 +55,16 @@ async def run_calls(
         for context in contexts
         for code in codes
     ]
+
+
+async def run_calls(
+    calls: list[Call],
+    *,
+    prompt: Prompt,
+    llm: LLMClient,
+    store: ResultStore[CallResult],
+    max_concurrency: int,
+) -> None:
     pending = [call for call in calls if not store.has(call.call_id)]
     if len(calls) != len(pending):
         logger.info(f"{len(calls) - len(pending)} of {len(calls)} calls have a result")
@@ -71,21 +85,15 @@ async def run_calls(
 
 
 async def _make_call(
-    call: _Call,
+    call: Call,
     *,
     prompt: Prompt,
     classifier: LLMClassifier[Answer],
     store: ResultStore[CallResult],
 ) -> None:
     with log_context(call_id=call.call_id):
-        user_prompt = prompt.render_user(
-            company=call.company,
-            context=call.context.text,
-            code=call.code,
-            match_id=call.call_id,
-        )
         try:
-            result = await classifier.classify(user_prompt)
+            result = await classifier.classify(call.user_prompt(prompt))
         except ToolboxLLMInvalidResponseError as error:
             logger.warning(f"No usable answer, so no result saved: {error!r}")
             return
