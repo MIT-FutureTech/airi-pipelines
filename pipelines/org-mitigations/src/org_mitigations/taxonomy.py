@@ -29,7 +29,9 @@ class _Category(BaseModel):
     short_name: str
     parent: str | None
     definition: str
+    boundary_question: str
     key_examples: str
+    exclusions: str
 
 
 class _TaxonomyFile(BaseModel):
@@ -67,3 +69,28 @@ def load_taxonomy(path: Path) -> list[Locus]:
             )
         )
     return list(loci.values())
+
+
+def render_taxonomy(path: Path) -> str:
+    taxonomy_file = _TaxonomyFile.model_validate_json(path.read_text())
+    loci: dict[str, list[str]] = {}
+    for category in taxonomy_file.categories:
+        if category.parent is None:
+            loci[category.code] = [
+                f"LOCUS {category.code}: {category.name.upper()}",
+                f"{category.definition} Boundary question: {category.boundary_question}",
+            ]
+        else:
+            loci[category.parent].append(_render_code(category))
+    return "\n\n".join("\n".join(lines) for lines in loci.values())
+
+
+def _render_code(category: _Category) -> str:
+    line = f"- {category.code}: {category.name} — {category.definition}"
+    if category.boundary_question:
+        line += f" {category.boundary_question}"
+    if category.key_examples:
+        line += f" Examples: {category.key_examples}."
+    if category.exclusions:
+        line += f" ({category.exclusions})"
+    return line
