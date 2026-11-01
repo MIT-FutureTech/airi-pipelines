@@ -1,0 +1,293 @@
+{
+  "name": "Mitigation Domain Taxonomy",
+  "version": "0.8",
+  "levels": 2,
+  "categories": [
+    {
+      "code": "1",
+      "name": "AI System",
+      "short_name": "AI System",
+      "level": 1,
+      "parent": null,
+      "definition": "Mitigations at the level of the AI system that target the properties, behavior, and capabilities of the model and system to allow it to be developed, deployed, and operated safely and as intended.",
+      "boundary_question": "Does it create change in the AI model and system?",
+      "exclusions": "",
+      "key_examples": ""
+    },
+    {
+      "code": "1.1",
+      "name": "Interpretability & Transparency",
+      "short_name": "Interpretability",
+      "level": 2,
+      "parent": "1",
+      "definition": "Mitigations that make a model's behavior and internals legible.",
+      "boundary_question": "Does it make the model's reasoning, behavior, or characteristics visible and easy to understand?",
+      "exclusions": "",
+      "key_examples": "Model cards; SHAP methods; Linear probes"
+    },
+    {
+      "code": "1.2",
+      "name": "Alignment & Value Learning",
+      "short_name": "Alignment",
+      "level": 2,
+      "parent": "1",
+      "definition": "Mitigations that shape a model's goals and values. Includes reducing bias, unfairness, and discrimination.",
+      "boundary_question": "Does it change what the model wants or is disposed to do?",
+      "exclusions": "",
+      "key_examples": "RLHF; Constitutional AI; Debiasing/detoxification via training"
+    },
+    {
+      "code": "1.3",
+      "name": "Capability Control & Containment",
+      "short_name": "Capability",
+      "level": 2,
+      "parent": "1",
+      "definition": "Mitigations that bound, measure, or halt what the model can do.",
+      "boundary_question": "Does it set a ceiling on capabilities or preserve the ability to constrain/halt it?",
+      "exclusions": "Runtime gating/monitoring → Operational.",
+      "key_examples": "Dangerous-capability evaluations; Unlearning; Staged release"
+    },
+    {
+      "code": "1.4",
+      "name": "Robustness & Adversarial Resistance",
+      "short_name": "Robustness",
+      "level": 2,
+      "parent": "1",
+      "definition": "Mitigations that improve AI model reliability under stress/attack.",
+      "boundary_question": "Does it keep the model working correctly under attack, rare inputs, or distribution shift?",
+      "exclusions": "",
+      "key_examples": "Adversarial training; Red-teaming; Data-poisoning defenses"
+    },
+    {
+      "code": "1.5",
+      "name": "Operational Safety & Control",
+      "short_name": "Operational",
+      "level": 2,
+      "parent": "1",
+      "definition": "Mitigations that keep a deployed system's live behaviour safe and within intended bounds during operation. Includes gating (filter/block unsafe inputs/outputs), confining (bound what the running system can access or do), watching (monitor behavior for anomalies), and instructing (steer behavior via inference-time instructions).",
+      "boundary_question": "Does it keep the running system behaving safely in real-time, by gating, confining, watching, or steering it (without changing the model itself)?",
+      "exclusions": "Mitigations targeting pre-deployment and deployment level containment → Capability. Pre-deployment capability bounding → Capability. Screening, verifying, or restricting who may access or use the system → Security.",
+      "key_examples": "I/O filters and guardrails; Sandboxing; Real-time monitoring"
+    },
+    {
+      "code": "1.6",
+      "name": "Privacy & Data Protection",
+      "short_name": "Privacy",
+      "level": 2,
+      "parent": "1",
+      "definition": "Mitigations that protect personal or sensitive data.",
+      "boundary_question": "Does it protect personal or sensitive data and prevent its leakage or misuse?",
+      "exclusions": "",
+      "key_examples": "PII removal, anonymization; Federated learning; Data minimization"
+    },
+    {
+      "code": "1.7",
+      "name": "Security & Access Control",
+      "short_name": "Security",
+      "level": 2,
+      "parent": "1",
+      "definition": "Mitigations that prevent unauthorized access, availability, and abuse. Includes responding to or recovering from incidents.",
+      "boundary_question": "Does it protect the system/weights from unauthorized access, or respond to and recover from incidents?",
+      "exclusions": "Mitigations involving reporting and disclosure of incidents → Accountability. Security covers protection against unauthorized or malicious actors, not the model's own conduct. Bounding the running model's own behaviour or outputs → Operational.",
+      "key_examples": "Model-weight protection; Cybersecurity controls; Incident response plans"
+    },
+    {
+      "code": "1.8",
+      "name": "Content Authenticity & Provenance",
+      "short_name": "Authenticity",
+      "level": 2,
+      "parent": "1",
+      "definition": "Mitigations that prove content origin and counter synthetic deceptive content.",
+      "boundary_question": "Does it provide information about content origin or help overcome deceptive content?",
+      "exclusions": "Mitigations targeting societal-level misinformation (e.g., through literacy) → Resilience.",
+      "key_examples": "Watermarking outputs; C2PA provenance tracking; AI content labeling"
+    },
+    {
+      "code": "1.9",
+      "name": "Human Oversight & Agentic Control",
+      "short_name": "Oversight",
+      "level": 2,
+      "parent": "1",
+      "definition": "Mitigations that allow humans to oversee/intervene, including bounding agent autonomy.",
+      "boundary_question": "Does it allow a human to oversee/decide or intervene? Does it bound an agent's autonomy to keep humans in charge?",
+      "exclusions": "Restrict this category to human-facing technical interventions, methods, and artifacts. Mitigations targeting end-user/human practices → End-use.",
+      "key_examples": "HITL review interfaces; Kill-switch, interruptibility; Agent activity logs"
+    },
+    {
+      "code": "1.A",
+      "name": "AI System (Other - Additional)",
+      "short_name": "AISystem-OA",
+      "level": 2,
+      "parent": "1",
+      "definition": "AI System mitigations that do not fit any category above.",
+      "boundary_question": "",
+      "exclusions": "",
+      "key_examples": ""
+    },
+    {
+      "code": "1.C",
+      "name": "AI System (Other - Cross-cutting)",
+      "short_name": "AISystem-OC",
+      "level": 2,
+      "parent": "1",
+      "definition": "AI System mitigations that cut across all domains in this locus.",
+      "boundary_question": "",
+      "exclusions": "",
+      "key_examples": ""
+    },
+    {
+      "code": "2",
+      "name": "Human & Organization",
+      "short_name": "Organization",
+      "level": 1,
+      "parent": null,
+      "definition": "Mitigations at the organizational level that target the capabilities, actions, and motivations of humans to allow the responsible development, oversight, and use of AI.",
+      "boundary_question": "Does it create change in people and organizations?",
+      "exclusions": "",
+      "key_examples": ""
+    },
+    {
+      "code": "2.1",
+      "name": "Training & Capacity-building",
+      "short_name": "Training",
+      "level": 2,
+      "parent": "2",
+      "definition": "Mitigations that build the AI-safety knowledge, skills, and expertise of people who develop, deploy, or work with AI so they can do this work safely and build safer systems.",
+      "boundary_question": "Does it improve the safety knowledge, skills, and expertise of people working with AI?",
+      "exclusions": "Restrict this category to changes involving professional staff. Mitigations targeting end-users → End-use. Capacity-building targeting wider society → Resilience. Restrict to training and capacity-building relating to AI safety and risks specifically.",
+      "key_examples": "Red-team / evaluator training; Practitioner certification; Staff safety & ethics training"
+    },
+    {
+      "code": "2.2",
+      "name": "Accountability & Responsibility",
+      "short_name": "Accountability",
+      "level": 2,
+      "parent": "2",
+      "definition": "Mitigations consisting of the rules, roles, internal structures, and external oversight through which an organization and its members are held to account to engage in responsible and safe conduct concerning AI. Includes disclosure and reporting for transparency.",
+      "boundary_question": "Does it hold an organization and its members to account—internally or through external oversight—for the AI it builds, deploys, or uses?",
+      "exclusions": "Mitigations targeting accountability, governance, or coordination across orgs or regions → Coordination. Documenting evidence that risk is controlled → Risk Management. Technical protection, response, and recovery → Security. Policies focused exclusively on end-use governance → End-use.",
+      "key_examples": "Board oversight; Incident reporting and disclosure; Third-party audit"
+    },
+    {
+      "code": "2.3",
+      "name": "Integrity & Ethics",
+      "short_name": "Ethics",
+      "level": 2,
+      "parent": "2",
+      "definition": "Mitigations that provide protections and disclosure mechanisms through which an organization's AI-related conduct can be scrutinized for integrity.",
+      "boundary_question": "Does it keep governance honest and free of misconduct?",
+      "exclusions": "Restrict this category to transparency and prevention of misconduct. Mitigations concerning organizational chain of responsibility → Accountability.",
+      "key_examples": "Whistleblower channels; Independent ethics boards; Conflict of interest disclosure"
+    },
+    {
+      "code": "2.4",
+      "name": "Risk Management & Assurance",
+      "short_name": "Risk Management",
+      "level": 2,
+      "parent": "2",
+      "definition": "Mitigations that identify, aggregate, and gather evidence that an organization's AI risks are understood and controlled to an acceptable level.",
+      "boundary_question": "Does it document, or provide evidence, that the organization's AI risks are understood and controlled to tolerance?",
+      "exclusions": "An evaluative act that produces an assessment → the subject tested (domain) x Evaluation instrument. Mitigations that determine who is responsible → Accountability. Analysis that generates new knowledge → Research. Real-time monitoring of deployed system → Operational. Societal-scale preparedness and recovery → Resilience.",
+      "key_examples": "Risk registers and matrices; Safety / assurance cases; Risk tolerance statements"
+    },
+    {
+      "code": "2.A",
+      "name": "Human & Organization (Other - Additional)",
+      "short_name": "Organization-OA",
+      "level": 2,
+      "parent": "2",
+      "definition": "Human & Organization mitigations that do not fit any category above.",
+      "boundary_question": "",
+      "exclusions": "",
+      "key_examples": ""
+    },
+    {
+      "code": "2.C",
+      "name": "Human & Organization (Other - Cross-cutting)",
+      "short_name": "Organization-OC",
+      "level": 2,
+      "parent": "2",
+      "definition": "Human & Organization mitigations that cut across all domains in this locus.",
+      "boundary_question": "",
+      "exclusions": "",
+      "key_examples": ""
+    },
+    {
+      "code": "3",
+      "name": "Society & Ecosystem",
+      "short_name": "Ecosystem",
+      "level": 1,
+      "parent": null,
+      "definition": "Mitigations at the level of the wider ecosystem that target the shared rules, institutions, and conditions to allow AI to be governed, contested, and absorbed safely across society.",
+      "boundary_question": "Does it involve actors and domains beyond a single organization?",
+      "exclusions": "",
+      "key_examples": ""
+    },
+    {
+      "code": "3.1",
+      "name": "End-use Governance",
+      "short_name": "End-use",
+      "level": 2,
+      "parent": "3",
+      "definition": "Mitigations that govern how AI is used safely by individuals or organizations in the end-user role, across both organizations and the wider ecosystem. Includes both user protections and user conduct.",
+      "boundary_question": "Does it govern how a human/organization uses AI?",
+      "exclusions": "",
+      "key_examples": "Acceptable-use policies; Output cross-checking; User rights: opt-out, contestability"
+    },
+    {
+      "code": "3.2",
+      "name": "Compute, Hardware, & Resource Stewardship",
+      "short_name": "Compute",
+      "level": 2,
+      "parent": "3",
+      "definition": "Mitigations that ensure the compute, hardware, and physical resources underpinning AI are controlled, secured, and sustainably managed.",
+      "boundary_question": "Does it govern the large-scale compute/hardware or environmental footprint of AI systems and their use?",
+      "exclusions": "",
+      "key_examples": "Compute-reporting thresholds; Hardware/chip export controls; Renewable-energy procurement"
+    },
+    {
+      "code": "3.3",
+      "name": "Ecosystem Coordination",
+      "short_name": "Coordination",
+      "level": 2,
+      "parent": "3",
+      "definition": "Mitigations that enable alignment and coordination across organizations/sectors/nations to govern AI safely. Includes shared safety infrastructure and resources. Includes market mechanisms, such as mitigations that change cost, rewards, and incentives at the market level (e.g., pricing, subsidies, funding, tax).",
+      "boundary_question": "Does it involve external or multi-actor coordination beyond a single organization?",
+      "exclusions": "Mitigations targeting internal organizational governance → Organization locus.",
+      "key_examples": "Oversight bodies; International agreements; Liability regimes"
+    },
+    {
+      "code": "3.4",
+      "name": "Societal Resilience & Recovery",
+      "short_name": "Resilience",
+      "level": 2,
+      "parent": "3",
+      "definition": "Mitigations that enable society to prepare for, withstand, and recover from the consequences of AI.",
+      "boundary_question": "Is it about societal-level preparedness, resilience, and recovery from AI-related harms?",
+      "exclusions": "",
+      "key_examples": "Public AI literacy campaigns; Societal incident registries; Crisis-management plans"
+    },
+    {
+      "code": "3.A",
+      "name": "Society & Ecosystem (Other - Additional)",
+      "short_name": "Ecosystem-OA",
+      "level": 2,
+      "parent": "3",
+      "definition": "Society & Ecosystem mitigations that do not fit any category above.",
+      "boundary_question": "",
+      "exclusions": "",
+      "key_examples": ""
+    },
+    {
+      "code": "3.C",
+      "name": "Society & Ecosystem (Other - Cross-cutting)",
+      "short_name": "Ecosystem-OC",
+      "level": 2,
+      "parent": "3",
+      "definition": "Society & Ecosystem mitigations that cut across all domains in this locus.",
+      "boundary_question": "",
+      "exclusions": "",
+      "key_examples": ""
+    }
+  ]
+}
