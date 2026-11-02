@@ -1,0 +1,1325 @@
+{
+  "schema_version": 2,
+  "purpose": "Source-evidence pilot for collaborators; not a verified legal corpus",
+  "input_sha256": "127c9c95921605b57a7b3bab42cd3573a20dc621ae608bcbb5fba6717dc78c1d",
+  "evidence_bundle_sha256": "1e2825f4e34750149cd9b7c075942c36dd848f29434c4b23f713bfd6e6235947",
+  "source_queue_generated_at": "2026-10-15T22:47:55.085358+08:00",
+  "check_definitions": {
+    "official_publisher_and_issuer": {
+      "label": "Official publisher and issuer",
+      "description": "The source is on an official host, and its text identifies the issuing institution or official republication role."
+    },
+    "retrieval_and_content_integrity": {
+      "label": "Retrieval and content integrity",
+      "description": "Every required document page returned HTTP 200, was parseable, and matched its pinned byte hash; any official release page was readable."
+    },
+    "document_identity_and_title": {
+      "label": "Document identity and title",
+      "description": "The original-language title and identifying text appear in the document; where applicable, the official release links to it."
+    },
+    "instrument_class_and_dates": {
+      "label": "Instrument class and dates",
+      "description": "Source text supports the instrument-class markers and separately typed dates. This does not determine AGORA scope or current legal force."
+    }
+  },
+  "summary": {
+    "machine_confirmed": 9,
+    "human_gold": 0
+  },
+  "records": [
+    {
+      "id": "cn:7498bd30d4732c64",
+      "source_row_number": 11,
+      "title": {
+        "original": {
+          "text": "人工智能安全治理框架3.0",
+          "language": "zh-Hans"
+        },
+        "display": {
+          "text": "AI Safety Governance Framework 3.0",
+          "language": "en",
+          "translation_status": "unverified_index_rendering"
+        }
+      },
+      "issuer": {
+        "original_name": "全国网络安全标准化技术委员会",
+        "language": "zh-Hans"
+      },
+      "document_id": null,
+      "publisher": {
+        "name": "中央网络安全和信息化委员会办公室 / 国家互联网信息办公室",
+        "role": "official_republication"
+      },
+      "sources": [
+        {
+          "id": "document",
+          "role": "official_document",
+          "url": "https://www.cac.gov.cn/rootimages/uploadimg/1791137114683961/1791137114683961.pdf",
+          "sha256": "cff709d8b1b2a0dfd2ff24df4d6b942b160975331e44c918e14a47d5c86da43d",
+          "checked_at": "2026-10-15T11:44:05.649491+00:00",
+          "http_status": 200,
+          "content_kind": "pdf",
+          "extracted_characters": 175810,
+          "pinned_sha256_matched": true
+        },
+        {
+          "id": "release",
+          "role": "official_release",
+          "url": "https://www.cac.gov.cn/2026-09/14/c_1791137092283345.htm",
+          "sha256": "72415a6f4f8cd2a7b3d2b8b8080247676393d12a7711f81e8907ef3e3c19f24a",
+          "checked_at": "2026-10-15T11:44:05.027422+00:00",
+          "http_status": 200,
+          "content_kind": "html",
+          "extracted_characters": 1094
+        }
+      ],
+      "classification": {
+        "local_instrument_class": {
+          "text": "全国网安标委人工智能安全治理框架",
+          "language": "zh-Hans"
+        },
+        "formal_rank": "no_formal_legislative_rank",
+        "binding_status": "non_binding",
+        "ai_scope": "ai_specific"
+      },
+      "dates": {
+        "publication": {
+          "value": "2026-09-14",
+          "source_id": "release",
+          "marker": "2026年09月14日"
+        }
+      },
+      "version_status": "not_checked",
+      "checks": {
+        "official_publisher_and_issuer": {
+          "passed": true,
+          "evidence": [
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "全国网络安全标准化技术委员会"
+            }
+          ]
+        },
+        "retrieval_and_content_integrity": {
+          "passed": true,
+          "evidence": [
+            {
+              "kind": "pinned_content_match",
+              "source_id": "document"
+            },
+            {
+              "kind": "readable_release_page",
+              "source_id": "release"
+            }
+          ]
+        },
+        "document_identity_and_title": {
+          "passed": true,
+          "evidence": [
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "人工智能安全治理框架3.0"
+            },
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "全国网络安全标准化技术委员会"
+            },
+            {
+              "kind": "official_release_links_to_document",
+              "source_id": "release",
+              "target_source_id": "document"
+            }
+          ]
+        },
+        "instrument_class_and_dates": {
+          "passed": true,
+          "evidence": [
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "人工智能安全治理框架3.0"
+            },
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "风险分类"
+            },
+            {
+              "kind": "verified_date_role",
+              "date_role": "publication"
+            }
+          ]
+        }
+      },
+      "review": {
+        "agora_scope": "not_screened",
+        "current_legal_force": "not_verified",
+        "human": "not_reviewed"
+      }
+    },
+    {
+      "id": "cn:17c5ffc922e71004",
+      "source_row_number": 12,
+      "title": {
+        "original": {
+          "text": "人工智能医学影像研究伦理指引",
+          "language": "zh-Hans"
+        },
+        "display": {
+          "text": "Ethical Guidelines for Artificial Intelligence Medical Imaging Research",
+          "language": "en",
+          "translation_status": "unverified_index_rendering"
+        }
+      },
+      "issuer": {
+        "original_name": "国家科技伦理委员会医学伦理分委员会",
+        "language": "zh-Hans"
+      },
+      "document_id": null,
+      "publisher": {
+        "name": "中华人民共和国科学技术部",
+        "role": "official_republication"
+      },
+      "sources": [
+        {
+          "id": "document",
+          "role": "official_document",
+          "url": "https://www.most.gov.cn/kjbgz/202608/P020260827537798488476.pdf",
+          "sha256": "33c0ea6a4ef88e5f900f8413a4f0475c22a532bfffcabda48c8c1c3575bd0339",
+          "checked_at": "2026-10-15T11:44:16.191507+00:00",
+          "http_status": 200,
+          "content_kind": "pdf",
+          "extracted_characters": 6428,
+          "pinned_sha256_matched": true
+        },
+        {
+          "id": "release",
+          "role": "official_release",
+          "url": "https://www.most.gov.cn/kjbgz/202608/t20260827_197206.html",
+          "sha256": "64a56d965a2fd02e4638690ea25a287c71f671ec19bc1501578271856e7b4ade",
+          "checked_at": "2026-10-15T11:44:22.004375+00:00",
+          "http_status": 200,
+          "content_kind": "html",
+          "extracted_characters": 347
+        }
+      ],
+      "classification": {
+        "local_instrument_class": {
+          "text": "科技伦理研究指引",
+          "language": "zh-Hans"
+        },
+        "formal_rank": "no_formal_legislative_rank",
+        "binding_status": "non_binding",
+        "ai_scope": "ai_specific"
+      },
+      "dates": {
+        "publication": {
+          "value": "2026-08-27",
+          "source_id": "release",
+          "marker": "2026年08月27日"
+        }
+      },
+      "version_status": "not_checked",
+      "checks": {
+        "official_publisher_and_issuer": {
+          "passed": true,
+          "evidence": [
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "国家科技伦理委员会医学伦理分委员会"
+            }
+          ]
+        },
+        "retrieval_and_content_integrity": {
+          "passed": true,
+          "evidence": [
+            {
+              "kind": "pinned_content_match",
+              "source_id": "document"
+            },
+            {
+              "kind": "readable_release_page",
+              "source_id": "release"
+            }
+          ]
+        },
+        "document_identity_and_title": {
+          "passed": true,
+          "evidence": [
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "人工智能医学影像研究伦理指引"
+            },
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "目的及范围"
+            },
+            {
+              "kind": "official_release_links_to_document",
+              "source_id": "release",
+              "target_source_id": "document"
+            }
+          ]
+        },
+        "instrument_class_and_dates": {
+          "passed": true,
+          "evidence": [
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "人工智能医学影像研究伦理指引"
+            },
+            {
+              "kind": "source_text_marker",
+              "source_id": "release",
+              "marker": "供相关科研机构和科研人员参考使用"
+            },
+            {
+              "kind": "verified_date_role",
+              "date_role": "publication"
+            }
+          ]
+        }
+      },
+      "review": {
+        "agora_scope": "not_screened",
+        "current_legal_force": "not_verified",
+        "human": "not_reviewed"
+      }
+    },
+    {
+      "id": "cn:e21276a7efce15f3",
+      "source_row_number": 13,
+      "title": {
+        "original": {
+          "text": "驾驶自动化技术研发伦理指引",
+          "language": "zh-Hans"
+        },
+        "display": {
+          "text": "Ethical Guidelines for Research and Development of Driving Automation Technology",
+          "language": "en",
+          "translation_status": "unverified_index_rendering"
+        }
+      },
+      "issuer": {
+        "original_name": "国家科技伦理委员会人工智能伦理分委员会",
+        "language": "zh-Hans"
+      },
+      "document_id": null,
+      "publisher": {
+        "name": "中华人民共和国科学技术部",
+        "role": "official_republication"
+      },
+      "sources": [
+        {
+          "id": "document",
+          "role": "official_document",
+          "url": "https://www.most.gov.cn/kjbgz/202507/P020250723532256831666.pdf",
+          "sha256": "dbbf775e3c6ab4f663fb2660a14825d3f2c89cbf3509ac6ae55a3e1d3f5850c1",
+          "checked_at": "2026-10-15T11:44:07.814840+00:00",
+          "http_status": 200,
+          "content_kind": "pdf",
+          "extracted_characters": 6439,
+          "pinned_sha256_matched": true
+        },
+        {
+          "id": "release",
+          "role": "official_release",
+          "url": "https://www.most.gov.cn/kjbgz/202507/t20250723_194243.html",
+          "sha256": "05ed2dbf3b61ed6668e9a611888f5d8e79a682fac72ccfae90ccdc7d0d605343",
+          "checked_at": "2026-10-15T11:44:15.418837+00:00",
+          "http_status": 200,
+          "content_kind": "html",
+          "extracted_characters": 405
+        }
+      ],
+      "classification": {
+        "local_instrument_class": {
+          "text": "科技伦理研究指引",
+          "language": "zh-Hans"
+        },
+        "formal_rank": "no_formal_legislative_rank",
+        "binding_status": "non_binding",
+        "ai_scope": "ai_related_driving_automation"
+      },
+      "dates": {
+        "publication": {
+          "value": "2025-07-23",
+          "source_id": "release",
+          "marker": "2025年07月23日"
+        }
+      },
+      "version_status": "not_checked",
+      "checks": {
+        "official_publisher_and_issuer": {
+          "passed": true,
+          "evidence": [
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "国家科技伦理委员会人工智能伦理分委员会"
+            }
+          ]
+        },
+        "retrieval_and_content_integrity": {
+          "passed": true,
+          "evidence": [
+            {
+              "kind": "pinned_content_match",
+              "source_id": "document"
+            },
+            {
+              "kind": "readable_release_page",
+              "source_id": "release"
+            }
+          ]
+        },
+        "document_identity_and_title": {
+          "passed": true,
+          "evidence": [
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "驾驶自动化技术研发伦理指引"
+            },
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "目的"
+            },
+            {
+              "kind": "official_release_links_to_document",
+              "source_id": "release",
+              "target_source_id": "document"
+            }
+          ]
+        },
+        "instrument_class_and_dates": {
+          "passed": true,
+          "evidence": [
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "驾驶自动化技术研发伦理指引"
+            },
+            {
+              "kind": "source_text_marker",
+              "source_id": "release",
+              "marker": "供相关科研机构和科研人员参考使用"
+            },
+            {
+              "kind": "verified_date_role",
+              "date_role": "publication"
+            }
+          ]
+        }
+      },
+      "review": {
+        "agora_scope": "not_screened",
+        "current_legal_force": "not_verified",
+        "human": "not_reviewed"
+      }
+    },
+    {
+      "id": "cn:cbdce0aae75c4a1e",
+      "source_row_number": 25,
+      "title": {
+        "original": {
+          "text": "网络安全标准实践指南——智能体部署使用安全指引",
+          "language": "zh-Hans"
+        },
+        "display": {
+          "text": "TC260 Practice Guide: Secure Deployment and Use of AI Agents",
+          "language": "en",
+          "translation_status": "unverified_index_rendering"
+        }
+      },
+      "issuer": {
+        "original_name": "全国网络安全标准化技术委员会秘书处",
+        "language": "zh-Hans"
+      },
+      "document_id": "TC260-PG-20266A",
+      "publisher": {
+        "name": "全国网络安全标准化技术委员会",
+        "role": "issuing_body_site"
+      },
+      "sources": [
+        {
+          "id": "document",
+          "role": "official_document",
+          "url": "https://www.tc260.org.cn/tc260/tzgg/202607/98b6f259f8a3428b8fe1cfea3c0fb19e/files/《网络安全标准实践指南——智能体部署使用安全指引》.pdf.pdf",
+          "sha256": "11124dbe739eebd438a6ed5e9b612fae599aa116d74ceab05a9d1c426f101ec4",
+          "checked_at": "2026-10-15T11:44:48.278793+00:00",
+          "http_status": 200,
+          "content_kind": "pdf",
+          "extracted_characters": 10558,
+          "pinned_sha256_matched": true
+        },
+        {
+          "id": "release",
+          "role": "official_release",
+          "url": "https://www.tc260.org.cn/tc260/tzgg/202607/98b6f259f8a3428b8fe1cfea3c0fb19e.shtml",
+          "sha256": "546455bcabe776d8ad12c143718a41f066014fc4c1b9b5d5ac90dec854f07c37",
+          "checked_at": "2026-10-15T11:44:46.423679+00:00",
+          "http_status": 200,
+          "content_kind": "html",
+          "extracted_characters": 602
+        }
+      ],
+      "classification": {
+        "local_instrument_class": {
+          "text": "网络安全标准实践指南",
+          "language": "zh-Hans"
+        },
+        "formal_rank": "technical_guidance_not_prc_statute",
+        "binding_status": "non_binding",
+        "ai_scope": "ai_specific_agents"
+      },
+      "dates": {
+        "publication": {
+          "value": "2026-07-01",
+          "source_id": "release",
+          "marker": "2026-07-01"
+        }
+      },
+      "version_status": "not_checked",
+      "checks": {
+        "official_publisher_and_issuer": {
+          "passed": true,
+          "evidence": [
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "全国网络安全标准化技术委员会秘书处"
+            }
+          ]
+        },
+        "retrieval_and_content_integrity": {
+          "passed": true,
+          "evidence": [
+            {
+              "kind": "pinned_content_match",
+              "source_id": "document"
+            },
+            {
+              "kind": "readable_release_page",
+              "source_id": "release"
+            }
+          ]
+        },
+        "document_identity_and_title": {
+          "passed": true,
+          "evidence": [
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "网络安全标准实践指南——智能体部署使用安全指引"
+            },
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "TC260-PG-20266A"
+            },
+            {
+              "kind": "official_release_links_to_document",
+              "source_id": "release",
+              "target_source_id": "document"
+            }
+          ]
+        },
+        "instrument_class_and_dates": {
+          "passed": true,
+          "evidence": [
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "TC260-PG-20266A"
+            },
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "网络安全标准实践指南"
+            },
+            {
+              "kind": "verified_date_role",
+              "date_role": "publication"
+            }
+          ]
+        }
+      },
+      "review": {
+        "agora_scope": "not_screened",
+        "current_legal_force": "not_verified",
+        "human": "not_reviewed"
+      }
+    },
+    {
+      "id": "cn:124e9aed2efa841f",
+      "source_row_number": 557,
+      "title": {
+        "original": {
+          "text": "中华人民共和国网络安全法",
+          "language": "zh-Hans"
+        },
+        "display": {
+          "text": "Cybersecurity Law of the People's Republic of China",
+          "language": "en",
+          "translation_status": "unverified_index_rendering"
+        }
+      },
+      "issuer": {
+        "original_name": "全国人民代表大会常务委员会",
+        "language": "zh-Hans"
+      },
+      "document_id": null,
+      "publisher": {
+        "name": "中央网络安全和信息化委员会办公室 / 国家互联网信息办公室",
+        "role": "official_republication"
+      },
+      "sources": [
+        {
+          "id": "document",
+          "role": "official_document",
+          "url": "https://www.cac.gov.cn/2016-11/07/c_1119867116.htm",
+          "sha256": "5c9a0f43059b5e2a5ab177a9aadd05aaaead9e5bc186f05e4451c94392a0f195",
+          "checked_at": "2026-10-15T11:43:59.919662+00:00",
+          "http_status": 200,
+          "content_kind": "html",
+          "extracted_characters": 2646,
+          "pinned_sha256_matched": true
+        },
+        {
+          "id": "document_page_2",
+          "role": "document_continuation",
+          "url": "https://www.cac.gov.cn/2016-11/07/c_1119867116_2.htm",
+          "sha256": "dc961e2324284323bc5a3d42092bc460adb5b5ff51201de3b9b2c0c016123e85",
+          "checked_at": "2026-10-15T11:44:01.017997+00:00",
+          "http_status": 200,
+          "content_kind": "html",
+          "extracted_characters": 4246,
+          "pinned_sha256_matched": true
+        },
+        {
+          "id": "document_page_3",
+          "role": "document_continuation",
+          "url": "https://www.cac.gov.cn/2016-11/07/c_1119867116_3.htm",
+          "sha256": "42b8a163752f25a9a2c0979743522a69c1f27a65af3609012689a29a8bff20d7",
+          "checked_at": "2026-10-15T11:44:01.648036+00:00",
+          "http_status": 200,
+          "content_kind": "html",
+          "extracted_characters": 4751,
+          "pinned_sha256_matched": true
+        }
+      ],
+      "classification": {
+        "local_instrument_class": {
+          "text": "全国人大常委会法律（2016年原始文本）",
+          "language": "zh-Hans"
+        },
+        "formal_rank": "npc_law",
+        "binding_status": "binding_original_text_current_consolidation_not_checked",
+        "ai_scope": "cross_cutting_not_ai_specific"
+      },
+      "dates": {
+        "adoption": {
+          "value": "2016-11-07",
+          "source_id": "document",
+          "marker": "2016年11月7日"
+        },
+        "effective": {
+          "value": "2017-06-01",
+          "source_id": "document_page_3",
+          "marker": "本法自2017年6月1日起施行"
+        }
+      },
+      "version_status": "historical_original_text",
+      "checks": {
+        "official_publisher_and_issuer": {
+          "passed": true,
+          "evidence": [
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "第十二届全国人民代表大会常务委员会第二十四次会议通过"
+            }
+          ]
+        },
+        "retrieval_and_content_integrity": {
+          "passed": true,
+          "evidence": [
+            {
+              "kind": "pinned_content_match",
+              "source_id": "document"
+            },
+            {
+              "kind": "pinned_content_match",
+              "source_id": "document_page_2"
+            },
+            {
+              "kind": "pinned_content_match",
+              "source_id": "document_page_3"
+            }
+          ]
+        },
+        "document_identity_and_title": {
+          "passed": true,
+          "evidence": [
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "中华人民共和国网络安全法"
+            },
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "第一条"
+            }
+          ]
+        },
+        "instrument_class_and_dates": {
+          "passed": true,
+          "evidence": [
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "第十二届全国人民代表大会常务委员会第二十四次会议通过"
+            },
+            {
+              "kind": "source_text_marker",
+              "source_id": "document_page_3",
+              "marker": "本法自2017年6月1日起施行"
+            },
+            {
+              "kind": "verified_date_role",
+              "date_role": "adoption"
+            },
+            {
+              "kind": "verified_date_role",
+              "date_role": "effective"
+            }
+          ]
+        }
+      },
+      "review": {
+        "agora_scope": "not_screened",
+        "current_legal_force": "not_verified",
+        "human": "not_reviewed"
+      }
+    },
+    {
+      "id": "cn:29ccf006d486883b",
+      "source_row_number": 562,
+      "title": {
+        "original": {
+          "text": "互联网信息服务算法推荐管理规定",
+          "language": "zh-Hans"
+        },
+        "display": {
+          "text": "Provisions on the Management of Algorithmic Recommendations in Internet Information Services",
+          "language": "en",
+          "translation_status": "unverified_index_rendering"
+        }
+      },
+      "issuer": {
+        "original_name": "国家互联网信息办公室、工业和信息化部、公安部、国家市场监督管理总局",
+        "language": "zh-Hans"
+      },
+      "document_id": "Order No. 9",
+      "publisher": {
+        "name": "国家互联网信息办公室",
+        "role": "issuing_body_site"
+      },
+      "sources": [
+        {
+          "id": "document",
+          "role": "official_document",
+          "url": "https://www.cac.gov.cn/2022-01/04/c_1642894606364259.htm",
+          "sha256": "89aa514b53377b1cda3742f74addddbbc9f44bb2927c9eaf65793f55ce19eda9",
+          "checked_at": "2026-10-15T11:44:03.094407+00:00",
+          "http_status": 200,
+          "content_kind": "html",
+          "extracted_characters": 4838,
+          "pinned_sha256_matched": true
+        }
+      ],
+      "classification": {
+        "local_instrument_class": {
+          "text": "多部门联合部门规章",
+          "language": "zh-Hans"
+        },
+        "formal_rank": "departmental_rule",
+        "binding_status": "binding",
+        "ai_scope": "algorithmic_recommendations"
+      },
+      "dates": {
+        "promulgation": {
+          "value": "2021-12-31",
+          "source_id": "document",
+          "marker": "2021年12月31日"
+        },
+        "publication": {
+          "value": "2022-01-04",
+          "source_id": "document",
+          "marker": "2022年01月04日"
+        },
+        "effective": {
+          "value": "2022-03-01",
+          "source_id": "document",
+          "marker": "本规定自2022年3月1日起施行"
+        }
+      },
+      "version_status": "not_checked",
+      "checks": {
+        "official_publisher_and_issuer": {
+          "passed": true,
+          "evidence": [
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "国家互联网信息办公室"
+            },
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "中华人民共和国工业和信息化部"
+            },
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "中华人民共和国公安部"
+            },
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "国家市场监督管理总局"
+            }
+          ]
+        },
+        "retrieval_and_content_integrity": {
+          "passed": true,
+          "evidence": [
+            {
+              "kind": "pinned_content_match",
+              "source_id": "document"
+            }
+          ]
+        },
+        "document_identity_and_title": {
+          "passed": true,
+          "evidence": [
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "互联网信息服务算法推荐管理规定"
+            },
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "第9号"
+            },
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "第一条"
+            }
+          ]
+        },
+        "instrument_class_and_dates": {
+          "passed": true,
+          "evidence": [
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "第9号"
+            },
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "现予公布"
+            },
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "第一条"
+            },
+            {
+              "kind": "verified_date_role",
+              "date_role": "promulgation"
+            },
+            {
+              "kind": "verified_date_role",
+              "date_role": "publication"
+            },
+            {
+              "kind": "verified_date_role",
+              "date_role": "effective"
+            }
+          ]
+        }
+      },
+      "review": {
+        "agora_scope": "not_screened",
+        "current_legal_force": "not_verified",
+        "human": "not_reviewed"
+      }
+    },
+    {
+      "id": "cn:b29f0731f1b031f4",
+      "source_row_number": 564,
+      "title": {
+        "original": {
+          "text": "中华人民共和国个人信息保护法",
+          "language": "zh-Hans"
+        },
+        "display": {
+          "text": "Personal Information Protection Law of the People's Republic of China",
+          "language": "en",
+          "translation_status": "unverified_index_rendering"
+        }
+      },
+      "issuer": {
+        "original_name": "全国人民代表大会常务委员会",
+        "language": "zh-Hans"
+      },
+      "document_id": null,
+      "publisher": {
+        "name": "中央网络安全和信息化委员会办公室 / 国家互联网信息办公室",
+        "role": "official_republication"
+      },
+      "sources": [
+        {
+          "id": "document",
+          "role": "official_document",
+          "url": "https://www.cac.gov.cn/2021-08/20/c_1631050028355286.htm",
+          "sha256": "50b62bb9868648fe0417d8757a8cff62641eba6d879403f363d771f8c6d3acff",
+          "checked_at": "2026-10-15T11:44:02.419901+00:00",
+          "http_status": 200,
+          "content_kind": "html",
+          "extracted_characters": 9859,
+          "pinned_sha256_matched": true
+        }
+      ],
+      "classification": {
+        "local_instrument_class": {
+          "text": "全国人大常委会法律",
+          "language": "zh-Hans"
+        },
+        "formal_rank": "npc_law",
+        "binding_status": "binding",
+        "ai_scope": "cross_cutting_with_automated_decision_provisions"
+      },
+      "dates": {
+        "adoption": {
+          "value": "2021-08-20",
+          "source_id": "document",
+          "marker": "2021年8月20日"
+        },
+        "effective": {
+          "value": "2021-11-01",
+          "source_id": "document",
+          "marker": "本法自2021年11月1日起施行"
+        }
+      },
+      "version_status": "not_checked",
+      "checks": {
+        "official_publisher_and_issuer": {
+          "passed": true,
+          "evidence": [
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "第十三届全国人民代表大会常务委员会第三十次会议通过"
+            }
+          ]
+        },
+        "retrieval_and_content_integrity": {
+          "passed": true,
+          "evidence": [
+            {
+              "kind": "pinned_content_match",
+              "source_id": "document"
+            }
+          ]
+        },
+        "document_identity_and_title": {
+          "passed": true,
+          "evidence": [
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "中华人民共和国个人信息保护法"
+            },
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "第一条"
+            },
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "第七十四条"
+            }
+          ]
+        },
+        "instrument_class_and_dates": {
+          "passed": true,
+          "evidence": [
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "第十三届全国人民代表大会常务委员会第三十次会议通过"
+            },
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "自动化决策"
+            },
+            {
+              "kind": "verified_date_role",
+              "date_role": "adoption"
+            },
+            {
+              "kind": "verified_date_role",
+              "date_role": "effective"
+            }
+          ]
+        }
+      },
+      "review": {
+        "agora_scope": "not_screened",
+        "current_legal_force": "not_verified",
+        "human": "not_reviewed"
+      }
+    },
+    {
+      "id": "cn:c0e9036d0f0a138a",
+      "source_row_number": 653,
+      "title": {
+        "original": {
+          "text": "生成式人工智能服务管理暂行办法",
+          "language": "zh-Hans"
+        },
+        "display": {
+          "text": "Interim Measures for the Management of Generative Artificial Intelligence Services",
+          "language": "en",
+          "translation_status": "unverified_index_rendering"
+        }
+      },
+      "issuer": {
+        "original_name": "国家互联网信息办公室、国家发展和改革委员会、教育部、科学技术部、工业和信息化部、公安部、国家广播电视总局",
+        "language": "zh-Hans"
+      },
+      "document_id": "Order No. 15",
+      "publisher": {
+        "name": "国家互联网信息办公室",
+        "role": "issuing_body_site"
+      },
+      "sources": [
+        {
+          "id": "document",
+          "role": "official_document",
+          "url": "https://www.cac.gov.cn/2023-07/13/c_1690898327029107.htm",
+          "sha256": "7fae988c064dde72c95e96e5727bf9abee4b3a5a1ea817606a9ca1f97ffac54b",
+          "checked_at": "2026-10-15T11:44:04.372623+00:00",
+          "http_status": 200,
+          "content_kind": "html",
+          "extracted_characters": 4075,
+          "pinned_sha256_matched": true
+        }
+      ],
+      "classification": {
+        "local_instrument_class": {
+          "text": "多部门联合部门规章",
+          "language": "zh-Hans"
+        },
+        "formal_rank": "departmental_rule",
+        "binding_status": "binding",
+        "ai_scope": "ai_specific"
+      },
+      "dates": {
+        "promulgation": {
+          "value": "2023-07-10",
+          "source_id": "document",
+          "marker": "2023年7月10日"
+        },
+        "publication": {
+          "value": "2023-07-13",
+          "source_id": "document",
+          "marker": "2023年07月13日"
+        },
+        "effective": {
+          "value": "2023-08-15",
+          "source_id": "document",
+          "marker": "本办法自2023年8月15日起施行"
+        }
+      },
+      "version_status": "not_checked",
+      "checks": {
+        "official_publisher_and_issuer": {
+          "passed": true,
+          "evidence": [
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "国家互联网信息办公室"
+            },
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "中华人民共和国国家发展和改革委员会"
+            },
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "中华人民共和国教育部"
+            },
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "中华人民共和国科学技术部"
+            },
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "中华人民共和国工业和信息化部"
+            },
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "中华人民共和国公安部"
+            },
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "国家广播电视总局"
+            }
+          ]
+        },
+        "retrieval_and_content_integrity": {
+          "passed": true,
+          "evidence": [
+            {
+              "kind": "pinned_content_match",
+              "source_id": "document"
+            }
+          ]
+        },
+        "document_identity_and_title": {
+          "passed": true,
+          "evidence": [
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "生成式人工智能服务管理暂行办法"
+            },
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "第15号"
+            },
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "第一条"
+            }
+          ]
+        },
+        "instrument_class_and_dates": {
+          "passed": true,
+          "evidence": [
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "第15号"
+            },
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "现予公布"
+            },
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "第一条"
+            },
+            {
+              "kind": "verified_date_role",
+              "date_role": "promulgation"
+            },
+            {
+              "kind": "verified_date_role",
+              "date_role": "publication"
+            },
+            {
+              "kind": "verified_date_role",
+              "date_role": "effective"
+            }
+          ]
+        }
+      },
+      "review": {
+        "agora_scope": "not_screened",
+        "current_legal_force": "not_verified",
+        "human": "not_reviewed"
+      }
+    },
+    {
+      "id": "cn:12fa7ce557d531a8",
+      "source_row_number": 656,
+      "title": {
+        "original": {
+          "text": "互联网信息服务深度合成管理规定",
+          "language": "zh-Hans"
+        },
+        "display": {
+          "text": "Provisions on the Administration of Deep Synthesis Internet Information Services",
+          "language": "en",
+          "translation_status": "unverified_index_rendering"
+        }
+      },
+      "issuer": {
+        "original_name": "国家互联网信息办公室、工业和信息化部、公安部",
+        "language": "zh-Hans"
+      },
+      "document_id": "Order No. 12",
+      "publisher": {
+        "name": "国家互联网信息办公室",
+        "role": "issuing_body_site"
+      },
+      "sources": [
+        {
+          "id": "document",
+          "role": "official_document",
+          "url": "https://www.cac.gov.cn/2022-12/11/c_1672221949354811.htm",
+          "sha256": "92e2f7b5478f9b32247276c456df0adaafa149f8f9dd8bbc6068f89e9952c0e0",
+          "checked_at": "2026-10-15T11:44:03.740471+00:00",
+          "http_status": 200,
+          "content_kind": "html",
+          "extracted_characters": 4131,
+          "pinned_sha256_matched": true
+        }
+      ],
+      "classification": {
+        "local_instrument_class": {
+          "text": "多部门联合部门规章",
+          "language": "zh-Hans"
+        },
+        "formal_rank": "departmental_rule",
+        "binding_status": "binding",
+        "ai_scope": "ai_specific_deep_synthesis"
+      },
+      "dates": {
+        "promulgation": {
+          "value": "2022-11-25",
+          "source_id": "document",
+          "marker": "2022年11月25日"
+        },
+        "publication": {
+          "value": "2022-12-11",
+          "source_id": "document",
+          "marker": "2022年12月11日"
+        },
+        "effective": {
+          "value": "2023-01-10",
+          "source_id": "document",
+          "marker": "本规定自2023年1月10日起施行"
+        }
+      },
+      "version_status": "not_checked",
+      "checks": {
+        "official_publisher_and_issuer": {
+          "passed": true,
+          "evidence": [
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "国家互联网信息办公室"
+            },
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "中华人民共和国工业和信息化部"
+            },
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "中华人民共和国公安部"
+            }
+          ]
+        },
+        "retrieval_and_content_integrity": {
+          "passed": true,
+          "evidence": [
+            {
+              "kind": "pinned_content_match",
+              "source_id": "document"
+            }
+          ]
+        },
+        "document_identity_and_title": {
+          "passed": true,
+          "evidence": [
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "互联网信息服务深度合成管理规定"
+            },
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "第12号"
+            },
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "第一条"
+            }
+          ]
+        },
+        "instrument_class_and_dates": {
+          "passed": true,
+          "evidence": [
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "第12号"
+            },
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "现予公布"
+            },
+            {
+              "kind": "source_text_marker",
+              "source_id": "document",
+              "marker": "第一条"
+            },
+            {
+              "kind": "verified_date_role",
+              "date_role": "promulgation"
+            },
+            {
+              "kind": "verified_date_role",
+              "date_role": "publication"
+            },
+            {
+              "kind": "verified_date_role",
+              "date_role": "effective"
+            }
+          ]
+        }
+      },
+      "review": {
+        "agora_scope": "not_screened",
+        "current_legal_force": "not_verified",
+        "human": "not_reviewed"
+      }
+    }
+  ]
+}
