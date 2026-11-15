@@ -1,10 +1,11 @@
 import logging
 
-from org_mitigations.companies import load_companies
-from org_mitigations.documents import load_documents
+from org_mitigations.corpus import load_corpus
 from org_mitigations.domain_taxonomy import DOMAIN_TAXONOMY_PATH, load_domain_taxonomy
-from org_mitigations.evidence import load_evidence
-from org_mitigations.excerpts import Excerpt, load_excerpts
+from org_mitigations.evidence import evidence_from_mitigations
+from org_mitigations.search.calls import SearchResult
+from org_mitigations.search.context import build_contexts
+from org_mitigations.search.mitigations import mitigations_from_results
 from org_mitigations.sheets.settings import SheetsSettings
 from org_mitigations.sheets.tabs import (
     EvidenceRow,
@@ -14,6 +15,7 @@ from org_mitigations.sheets.tabs import (
     write_tab,
 )
 from toolbox.log import configure_logging
+from toolbox.results import ResultStore
 
 logger = logging.getLogger(__name__)
 
@@ -22,25 +24,26 @@ def main() -> None:
     settings = SheetsSettings()
     configure_logging(level=logging.INFO)
 
-    excerpts: list[Excerpt] = []
-    for path in settings.excerpt_files:
-        excerpts.extend(load_excerpts(path))
+    corpus = load_corpus(settings.export_dir, company_names=None)
+    contexts = build_contexts(
+        corpus.excerpts, corpus.documents, max_chars=settings.max_chars
+    )
+    results = ResultStore(settings.run_dir / "search", SearchResult).load_all()
+    mitigations = mitigations_from_results(results, contexts)
 
-    companies = load_companies(settings.export_dir)
-    documents = load_documents(settings.export_dir)
     excerpt_tab = excerpt_rows(
         company_names=settings.company_names,
-        companies=companies,
-        documents=documents,
-        excerpts=excerpts,
+        companies=corpus.companies,
+        documents=corpus.documents,
+        excerpts=corpus.excerpts,
     )
     evidence_tab = evidence_rows(
         company_names=settings.company_names,
         taxonomy=load_domain_taxonomy(DOMAIN_TAXONOMY_PATH),
-        companies=companies,
-        documents=documents,
-        excerpts=excerpts,
-        evidence=load_evidence(settings.llm_output_dir),
+        companies=corpus.companies,
+        documents=corpus.documents,
+        excerpts=corpus.excerpts,
+        evidence=evidence_from_mitigations(mitigations, corpus.excerpts),
     )
     located = sum(row.quote_start is not None for row in evidence_tab)
     logger.info(f"Located {located} of {len(evidence_tab)} quotes")
