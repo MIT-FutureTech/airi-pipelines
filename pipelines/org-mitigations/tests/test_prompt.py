@@ -3,9 +3,9 @@ from pathlib import Path
 import pytest
 
 from org_mitigations.domain_taxonomy import DOMAIN_TAXONOMY_PATH, render_domain_taxonomy
-from org_mitigations.search.prompt import Prompt, load_prompt
+from org_mitigations.prompt import Prompt, load_prompt
 
-PROMPT_PATH = Path(__file__).parent.parent.parent / "prompts" / "search.md"
+PROMPT_PATH = Path(__file__).parent.parent / "prompts" / "search.md"
 
 TEMPLATE = """\
 <!-- SYSTEM -->

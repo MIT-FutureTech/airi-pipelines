@@ -3,9 +3,9 @@ import logging
 from pydantic import BaseModel
 
 from org_mitigations.companies import Company
+from org_mitigations.prompt import Prompt
 from org_mitigations.search.answer import Answer
 from org_mitigations.search.context import Context
-from org_mitigations.search.prompt import Prompt
 from toolbox.classification import LLMClassifier
 from toolbox.concurrency import ConcurrentMap
 from toolbox.llm import LLMClient, TokenUsage, ToolboxLLMInvalidResponseError

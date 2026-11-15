@@ -2,10 +2,10 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from org_mitigations.companies import Company
+from org_mitigations.prompt import Prompt
 from org_mitigations.search.answer import Answer
 from org_mitigations.search.calls import SearchResult, plan_calls, run_calls
 from org_mitigations.search.context import Context
-from org_mitigations.search.prompt import Prompt
 from toolbox.llm import Message, ToolboxLLMInvalidResponseError
 from toolbox.llm.stub import STUB_MODEL, STUB_USAGE, StubLLMClient
 from toolbox.results import ResultStore
