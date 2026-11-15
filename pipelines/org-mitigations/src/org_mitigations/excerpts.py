@@ -14,10 +14,6 @@ class Excerpt(BaseModel):
     passage_ids: list[str]
 
 
-def excerpt_id(match_id: str, number: int) -> str:
-    return f"{match_id}_excerpt{number}"
-
-
 def merge_passages(passages: list[Passage]) -> list[Excerpt]:
     by_document: defaultdict[str, list[Passage]] = defaultdict(list)
     for passage in passages:
@@ -52,7 +48,7 @@ def _merge_document(document_id: str, passages: list[Passage]) -> list[Excerpt]:
         raise ValueError(f"A passage of {document_id} was lost while merging")
     return [
         Excerpt(
-            excerpt_id=excerpt_id(document_id, number),
+            excerpt_id=f"{document_id}_excerpt{number}",
             document_id=document_id,
             text=text,
             passage_ids=[passage.passage_id for passage in run],
