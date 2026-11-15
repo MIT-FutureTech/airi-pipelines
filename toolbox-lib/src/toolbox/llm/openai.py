@@ -47,7 +47,6 @@ _RETRYABLE_EXCEPTIONS = (
     APITimeoutError,
     RateLimitError,
     ToolboxLLMInvalidResponseError,
-    ValidationError,
 )
 _GENERATION_RETRY_CONFIG = retry(
     retry=retry_if_exception_type(_RETRYABLE_EXCEPTIONS),
@@ -133,14 +132,19 @@ class OpenAIClient(LLMClient):
         if self._rate_limiter:
             await self._rate_limiter.acquire()
 
-        response = await self._client.responses.parse(
-            input=_to_api_messages(messages),
-            model=self._model,
-            temperature=self._temperature,
-            reasoning=_to_api_reasoning(self._reasoning_effort),
-            max_output_tokens=self._output_token_limit,
-            text_format=schema,
-        )
+        try:
+            response = await self._client.responses.parse(
+                input=_to_api_messages(messages),
+                model=self._model,
+                temperature=self._temperature,
+                reasoning=_to_api_reasoning(self._reasoning_effort),
+                max_output_tokens=self._output_token_limit,
+                text_format=schema,
+            )
+        except ValidationError as error:
+            raise ToolboxLLMInvalidResponseError(
+                f"Response from {self._model} does not match {schema.__name__}"
+            ) from error
         if (value := response.output_parsed) is None:
             serialized_messages = json.dumps(
                 [msg.model_dump_json() for msg in messages],
