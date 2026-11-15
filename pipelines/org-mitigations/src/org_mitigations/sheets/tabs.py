@@ -34,7 +34,7 @@ class EvidenceRow(BaseModel):
     excerpt_id: str = Field(serialization_alias="Excerpt ID")
     domain_code: str = Field(serialization_alias="Domain code")
     domain_name: str = Field(serialization_alias="Domain name")
-    mitigation: str = Field(serialization_alias="Mitigation")
+    mitigation_name: str = Field(serialization_alias="Mitigation")
     strength: Strength = Field(serialization_alias="Strength")
     quote: str = Field(serialization_alias="Quote")
     quote_start: int | None = Field(serialization_alias="Quote start")
@@ -145,7 +145,7 @@ def evidence_rows(
                 excerpt_id=item.excerpt_id,
                 domain_code=item.domain_code,
                 domain_name=domain_names[item.domain_code],
-                mitigation=item.mitigation,
+                mitigation_name=item.mitigation_name,
                 strength=item.strength,
                 quote=item.quote,
                 quote_start=location.start if location else None,

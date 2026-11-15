@@ -12,7 +12,7 @@ class Evidence(BaseModel):
     mitigation_id: str
     document_id: str
     domain_code: str
-    mitigation: str
+    mitigation_name: str
     reasoning: str
     quote: str
     strength: Strength
@@ -61,7 +61,7 @@ def load_evidence(llm_output_dir: Path) -> list[Evidence]:
                     mitigation_id=mitigation_id,
                     document_id=output.input.document_id,
                     domain_code=output.input.code,
-                    mitigation=mitigation.mitigation,
+                    mitigation_name=mitigation.mitigation,
                     reasoning=mitigation.reasoning,
                     quote=quote.quote,
                     strength=quote.strength,
@@ -83,7 +83,7 @@ def evidence_from_mitigations(
             mitigation_id=mitigation.mitigation_id,
             document_id=document_ids[quote.excerpt_id],
             domain_code=mitigation.domain_code,
-            mitigation=mitigation.name,
+            mitigation_name=mitigation.name,
             reasoning=mitigation.reasoning,
             quote=quote.quote,
             strength=quote.strength,

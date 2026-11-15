@@ -57,7 +57,7 @@ export interface Span {
 export interface LocatedEvidence {
   document_id: string;
   domain_code: string;
-  mitigation: string;
+  mitigation_name: string;
   quote: string;
   strength: Strength;
   excerpt_id: string;

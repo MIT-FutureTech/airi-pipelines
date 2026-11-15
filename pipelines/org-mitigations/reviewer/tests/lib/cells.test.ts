@@ -22,7 +22,7 @@ function evidence(documentId: string, domainCode: string): LocatedEvidence {
   return {
     document_id: documentId,
     domain_code: domainCode,
-    mitigation: "Board oversight of AI",
+    mitigation_name: "Board oversight of AI",
     quote: "Our board oversees AI.",
     strength: "stated",
     excerpt_id: `${documentId}_excerpt1`,

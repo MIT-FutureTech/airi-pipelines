@@ -11,7 +11,7 @@ function evidence(
   return {
     document_id: documentId,
     domain_code: "2.2",
-    mitigation: "Board oversight of AI",
+    mitigation_name: "Board oversight of AI",
     quote,
     strength,
     excerpt_id: `${documentId}_excerpt1`,

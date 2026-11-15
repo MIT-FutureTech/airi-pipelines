@@ -12,7 +12,7 @@ export interface CellSelection {
 }
 
 export function quoteKey(item: LocatedEvidence): string {
-  return `${item.excerpt_id} ${item.mitigation} ${item.quote}`;
+  return `${item.excerpt_id} ${item.mitigation_name} ${item.quote}`;
 }
 
 export function cellKey(companyId: string, domainCode: string): string {

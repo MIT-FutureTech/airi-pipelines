@@ -193,7 +193,7 @@ function QuoteCard({
     <Paper withBorder p="sm">
       <Stack gap="xs">
         <Group justify="space-between" align="flex-start" wrap="nowrap">
-          <Text fw={600}>{item.mitigation}</Text>
+          <Text fw={600}>{item.mitigation_name}</Text>
           <Text
             px="xs"
             style={{ ...STRENGTH_COLORS[item.strength], borderRadius: 4 }}
