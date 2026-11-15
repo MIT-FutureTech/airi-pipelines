@@ -32,26 +32,26 @@ class TestAnswer:
     def test_reads_an_answer_with_practices_and_affiliations(self) -> None:
         answer = Answer.model_validate_json("""{
             "match_id": "Example_Bank__2.2__3",
-            "classifications": [
+            "tagged_practices": [
                 {
-                    "practice": "Formal AI oversight and accountability",
+                    "name": "Formal AI oversight and accountability",
                     "subtypes": ["Board of directors oversight"],
-                    "quotes": [1],
+                    "quote_numbers": [1],
                     "reasoning": "A board committee oversees the risks of AI."
                 }
             ],
             "affiliations": [
-                {"name": "Frontier Model Forum", "relation": "member", "quotes": [2]}
+                {"name": "Frontier Model Forum", "relation": "member", "quote_numbers": [2]}
             ]
         }""")
 
         assert answer == Answer(
             match_id="Example_Bank__2.2__3",
-            classifications=[
+            tagged_practices=[
                 TaggedPractice(
-                    practice="Formal AI oversight and accountability",
+                    name="Formal AI oversight and accountability",
                     subtypes=["Board of directors oversight"],
-                    quotes=[1],
+                    quote_numbers=[1],
                     reasoning="A board committee oversees the risks of AI.",
                 )
             ],
@@ -59,35 +59,35 @@ class TestAnswer:
                 Affiliation(
                     name="Frontier Model Forum",
                     relation=Relation.MEMBER,
-                    quotes=[2],
+                    quote_numbers=[2],
                 )
             ],
         )
 
     def test_reads_an_answer_without_practices(self) -> None:
         answer = Answer.model_validate_json(
-            '{"match_id": "Example_Bank__1.8__1", "classifications": [], "affiliations": []}'
+            '{"match_id": "Example_Bank__1.8__1", "tagged_practices": [], "affiliations": []}'
         )
 
-        assert answer.classifications == []
+        assert answer.tagged_practices == []
         assert answer.affiliations == []
 
     def test_rejects_an_unknown_relation(self) -> None:
         with pytest.raises(ValidationError, match="relation"):
             Affiliation.model_validate(
-                {"name": "EU AI Pact", "relation": "supporter", "quotes": [1]}
+                {"name": "EU AI Pact", "relation": "supporter", "quote_numbers": [1]}
             )
 
 
 def _tagged(practice: str, *subtypes: str) -> TaggedPractice:
     return TaggedPractice(
-        practice=practice, subtypes=list(subtypes), quotes=[1], reasoning="Fits."
+        name=practice, subtypes=list(subtypes), quote_numbers=[1], reasoning="Fits."
     )
 
 
 def _answer(*tagged: TaggedPractice) -> Answer:
     return Answer(
-        match_id="Example_Bank__1.4__1", classifications=list(tagged), affiliations=[]
+        match_id="Example_Bank__1.4__1", tagged_practices=list(tagged), affiliations=[]
     )
 
 

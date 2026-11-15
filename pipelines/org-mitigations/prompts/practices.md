@@ -28,14 +28,14 @@ Give each one's full name, as the quotes write it. Do not list pledges the compa
 Respond with ONLY a JSON object. No preamble. Fields in this order:
 {
   "match_id": "<match_id>",
-  "classifications": [
-    {"practice": "Practice name from the list", "subtypes": ["Subtype from that practice's list"], "quotes": [1, 2], "reasoning": "One sentence, max 20 words: how the quotes fit the definition."}
+  "tagged_practices": [
+    {"name": "Practice name from the list", "subtypes": ["Subtype from that practice's list"], "quote_numbers": [1, 2], "reasoning": "One sentence, max 20 words: how the quotes fit the definition."}
   ],
   "affiliations": [
-    {"name": "Full name of the commitment or body", "relation": "signed or member", "quotes": [1]}
+    {"name": "Full name of the commitment or body", "relation": "signed or member", "quote_numbers": [1]}
   ]
 }
-Use an empty list for "classifications" if no practice fits, for "subtypes" if the quotes show none of the practice's subtypes, and for "affiliations" if the quotes name no commitment or body. Set match_id to the value provided in the input.
+Use an empty list for "tagged_practices" if no practice fits, for "subtypes" if the quotes show none of the practice's subtypes, and for "affiliations" if the quotes name no commitment or body. Set match_id to the value provided in the input.
 </output_format>
 
 <examples>
@@ -49,9 +49,9 @@ Use an empty list for "classifications" if no practice fits, for "subtypes" if t
 </input>
 {
   "match_id": "Example_Bank__1.4__1",
-  "classifications": [
-    {"practice": "Red teaming", "subtypes": ["External red teaming"], "quotes": [1], "reasoning": "Internal and external specialists try to make each model produce harmful answers before release."},
-    {"practice": "Pre-deployment testing and evaluation", "subtypes": ["Bias and fairness testing"], "quotes": [2], "reasoning": "Error rates are compared across demographic groups and gaps fixed before launch."}
+  "tagged_practices": [
+    {"name": "Red teaming", "subtypes": ["External red teaming"], "quote_numbers": [1], "reasoning": "Internal and external specialists try to make each model produce harmful answers before release."},
+    {"name": "Pre-deployment testing and evaluation", "subtypes": ["Bias and fairness testing"], "quote_numbers": [2], "reasoning": "Error rates are compared across demographic groups and gaps fixed before launch."}
   ],
   "affiliations": []
 }
@@ -66,12 +66,12 @@ Use an empty list for "classifications" if no practice fits, for "subtypes" if t
 </input>
 {
   "match_id": "Example_Bank__2.2__3",
-  "classifications": [
-    {"practice": "Named accountability for AI risk", "subtypes": ["Board of directors oversight"], "quotes": [1], "reasoning": "A committee of the board holds ongoing oversight of the risks from the company's AI use."}
+  "tagged_practices": [
+    {"name": "Named accountability for AI risk", "subtypes": ["Board of directors oversight"], "quote_numbers": [1], "reasoning": "A committee of the board holds ongoing oversight of the risks from the company's AI use."}
   ],
   "affiliations": [
-    {"name": "Frontier Model Forum", "relation": "member", "quotes": [2]},
-    {"name": "EU AI Pact", "relation": "signed", "quotes": [2]}
+    {"name": "Frontier Model Forum", "relation": "member", "quote_numbers": [2]},
+    {"name": "EU AI Pact", "relation": "signed", "quote_numbers": [2]}
   ]
 }
 
@@ -85,9 +85,9 @@ Use an empty list for "classifications" if no practice fits, for "subtypes" if t
 </input>
 {
   "match_id": "Example_Bank__2.1__2",
-  "classifications": [
-    {"practice": "AI risk management to a recognised standard", "subtypes": ["Model risk management", "AI system inventory"], "quotes": [1], "reasoning": "AI models are inventoried and governed under the bank's model risk management policy."},
-    {"practice": "Pre-deployment risk and impact assessment", "subtypes": ["Use-case approval"], "quotes": [2], "reasoning": "An independent team validates each model and approves its use before deployment."}
+  "tagged_practices": [
+    {"name": "AI risk management to a recognised standard", "subtypes": ["Model risk management", "AI system inventory"], "quote_numbers": [1], "reasoning": "AI models are inventoried and governed under the bank's model risk management policy."},
+    {"name": "Pre-deployment risk and impact assessment", "subtypes": ["Use-case approval"], "quote_numbers": [2], "reasoning": "An independent team validates each model and approves its use before deployment."}
   ],
   "affiliations": []
 }
@@ -102,7 +102,7 @@ Use an empty list for "classifications" if no practice fits, for "subtypes" if t
 </input>
 {
   "match_id": "Example_Bank__1.8__1",
-  "classifications": [],
+  "tagged_practices": [],
   "affiliations": []
 }
 </examples>

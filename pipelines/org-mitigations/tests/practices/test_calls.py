@@ -96,11 +96,11 @@ def _response(practice: str, *subtypes: str) -> StructuredResult[Answer]:
     return StructuredResult(
         value=Answer(
             match_id="Example_Bank__2.2__1",
-            classifications=[
+            tagged_practices=[
                 TaggedPractice(
-                    practice=practice,
+                    name=practice,
                     subtypes=list(subtypes),
-                    quotes=[1],
+                    quote_numbers=[1],
                     reasoning="The board oversees AI.",
                 )
             ],
