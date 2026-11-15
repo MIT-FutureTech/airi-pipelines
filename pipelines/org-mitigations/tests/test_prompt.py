@@ -10,7 +10,7 @@ from org_mitigations.practice_list import (
 )
 from org_mitigations.prompt import Prompt, load_prompt
 
-PROMPT_PATH = Path(__file__).parent.parent / "prompts" / "search.md"
+SEARCH_PROMPT_PATH = Path(__file__).parent.parent / "prompts" / "search.md"
 PRACTICES_PROMPT_PATH = Path(__file__).parent.parent / "prompts" / "practices.md"
 
 TEMPLATE = """\
@@ -71,9 +71,9 @@ class TestLoadPrompt:
         with pytest.raises(ValueError, match="system section has placeholders"):
             load_prompt(path, taxonomy="")
 
-    def test_loads_the_pipelines_prompt(self) -> None:
+    def test_loads_the_search_prompt(self) -> None:
         assert load_prompt(
-            PROMPT_PATH, taxonomy=render_domain_taxonomy(DOMAIN_TAXONOMY_PATH)
+            SEARCH_PROMPT_PATH, taxonomy=render_domain_taxonomy(DOMAIN_TAXONOMY_PATH)
         )
 
     def test_loads_the_practices_prompt(self) -> None:
