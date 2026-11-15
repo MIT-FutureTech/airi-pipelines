@@ -1,7 +1,7 @@
 import logging
 
 from org_mitigations.bundle.assemble import assemble_bundle
-from org_mitigations.bundle.run import load_run
+from org_mitigations.bundle.run_settings import load_run
 from org_mitigations.bundle.settings import BundleSettings
 from org_mitigations.companies import load_companies
 from org_mitigations.documents import load_documents

@@ -1,5 +1,5 @@
 // biome-ignore-all lint/style/useNamingConvention: these fields must match what Python outputs
-export interface Run {
+export interface RunSettings {
   prompt_file: string;
   model: string;
   temperature: number;
@@ -65,7 +65,7 @@ export interface LocatedEvidence {
 }
 
 export interface Bundle {
-  run: Run;
+  run: RunSettings;
   taxonomy: Locus[];
   companies: Company[];
   documents: CompanyDocument[];

@@ -1,7 +1,7 @@
 import pytest
 
 from org_mitigations.bundle.assemble import Bundle, LocatedEvidence, assemble_bundle
-from org_mitigations.bundle.run import Run
+from org_mitigations.bundle.run_settings import RunSettings
 from org_mitigations.companies import Company
 from org_mitigations.documents import Document
 from org_mitigations.domain_taxonomy import Domain, Locus
@@ -10,7 +10,7 @@ from org_mitigations.excerpts import Excerpt
 from org_mitigations.locate import Span
 from org_mitigations.search.answer import Strength
 
-RUN = Run(
+RUN = RunSettings(
     prompt_file="prompt.md",
     model="example/model",
     temperature=1.0,

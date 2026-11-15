@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from org_mitigations.bundle.run import Run, load_run, single_model
+from org_mitigations.bundle.run_settings import RunSettings, load_run, single_model
 from org_mitigations.search.answer import Answer
 from org_mitigations.search.calls import SearchResult
 
@@ -23,7 +23,7 @@ class TestLoadRun:
 
         run = load_run(tmp_path, temperature=1.0, reasoning_effort="medium")
 
-        assert run == Run(
+        assert run == RunSettings(
             prompt_file="prompt.md",
             model="example/model",
             temperature=1.0,

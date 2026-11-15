@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from org_mitigations.search.calls import SearchResult
 
 
-class Run(BaseModel):
+class RunSettings(BaseModel):
     prompt_file: str
     model: str
     temperature: float
@@ -22,7 +22,9 @@ class _LLMOutput(BaseModel):
     metadata: _Metadata
 
 
-def load_run(llm_output_dir: Path, *, temperature: float, reasoning_effort: str) -> Run:
+def load_run(
+    llm_output_dir: Path, *, temperature: float, reasoning_effort: str
+) -> RunSettings:
     settings: set[_Metadata] = set()
     for path in llm_output_dir.glob("*.json"):
         output = _LLMOutput.model_validate_json(path.read_text())
@@ -32,7 +34,7 @@ def load_run(llm_output_dir: Path, *, temperature: float, reasoning_effort: str)
             f"Expected one prompt and model in {llm_output_dir}, found {settings}"
         )
     metadata = settings.pop()
-    return Run(
+    return RunSettings(
         prompt_file=metadata.prompt_file,
         model=metadata.llm_model,
         temperature=temperature,
