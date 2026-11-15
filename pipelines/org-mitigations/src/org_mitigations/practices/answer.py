@@ -26,7 +26,7 @@ class Affiliation(BaseModel):
 class Answer(BaseModel):
     match_id: str
     classifications: list[TaggedPractice]
-    named: list[Affiliation]
+    affiliations: list[Affiliation]
 
 
 def unlisted_names(answer: Answer, practices: list[Practice]) -> list[str]:

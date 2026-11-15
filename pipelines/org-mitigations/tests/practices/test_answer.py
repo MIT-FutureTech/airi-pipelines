@@ -40,7 +40,7 @@ class TestAnswer:
                     "reasoning": "A board committee oversees the risks of AI."
                 }
             ],
-            "named": [
+            "affiliations": [
                 {"name": "Frontier Model Forum", "relation": "member", "quotes": [2]}
             ]
         }""")
@@ -55,7 +55,7 @@ class TestAnswer:
                     reasoning="A board committee oversees the risks of AI.",
                 )
             ],
-            named=[
+            affiliations=[
                 Affiliation(
                     name="Frontier Model Forum",
                     relation=Relation.MEMBER,
@@ -66,11 +66,11 @@ class TestAnswer:
 
     def test_reads_an_answer_without_practices(self) -> None:
         answer = Answer.model_validate_json(
-            '{"match_id": "Example_Bank__1.8__1", "classifications": [], "named": []}'
+            '{"match_id": "Example_Bank__1.8__1", "classifications": [], "affiliations": []}'
         )
 
         assert answer.classifications == []
-        assert answer.named == []
+        assert answer.affiliations == []
 
     def test_rejects_an_unknown_relation(self) -> None:
         with pytest.raises(ValidationError, match="relation"):
@@ -87,7 +87,7 @@ def _tagged(practice: str, *subtypes: str) -> TaggedPractice:
 
 def _answer(*tagged: TaggedPractice) -> Answer:
     return Answer(
-        match_id="Example_Bank__1.4__1", classifications=list(tagged), named=[]
+        match_id="Example_Bank__1.4__1", classifications=list(tagged), affiliations=[]
     )
 
 

@@ -104,7 +104,7 @@ def _response(practice: str, *subtypes: str) -> StructuredResult[Answer]:
                     reasoning="The board oversees AI.",
                 )
             ],
-            named=[],
+            affiliations=[],
         ),
         model=STUB_MODEL,
         usage=STUB_USAGE,
