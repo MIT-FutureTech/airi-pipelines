@@ -1,8 +1,18 @@
 from pydantic import BaseModel
 
 from org_mitigations.companies import Company
+from org_mitigations.practice_list import Practice
+from org_mitigations.practices.answer import Answer, unlisted_names
 from org_mitigations.prompt import Prompt
 from org_mitigations.search.mitigations import FoundMitigation
+from toolbox.llm import StructuredResult, TokenUsage, ToolboxLLMInvalidResponseError
+
+
+class PracticesResult(BaseModel):
+    mitigation_id: str
+    answer: Answer
+    model: str
+    usage: TokenUsage | None
 
 
 class Call(BaseModel):
@@ -35,3 +45,22 @@ def plan_calls(
         )
         for mitigation in mitigations
     ]
+
+
+def make_practices_result(
+    call: Call,
+    response: StructuredResult[Answer],
+    *,
+    practices: list[Practice],
+) -> PracticesResult:
+    unlisted = unlisted_names(response.value, practices)
+    if unlisted:
+        raise ToolboxLLMInvalidResponseError(
+            f"Names not in the practice list: {unlisted}"
+        )
+    return PracticesResult(
+        mitigation_id=call.call_id,
+        answer=response.value,
+        model=response.model,
+        usage=response.usage,
+    )
