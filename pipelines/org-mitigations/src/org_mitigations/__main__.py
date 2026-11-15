@@ -44,7 +44,7 @@ async def main() -> None:
             settings.prompt_path,
             taxonomy=render_taxonomy(TAXONOMY_PATH),
         )
-        store = ResultStore(settings.output_dir / "calls", CallResult)
+        store = ResultStore(settings.output_dir / "search", CallResult)
         if settings.dry_run:
             _preview(calls, prompt=prompt, store=store)
             return
