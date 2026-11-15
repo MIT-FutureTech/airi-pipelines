@@ -154,22 +154,22 @@
       ]
     },
     {
-      "name": "Human-in-the-loop oversight",
-      "definition": "Human-in-the-loop oversight is an operating procedure in which a company keeps named people able to review, approve or override an AI system's decisions before they take effect, especially in high-stakes uses, while the system operates.",
+      "name": "Human approval for consequential AI actions",
+      "definition": "Human approval for consequential AI actions is an operating procedure in which a company requires a person to approve an AI system's action before it takes effect, when the action is hard to undo or is a decision against someone.",
       "counts": [
-        "Human review of AI decisions in high-stakes uses such as credit, hiring or medicine.",
-        "Human review of cases that automated systems flag.",
-        "The ability to override."
+        "AI agents that ask the user to confirm before purchases, sending messages, deleting data or changing permissions.",
+        "Rules that a qualified person makes or reviews adverse decisions about individuals, such as credit, hiring, insurance or medical denials, before they take effect.",
+        "Human review of cases that automated systems flag, before action is taken against a person."
       ],
       "does_not_count": [
-        "General statements that AI supports human decisions or that people stay responsible, unless a review or override step is described.",
-        "Feedback buttons for users.",
-        "Switching to a manual process when an AI system fails (Shutdown and fallback plan).",
-        "Review that affected people ask for (Appeal and human review for affected people).",
-        "Approval of irreversible or high-consequence actions by agents (Approval for irreversible AI actions)."
+        "General statements that people stay responsible or that AI supports human decisions.",
+        "Rules telling staff to check AI outputs (AI use policies and downstream guidance).",
+        "Review after the fact.",
+        "Review the affected person asks for (Appeal and human review for affected people)."
       ],
       "subtypes": [
-        "Escalation to human review"
+        "Agent action confirmation",
+        "Human decision on adverse outcomes"
       ]
     },
     {
@@ -454,25 +454,12 @@
       ],
       "does_not_count": [
         "General customer service or complaints.",
-        "Human review the company does on its own initiative (Human-in-the-loop oversight)."
+        "Human review the company does on its own initiative (Human approval for consequential AI actions)."
       ],
       "subtypes": [
         "Appeal or contest",
         "Opt-out with a human alternative"
       ]
-    },
-    {
-      "name": "Approval for irreversible AI actions",
-      "definition": "Approval for irreversible AI actions is an operating procedure in which a company requires a person to approve irreversible or high-consequence actions an AI agent proposes, such as making payments, deleting data or running code, before they take effect.",
-      "counts": [
-        "Approval steps for irreversible or high-consequence agent actions.",
-        "Limits on what agents may do without approval."
-      ],
-      "does_not_count": [
-        "Routine approvals of everyday actions.",
-        "Human review of decisions about people (Human-in-the-loop oversight)."
-      ],
-      "subtypes": []
     },
     {
       "name": "Shutdown and fallback plan",
