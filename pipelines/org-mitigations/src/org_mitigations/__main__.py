@@ -54,7 +54,7 @@ async def main() -> None:
         )
 
         prompt = load_prompt(
-            settings.prompt_path,
+            settings.search.prompt_path,
             taxonomy=render_domain_taxonomy(DOMAIN_TAXONOMY_PATH),
         )
         store = ResultStore(settings.output_dir / "search", SearchResult)
@@ -63,12 +63,12 @@ async def main() -> None:
             return
 
         async with OpenRouterClient(
-            model=settings.model,
+            model=settings.search.model,
             rate_limit_rps=settings.llm_rate_limit_rps,
             timeout=settings.llm_timeout,
-            temperature=settings.temperature,
-            reasoning_effort=settings.reasoning_effort,
-            output_token_limit=settings.output_token_limit,
+            temperature=settings.search.temperature,
+            reasoning_effort=settings.search.reasoning_effort,
+            output_token_limit=settings.search.output_token_limit,
         ) as llm:
             await run_calls(
                 calls,
