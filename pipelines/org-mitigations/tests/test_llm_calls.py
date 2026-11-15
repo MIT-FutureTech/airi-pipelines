@@ -5,7 +5,7 @@ from org_mitigations.companies import Company
 from org_mitigations.llm_calls import run_calls
 from org_mitigations.prompt import Prompt
 from org_mitigations.search.answer import Answer
-from org_mitigations.search.calls import SearchResult, plan_calls
+from org_mitigations.search.calls import SearchResult, make_search_result, plan_calls
 from org_mitigations.search.context import Context
 from toolbox.llm import Message, ToolboxLLMInvalidResponseError
 from toolbox.llm.stub import STUB_MODEL, STUB_USAGE, StubLLMClient
@@ -54,6 +54,8 @@ async def _run(llm: StubLLMClient, store: ResultStore[SearchResult]) -> None:
     await run_calls(
         plan_calls(CONTEXTS, ["1.1", "2.1"], companies=COMPANIES),
         prompt=PROMPT,
+        answer_schema=Answer,
+        make_result=make_search_result,
         llm=llm,
         store=store,
         max_concurrency=2,

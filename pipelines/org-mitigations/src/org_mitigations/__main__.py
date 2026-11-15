@@ -9,7 +9,13 @@ from org_mitigations.domain_taxonomy import (
 )
 from org_mitigations.llm_calls import run_calls
 from org_mitigations.prompt import Prompt, load_prompt
-from org_mitigations.search.calls import Call, SearchResult, plan_calls
+from org_mitigations.search.answer import Answer
+from org_mitigations.search.calls import (
+    Call,
+    SearchResult,
+    make_search_result,
+    plan_calls,
+)
 from org_mitigations.search.context import build_contexts
 from org_mitigations.settings import PipelineSettings
 from toolbox.llm import OpenRouterClient
@@ -67,6 +73,8 @@ async def main() -> None:
             await run_calls(
                 calls,
                 prompt=prompt,
+                answer_schema=Answer,
+                make_result=make_search_result,
                 llm=llm,
                 store=store,
                 max_concurrency=settings.concurrency,
