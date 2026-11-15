@@ -3,6 +3,8 @@ from pathlib import Path
 from pydantic import Field
 from pydantic_settings import BaseSettings
 
+from org_mitigations.settings import DEFAULT_MAX_CHARS
+
 
 class BundleSettings(
     BaseSettings,
@@ -13,15 +15,14 @@ class BundleSettings(
     cli_prog_name="org_mitigations.bundle",
 ):
     r"""
-    Bundle an LLM run's evidence for the reviewer app.
+    Bundle a run's evidence for the reviewer app.
 
     Example usage:
 
       uv run python -m org_mitigations.bundle \
         --export-dir /path/to/exports/ \
-        --excerpt-files /path/to/documents-excerpts.csv \
-        --excerpt-files /path/to/companies-excerpts.csv \
-        --llm-output-dir /path/to/classifications \
+        --run-dir /path/to/output/ \
+        --prompt-file search_v1.0.md \
         --temperature 1 \
         --reasoning-effort medium \
         --company-names Amazon --company-names Apple \
@@ -30,23 +31,27 @@ class BundleSettings(
 
     export_dir: Path = Field(
         default=...,
-        description="A folder with companies.csv and documents.csv exports",
+        description="A folder with companies.csv, documents.csv and passages.csv",
     )
-    excerpt_files: list[Path] = Field(
+    run_dir: Path = Field(
         default=...,
-        description="The excerpt files the LLM read",
+        description="The run's output folder, which the pipeline's --output-dir named",
     )
-    llm_output_dir: Path = Field(
+    max_chars: int = Field(
+        default=DEFAULT_MAX_CHARS,
+        description="The --max-chars the run used",
+    )
+    prompt_file: str = Field(
         default=...,
-        description="The LLM run's output folder containing JSON files",
+        description="The name of the prompt file the run used",
     )
     temperature: float = Field(
         default=...,
-        description="The temperature the LLM run used",
+        description="The temperature the run used",
     )
     reasoning_effort: str = Field(
         default=...,
-        description="The reasoning effort the LLM run used",
+        description="The reasoning effort the run used",
     )
     company_names: list[str] = Field(
         default=...,
