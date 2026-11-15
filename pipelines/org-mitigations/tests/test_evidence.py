@@ -131,7 +131,7 @@ class TestEvidenceFromMitigations:
             FoundMitigation(
                 mitigation_id="Example_Bank__2.2__1",
                 company_id="recA",
-                code="2.2",
+                domain_code="2.2",
                 name="Board oversight of AI",
                 reasoning="Board-level accountability for AI.",
                 quotes=[

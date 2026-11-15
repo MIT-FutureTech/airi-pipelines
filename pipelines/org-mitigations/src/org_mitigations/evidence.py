@@ -82,7 +82,7 @@ def evidence_from_mitigations(
             evidence_id=f"{mitigation.mitigation_id}.{number}",
             mitigation_id=mitigation.mitigation_id,
             document_id=document_ids[quote.excerpt_id],
-            code=mitigation.code,
+            code=mitigation.domain_code,
             mitigation=mitigation.name,
             reasoning=mitigation.reasoning,
             quote=quote.quote,

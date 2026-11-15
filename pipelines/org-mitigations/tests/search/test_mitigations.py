@@ -61,7 +61,7 @@ class TestFoundMitigations:
             FoundMitigation(
                 mitigation_id="Example_Bank__2.2__1",
                 company_id="recA",
-                code="2.2",
+                domain_code="2.2",
                 name="Board oversight",
                 reasoning="Why Board oversight",
                 quotes=[
@@ -75,7 +75,7 @@ class TestFoundMitigations:
             FoundMitigation(
                 mitigation_id="Example_Bank__2.2__2",
                 company_id="recA",
-                code="2.2",
+                domain_code="2.2",
                 name="AI policy",
                 reasoning="Why AI policy",
                 quotes=[
