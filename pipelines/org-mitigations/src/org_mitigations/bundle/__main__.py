@@ -1,12 +1,12 @@
 import logging
 
 from org_mitigations.bundle.assemble import assemble_bundle
+from org_mitigations.bundle.run import load_run
 from org_mitigations.bundle.settings import BundleSettings
 from org_mitigations.companies import load_companies
 from org_mitigations.documents import load_documents
 from org_mitigations.evidence import load_evidence
 from org_mitigations.excerpts import Excerpt, load_excerpts
-from org_mitigations.run import load_run
 from org_mitigations.taxonomy import TAXONOMY_PATH, load_taxonomy
 from toolbox.log import configure_logging
 

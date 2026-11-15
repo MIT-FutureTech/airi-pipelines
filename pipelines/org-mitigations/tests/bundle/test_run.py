@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from org_mitigations.run import Run, load_run, single_model
+from org_mitigations.bundle.run import Run, load_run, single_model
 from org_mitigations.search.answer import Answer
 from org_mitigations.search.calls import CallResult
 
