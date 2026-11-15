@@ -2,11 +2,8 @@ import asyncio
 import logging
 
 from org_mitigations.calls import Call, CallResult, plan_calls, run_calls
-from org_mitigations.companies import Company, load_companies
 from org_mitigations.context import build_contexts
-from org_mitigations.documents import load_documents
-from org_mitigations.excerpts import merge_passages
-from org_mitigations.passages import load_passages
+from org_mitigations.corpus import load_corpus
 from org_mitigations.prompt import Prompt, load_prompt
 from org_mitigations.settings import PipelineSettings
 from org_mitigations.taxonomy import TAXONOMY_PATH, load_taxonomy, render_taxonomy
@@ -29,34 +26,17 @@ async def main() -> None:
         logger.info(f"Configuration: {settings.model_dump_json()}")
         install_log_context_filter()
 
-        companies = _select_companies(
-            load_companies(settings.export_dir),
-            settings.company_names,
-        )
-        company_ids = {company.company_id for company in companies}
-        documents = [
-            document
-            for document in load_documents(settings.export_dir)
-            if document.company_id in company_ids
-        ]
-        document_ids = {document.document_id for document in documents}
-        passages = [
-            passage
-            for passage in load_passages(settings.export_dir)
-            if passage.document_id in document_ids
-        ]
+        corpus = load_corpus(settings.export_dir, company_names=settings.company_names)
         contexts = build_contexts(
-            merge_passages(passages),
-            documents,
-            max_chars=settings.max_chars,
+            corpus.excerpts, corpus.documents, max_chars=settings.max_chars
         )
         codes = [
             code.code for locus in load_taxonomy(TAXONOMY_PATH) for code in locus.codes
         ]
-        calls = plan_calls(contexts, codes, companies=companies)
+        calls = plan_calls(contexts, codes, companies=corpus.companies)
         covered = {context.company_id for context in contexts}
         logger.info(
-            f"{len(covered)} of {len(companies)} companies have passages:"
+            f"{len(covered)} of {len(corpus.companies)} companies have passages:"
             + f" {len(contexts)} contexts, {len(calls)} calls"
         )
 
@@ -87,19 +67,6 @@ async def main() -> None:
     except:
         logger.exception("Uncaught exception")
         raise
-
-
-def _select_companies(
-    all_companies: list[Company],
-    selected_names: list[str] | None,
-) -> list[Company]:
-    if selected_names is None:
-        return all_companies
-    companies_by_name = {company.name: company for company in all_companies}
-    unknown = [name for name in selected_names if name not in companies_by_name]
-    if unknown:
-        raise ValueError(f"No companies named {unknown}")
-    return [companies_by_name[name] for name in selected_names]
 
 
 def _preview(
