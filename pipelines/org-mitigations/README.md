@@ -5,11 +5,16 @@ A project to understand how organizations are mitigating risks from AI
 ## Methodology
 
 Excerpts from corporate documents are shown to an LLM, which searches them for
-evidence of each mitigation type in the taxonomy.
+evidence of each mitigation type in the taxonomy. Each mitigation it finds is
+then shown to an LLM again, with its quotes, to tag it with practices from a
+fixed list (`prompts/practice_list.json`).
 
 ## Running the pipeline
 
-See `uv run python -m org_mitigations --help` for the arguments and options.
+The pipeline runs in stages: `search`, then `practices`. `--stages` says which
+to run; the practices stage reads the search's results from the same output
+folder. See `uv run python -m org_mitigations --help` for the arguments and
+options.
 
 The pipeline needs the `OPENROUTER_API_KEY` environment variable to be set.
 

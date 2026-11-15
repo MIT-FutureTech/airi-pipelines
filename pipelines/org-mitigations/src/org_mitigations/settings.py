@@ -60,13 +60,14 @@ class PipelineSettings(
 ):
     r"""
     Ask an LLM which mitigations each company's documents describe, with quotes
-    as evidence.
+    as evidence, then which practices each mitigation shows.
 
     Example usage:
 
       uv run --env-file=.env python -m org_mitigations \
         --export-dir /path/to/exports/ \
         --output-dir /path/to/output/ \
+        --stages search,practices \
         --company-names "Example Bank" --company-names "Example Retail"
     """
 
@@ -77,6 +78,13 @@ class PipelineSettings(
     output_dir: Path = Field(
         default=...,
         description="Where to write each call's result and log.txt",
+    )
+    stages: list[PipelineStage] = Field(
+        default=...,
+        description="""
+            The stages to run, comma-separated. They run in pipeline order,
+            whatever order they're given in.
+        """,
     )
     company_names: list[str] | None = Field(
         default=None,
