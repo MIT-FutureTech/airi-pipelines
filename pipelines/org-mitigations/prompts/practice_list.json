@@ -49,7 +49,7 @@
       ],
       "does_not_count": [
         "General responsible AI policies or principles (Published AI policy).",
-        "A management system modelled on a standard such as ISO/IEC 42001 (AI risk management system).",
+        "A management system modelled on a standard such as ISO/IEC 42001 (AI risk management to a recognised standard).",
         "Frameworks that don't tie safeguards to capability or risk thresholds."
       ],
       "subtypes": [
@@ -191,8 +191,8 @@
       ]
     },
     {
-      "name": "Formal AI oversight and accountability",
-      "definition": "Formal AI oversight and accountability is a governance arrangement in which a company's board, a board or management committee, or a named executive or team holds ongoing responsibility for AI risks and reviews or approves decisions about AI.",
+      "name": "Named accountability for AI risk",
+      "definition": "Named accountability for AI risk is a governance arrangement in which a company's board, a board or management committee, or a named executive or team holds ongoing responsibility for AI risks and reviews or approves decisions about AI.",
       "counts": [
         "Board or board-committee oversight of AI risk.",
         "AI ethics, risk or governance committees and councils, such as an AI risk committee that meets monthly.",
@@ -218,7 +218,7 @@
         "Outside validation of internal test results."
       ],
       "does_not_count": [
-        "Certification against a standard such as ISO/IEC 42001 (AI risk management system).",
+        "Certification against a standard such as ISO/IEC 42001 (AI risk management to a recognised standard).",
         "Red teaming the company commissions and directs (Red teaming).",
         "Open invitations to anyone to find and report flaws (Bug bounties and AI vulnerability reporting).",
         "Regulator inspections with enforcement powers."
@@ -229,8 +229,8 @@
       ]
     },
     {
-      "name": "AI risk management system",
-      "definition": "An AI risk management system is a governance arrangement in which a company builds a recognised framework, such as ISO/IEC 42001 or the NIST AI RMF, into an organisation-wide system for assessing, monitoring and responding to AI risks.",
+      "name": "AI risk management to a recognised standard",
+      "definition": "AI risk management to a recognised standard is a governance arrangement in which a company builds a recognised framework, such as ISO/IEC 42001 or the NIST AI RMF, into an organisation-wide system for assessing, monitoring and responding to AI risks.",
       "counts": [
         "Certification to ISO/IEC 42001 or a similar standard, which is the strongest evidence.",
         "Described alignment with the NIST AI RMF or ISO/IEC 23894.",
@@ -283,7 +283,7 @@
       "does_not_count": [
         "Passing statements of values that don't point to a published document, such as 'we take AI safety seriously'.",
         "A safety framework for advanced AI (Safety framework for advanced AI).",
-        "A described organisation-wide system for assessing, monitoring and responding to AI risks (AI risk management system)."
+        "A described organisation-wide system for assessing, monitoring and responding to AI risks (AI risk management to a recognised standard)."
       ],
       "subtypes": []
     },
@@ -299,7 +299,7 @@
       ],
       "does_not_count": [
         "Testing on its own, with no documented assessment of risks and impacts (Pre-deployment testing and evaluation).",
-        "The organisation-wide system (AI risk management system).",
+        "The organisation-wide system (AI risk management to a recognised standard).",
         "Structured safety arguments (Safety case)."
       ],
       "subtypes": [
@@ -363,8 +363,8 @@
       "subtypes": []
     },
     {
-      "name": "AI environmental footprint assessment",
-      "definition": "AI environmental footprint assessment is a disclosure practice in which a company estimates, tracks and reports the energy and water use, carbon emissions and hardware effects of training and running its AI systems, or sets targets for them.",
+      "name": "Reducing AI's environmental footprint",
+      "definition": "Reducing AI's environmental footprint is a disclosure practice in which a company estimates, tracks and reports the energy and water use, carbon emissions and hardware effects of training and running its AI systems, or sets targets for them.",
       "counts": [
         "AI-specific measurement, disclosure or targets for energy, emissions or water.",
         "Measured efficiency gains for AI workloads."
@@ -376,8 +376,8 @@
       "subtypes": []
     },
     {
-      "name": "Privacy-preserving AI processing",
-      "definition": "Privacy-preserving AI processing is a technical safeguard in which a company trains or runs AI so that personal data stays protected during processing, through on-device processing, confidential computing, encryption or federated learning.",
+      "name": "Privacy-preserving AI data handling",
+      "definition": "Privacy-preserving AI data handling is a technical safeguard in which a company trains or runs AI so that personal data stays protected during processing, through on-device processing, confidential computing, encryption or federated learning.",
       "counts": [
         "On-device AI.",
         "Confidential computing and secure enclaves, such as Apple's Private Cloud Compute.",

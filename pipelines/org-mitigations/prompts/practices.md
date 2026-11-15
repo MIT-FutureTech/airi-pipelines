@@ -67,7 +67,7 @@ Use an empty list for "classifications" if no practice fits, for "subtypes" if t
 {
   "match_id": "Example_Bank__2.2__3",
   "classifications": [
-    {"practice": "Formal AI oversight and accountability", "subtypes": ["Board of directors oversight"], "quotes": [1], "reasoning": "A committee of the board holds ongoing oversight of the risks from the company's AI use."}
+    {"practice": "Named accountability for AI risk", "subtypes": ["Board of directors oversight"], "quotes": [1], "reasoning": "A committee of the board holds ongoing oversight of the risks from the company's AI use."}
   ],
   "named": [
     {"name": "Frontier Model Forum", "relation": "member", "quotes": [2]},
@@ -86,7 +86,7 @@ Use an empty list for "classifications" if no practice fits, for "subtypes" if t
 {
   "match_id": "Example_Bank__2.1__2",
   "classifications": [
-    {"practice": "AI risk management system", "subtypes": ["Model risk management", "AI system inventory"], "quotes": [1], "reasoning": "AI models are inventoried and governed under the bank's model risk management policy."},
+    {"practice": "AI risk management to a recognised standard", "subtypes": ["Model risk management", "AI system inventory"], "quotes": [1], "reasoning": "AI models are inventoried and governed under the bank's model risk management policy."},
     {"practice": "Pre-deployment risk and impact assessment", "subtypes": ["Use-case approval"], "quotes": [2], "reasoning": "An independent team validates each model and approves its use before deployment."}
   ],
   "named": []
