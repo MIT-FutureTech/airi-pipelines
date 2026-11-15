@@ -1,3 +1,4 @@
+from enum import StrEnum
 from pathlib import Path
 
 from pydantic import BaseModel, Field
@@ -7,6 +8,10 @@ from toolbox.llm import ReasoningEffort
 
 _PIPELINE_DIR = Path(__file__).parent.parent.parent
 DEFAULT_MAX_CHARS = 75_000
+
+
+class PipelineStage(StrEnum):
+    SEARCH = "search"
 
 
 class StageSettings(BaseModel):

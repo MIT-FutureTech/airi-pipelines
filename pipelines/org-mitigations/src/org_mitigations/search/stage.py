@@ -11,7 +11,7 @@ from org_mitigations.prompt import load_prompt
 from org_mitigations.search.answer import Answer
 from org_mitigations.search.calls import SearchResult, make_search_result, plan_calls
 from org_mitigations.search.context import Context
-from org_mitigations.settings import PipelineSettings
+from org_mitigations.settings import PipelineSettings, PipelineStage
 from toolbox.llm import OpenRouterClient
 from toolbox.results import ResultStore
 
@@ -40,7 +40,7 @@ async def run_search(
         settings.search.prompt_path,
         taxonomy=render_domain_taxonomy(DOMAIN_TAXONOMY_PATH),
     )
-    store = ResultStore(settings.output_dir / "search", SearchResult)
+    store = ResultStore(settings.output_dir / PipelineStage.SEARCH, SearchResult)
     if settings.dry_run:
         preview_calls(calls, prompt=prompt, store=store)
         return

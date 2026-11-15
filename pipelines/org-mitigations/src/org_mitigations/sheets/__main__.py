@@ -6,6 +6,7 @@ from org_mitigations.evidence import evidence_from_mitigations
 from org_mitigations.search.calls import SearchResult
 from org_mitigations.search.context import build_contexts
 from org_mitigations.search.mitigations import mitigations_from_results
+from org_mitigations.settings import PipelineStage
 from org_mitigations.sheets.settings import SheetsSettings
 from org_mitigations.sheets.tabs import (
     EvidenceRow,
@@ -28,7 +29,10 @@ def main() -> None:
     contexts = build_contexts(
         corpus.excerpts, corpus.documents, max_chars=settings.max_chars
     )
-    results = ResultStore(settings.run_dir / "search", SearchResult).load_all()
+    results = ResultStore(
+        settings.run_dir / PipelineStage.SEARCH,
+        SearchResult,
+    ).load_all()
     mitigations = mitigations_from_results(results, contexts)
 
     excerpt_tab = excerpt_rows(
