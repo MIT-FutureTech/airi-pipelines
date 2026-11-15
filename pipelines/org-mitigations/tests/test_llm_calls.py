@@ -1,13 +1,18 @@
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from pathlib import Path
 
 from org_mitigations.companies import Company
 from org_mitigations.llm_calls import run_calls
 from org_mitigations.prompt import Prompt
 from org_mitigations.search.answer import Answer
-from org_mitigations.search.calls import SearchResult, make_search_result, plan_calls
+from org_mitigations.search.calls import (
+    Call,
+    SearchResult,
+    make_search_result,
+    plan_calls,
+)
 from org_mitigations.search.context import Context
-from toolbox.llm import Message, ToolboxLLMInvalidResponseError
+from toolbox.llm import Message, StructuredResult, ToolboxLLMInvalidResponseError
 from toolbox.llm.stub import STUB_MODEL, STUB_USAGE, StubLLMClient
 from toolbox.results import ResultStore
 
@@ -50,12 +55,18 @@ def _stub(*, failing: set[str]) -> StubLLMClient:
     return StubLLMClient(answer)
 
 
-async def _run(llm: StubLLMClient, store: ResultStore[SearchResult]) -> None:
+async def _run(
+    llm: StubLLMClient,
+    store: ResultStore[SearchResult],
+    make_result: Callable[
+        [Call, StructuredResult[Answer]], SearchResult
+    ] = make_search_result,
+) -> None:
     await run_calls(
         plan_calls(CONTEXTS, ["1.1", "2.1"], companies=COMPANIES),
         prompt=PROMPT,
         answer_schema=Answer,
-        make_result=make_search_result,
+        make_result=make_result,
         llm=llm,
         store=store,
         max_concurrency=2,
@@ -121,4 +132,19 @@ class TestRunCalls:
         await _run(_stub(failing={"Example_Bank__1.1"}), store)
 
         assert not store.has("Example_Bank__1.1")
+        assert len(store.load_all()) == 3
+
+    async def test_saves_nothing_for_an_answer_its_stage_rejects(
+        self, tmp_path: Path
+    ) -> None:
+        def make_result(call: Call, response: StructuredResult[Answer]) -> SearchResult:
+            if call.call_id == "Example_Retail__2.1":
+                raise ToolboxLLMInvalidResponseError("Names not in the list")
+            return make_search_result(call, response)
+
+        store = ResultStore(tmp_path / "calls", SearchResult)
+
+        await _run(_stub(failing=set()), store, make_result)
+
+        assert not store.has("Example_Retail__2.1")
         assert len(store.load_all()) == 3

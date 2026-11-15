@@ -64,7 +64,8 @@ async def _make_call[C: LLMCall, A: BaseModel, R: BaseModel](
     with log_context(call_id=call.call_id):
         try:
             response = await classifier.classify(call.user_prompt(prompt))
+            result = make_result(call, response)
         except ToolboxLLMInvalidResponseError as error:
             logger.warning(f"No usable answer, so no result saved: {error!r}")
             return
-        store.save(call.call_id, make_result(call, response))
+        store.save(call.call_id, result)
