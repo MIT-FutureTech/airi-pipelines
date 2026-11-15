@@ -2,11 +2,15 @@ import asyncio
 import logging
 
 from org_mitigations.corpus import load_corpus
+from org_mitigations.domain_taxonomy import (
+    DOMAIN_TAXONOMY_PATH,
+    load_domain_taxonomy,
+    render_domain_taxonomy,
+)
 from org_mitigations.search.calls import Call, CallResult, plan_calls, run_calls
 from org_mitigations.search.context import build_contexts
 from org_mitigations.search.prompt import Prompt, load_prompt
 from org_mitigations.settings import PipelineSettings
-from org_mitigations.taxonomy import TAXONOMY_PATH, load_taxonomy, render_taxonomy
 from toolbox.llm import OpenRouterClient
 from toolbox.log import configure_logging, install_log_context_filter
 from toolbox.results import ResultStore
@@ -31,7 +35,9 @@ async def main() -> None:
             corpus.excerpts, corpus.documents, max_chars=settings.max_chars
         )
         codes = [
-            code.code for locus in load_taxonomy(TAXONOMY_PATH) for code in locus.codes
+            code.code
+            for locus in load_domain_taxonomy(DOMAIN_TAXONOMY_PATH)
+            for code in locus.codes
         ]
         calls = plan_calls(contexts, codes, companies=corpus.companies)
         covered = {context.company_id for context in contexts}
@@ -42,7 +48,7 @@ async def main() -> None:
 
         prompt = load_prompt(
             settings.prompt_path,
-            taxonomy=render_taxonomy(TAXONOMY_PATH),
+            taxonomy=render_domain_taxonomy(DOMAIN_TAXONOMY_PATH),
         )
         store = ResultStore(settings.output_dir / "search", CallResult)
         if settings.dry_run:

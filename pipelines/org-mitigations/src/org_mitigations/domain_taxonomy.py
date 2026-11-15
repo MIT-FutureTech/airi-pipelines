@@ -2,7 +2,7 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
-TAXONOMY_PATH = (
+DOMAIN_TAXONOMY_PATH = (
     Path(__file__).parent.parent.parent / "prompts" / "mitigation_domain_taxonomy.json"
 )
 
@@ -41,7 +41,7 @@ class _TaxonomyFile(BaseModel):
 _OTHER_CODE_SUFFIXES = (".A", ".C")
 
 
-def load_taxonomy(path: Path) -> list[Locus]:
+def load_domain_taxonomy(path: Path) -> list[Locus]:
     """Read the taxonomy's loci and codes, leaving out the Other codes."""
     taxonomy_file = _TaxonomyFile.model_validate_json(path.read_text())
     loci: dict[str, Locus] = {}
@@ -71,7 +71,7 @@ def load_taxonomy(path: Path) -> list[Locus]:
     return list(loci.values())
 
 
-def render_taxonomy(path: Path) -> str:
+def render_domain_taxonomy(path: Path) -> str:
     taxonomy_file = _TaxonomyFile.model_validate_json(path.read_text())
     loci: dict[str, list[str]] = {}
     for category in taxonomy_file.categories:

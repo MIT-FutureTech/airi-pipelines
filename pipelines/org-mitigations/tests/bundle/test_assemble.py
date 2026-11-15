@@ -4,11 +4,11 @@ from org_mitigations.bundle.assemble import Bundle, LocatedEvidence, assemble_bu
 from org_mitigations.bundle.run import Run
 from org_mitigations.companies import Company
 from org_mitigations.documents import Document
+from org_mitigations.domain_taxonomy import Code, Locus
 from org_mitigations.evidence import Evidence
 from org_mitigations.excerpts import Excerpt
 from org_mitigations.locate import Span
 from org_mitigations.search.answer import Strength
-from org_mitigations.taxonomy import Code, Locus
 
 RUN = Run(
     prompt_file="prompt.md",

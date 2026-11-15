@@ -2,6 +2,7 @@ import logging
 
 from org_mitigations.companies import load_companies
 from org_mitigations.documents import load_documents
+from org_mitigations.domain_taxonomy import DOMAIN_TAXONOMY_PATH, load_domain_taxonomy
 from org_mitigations.evidence import load_evidence
 from org_mitigations.excerpts import Excerpt, load_excerpts
 from org_mitigations.sheets.settings import SheetsSettings
@@ -12,7 +13,6 @@ from org_mitigations.sheets.tabs import (
     excerpt_rows,
     write_tab,
 )
-from org_mitigations.taxonomy import TAXONOMY_PATH, load_taxonomy
 from toolbox.log import configure_logging
 
 logger = logging.getLogger(__name__)
@@ -36,7 +36,7 @@ def main() -> None:
     )
     evidence_tab = evidence_rows(
         company_names=settings.company_names,
-        taxonomy=load_taxonomy(TAXONOMY_PATH),
+        taxonomy=load_domain_taxonomy(DOMAIN_TAXONOMY_PATH),
         companies=companies,
         documents=documents,
         excerpts=excerpts,

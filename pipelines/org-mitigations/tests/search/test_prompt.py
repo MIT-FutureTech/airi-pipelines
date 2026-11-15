@@ -2,8 +2,8 @@ from pathlib import Path
 
 import pytest
 
+from org_mitigations.domain_taxonomy import DOMAIN_TAXONOMY_PATH, render_domain_taxonomy
 from org_mitigations.search.prompt import Prompt, load_prompt
-from org_mitigations.taxonomy import TAXONOMY_PATH, render_taxonomy
 
 PROMPT_PATH = Path(__file__).parent.parent.parent / "prompts" / "prompt_v1.0.md"
 
@@ -72,7 +72,9 @@ class TestLoadPrompt:
             load_prompt(path, taxonomy="")
 
     def test_loads_the_pipelines_prompt(self) -> None:
-        assert load_prompt(PROMPT_PATH, taxonomy=render_taxonomy(TAXONOMY_PATH))
+        assert load_prompt(
+            PROMPT_PATH, taxonomy=render_domain_taxonomy(DOMAIN_TAXONOMY_PATH)
+        )
 
 
 class TestRenderUser:

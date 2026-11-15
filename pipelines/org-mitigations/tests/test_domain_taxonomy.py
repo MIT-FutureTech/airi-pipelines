@@ -3,12 +3,12 @@ from pathlib import Path
 
 import pytest
 
-from org_mitigations.taxonomy import (
-    TAXONOMY_PATH,
+from org_mitigations.domain_taxonomy import (
+    DOMAIN_TAXONOMY_PATH,
     Code,
     Locus,
-    load_taxonomy,
-    render_taxonomy,
+    load_domain_taxonomy,
+    render_domain_taxonomy,
 )
 
 
@@ -93,12 +93,12 @@ TAXONOMY_FILE = {
 }
 
 
-class TestLoadTaxonomy:
+class TestLoadDomainTaxonomy:
     def test_nests_codes_under_their_locus(self, tmp_path: Path) -> None:
         path = tmp_path / "taxonomy.json"
         path.write_text(json.dumps(TAXONOMY_FILE))
 
-        assert load_taxonomy(path) == [
+        assert load_domain_taxonomy(path) == [
             Locus(
                 code="1",
                 name="AI System",
@@ -149,13 +149,13 @@ class TestLoadTaxonomy:
         path.write_text(json.dumps(taxonomy_file))
 
         with pytest.raises(ValueError, match=r"Code 1\.1 has no examples"):
-            load_taxonomy(path)
+            load_domain_taxonomy(path)
 
     def test_loads_the_pipelines_taxonomy_file(self) -> None:
-        assert load_taxonomy(TAXONOMY_PATH)
+        assert load_domain_taxonomy(DOMAIN_TAXONOMY_PATH)
 
 
-class TestRenderTaxonomy:
+class TestRenderDomainTaxonomy:
     def test_lists_each_locus_with_all_its_codes(self, tmp_path: Path) -> None:
         taxonomy_file = {
             "categories": [
@@ -206,7 +206,7 @@ class TestRenderTaxonomy:
         path = tmp_path / "taxonomy.json"
         path.write_text(json.dumps(taxonomy_file))
 
-        assert render_taxonomy(path) == (
+        assert render_domain_taxonomy(path) == (
             "LOCUS 1: AI SYSTEM\n"
             "Mitigations at the AI system level."
             " Boundary question: Does it change the AI system?\n"
