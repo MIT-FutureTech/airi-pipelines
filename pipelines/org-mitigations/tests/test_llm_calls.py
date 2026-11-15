@@ -1,8 +1,10 @@
 from collections.abc import Callable, Sequence
 from pathlib import Path
 
+import pytest
+
 from org_mitigations.companies import Company
-from org_mitigations.llm_calls import run_calls
+from org_mitigations.llm_calls import make_llm_client, run_calls
 from org_mitigations.prompt import Prompt
 from org_mitigations.search.answer import Answer
 from org_mitigations.search.calls import (
@@ -12,6 +14,7 @@ from org_mitigations.search.calls import (
     plan_calls,
 )
 from org_mitigations.search.context import Context
+from org_mitigations.settings import PipelineSettings, SearchSettings
 from toolbox.llm import Message, StructuredResult, ToolboxLLMInvalidResponseError
 from toolbox.llm.stub import STUB_MODEL, STUB_USAGE, StubLLMClient
 from toolbox.results import ResultStore
@@ -148,3 +151,27 @@ class TestRunCalls:
 
         assert not store.has("Example_Retail__2.1")
         assert len(store.load_all()) == 3
+
+
+class TestMakeLLMClient:
+    async def test_configures_the_client_with_the_stages_settings(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setenv("OPENROUTER_API_KEY", "sk-fake-key")
+        stage = SearchSettings(
+            model="example/model",
+            temperature=0.5,
+            reasoning_effort="low",
+            output_token_limit=16_000,
+        )
+        settings = PipelineSettings.model_construct(
+            llm_rate_limit_rps=2.0, llm_timeout=30.0
+        )
+
+        async with make_llm_client(stage, settings=settings) as llm:
+            assert (
+                llm._model,
+                llm._temperature,
+                llm._reasoning_effort,
+                llm._output_token_limit,
+            ) == ("example/model", 0.5, "low", 16_000)

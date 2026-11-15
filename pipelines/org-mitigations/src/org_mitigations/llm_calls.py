@@ -5,9 +5,15 @@ from typing import Protocol
 from pydantic import BaseModel
 
 from org_mitigations.prompt import Prompt
+from org_mitigations.settings import PipelineSettings, StageSettings
 from toolbox.classification import LLMClassifier
 from toolbox.concurrency import ConcurrentMap
-from toolbox.llm import LLMClient, StructuredResult, ToolboxLLMInvalidResponseError
+from toolbox.llm import (
+    LLMClient,
+    OpenRouterClient,
+    StructuredResult,
+    ToolboxLLMInvalidResponseError,
+)
 from toolbox.log import log_context
 from toolbox.results import ResultStore
 
@@ -19,6 +25,21 @@ class LLMCall(Protocol):
     def call_id(self) -> str: ...
 
     def user_prompt(self, prompt: Prompt) -> str: ...
+
+
+def make_llm_client(
+    stage: StageSettings,
+    *,
+    settings: PipelineSettings,
+) -> OpenRouterClient:
+    return OpenRouterClient(
+        model=stage.model,
+        rate_limit_rps=settings.llm_rate_limit_rps,
+        timeout=settings.llm_timeout,
+        temperature=stage.temperature,
+        reasoning_effort=stage.reasoning_effort,
+        output_token_limit=stage.output_token_limit,
+    )
 
 
 async def run_calls[C: LLMCall, A: BaseModel, R: BaseModel](
