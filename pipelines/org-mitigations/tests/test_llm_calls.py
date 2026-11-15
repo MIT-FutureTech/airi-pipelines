@@ -52,7 +52,7 @@ def _stub(*, failing: set[str]) -> StubLLMClient:
             match_id=match_id,
             has_mitigation=False,
             reason="Nothing in this category",
-            classifications=[],
+            mitigations=[],
         )
 
     return StubLLMClient(answer)
@@ -97,7 +97,7 @@ class TestRunCalls:
                 match_id="Example_Bank__2.1",
                 has_mitigation=False,
                 reason="Nothing in this category",
-                classifications=[],
+                mitigations=[],
             ),
             model=STUB_MODEL,
             usage=STUB_USAGE,

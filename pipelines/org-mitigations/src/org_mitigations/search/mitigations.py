@@ -30,23 +30,23 @@ def mitigations_from_results(
     mitigations: list[FoundMitigation] = []
     for call_id, result in results.items():
         context = contexts_by_id[result.context_id]
-        for number, mitigation in enumerate(result.answer.classifications, start=1):
+        for number, mitigation in enumerate(result.answer.mitigations, start=1):
             mitigations.append(
                 FoundMitigation(
                     mitigation_id=f"{call_id}__{number}",
                     company_id=context.company_id,
                     domain_code=result.domain_code,
-                    name=mitigation.mitigation,
+                    name=mitigation.name,
                     reasoning=mitigation.reasoning,
                     quotes=[
                         FoundQuote(
                             excerpt_id=_cited_excerpt_id(
-                                call_id, context, quote.excerpt
+                                call_id, context, quote.excerpt_number
                             ),
                             quote=quote.quote,
                             strength=quote.strength,
                         )
-                        for quote in mitigation.evidence
+                        for quote in mitigation.quotes
                     ],
                 )
             )

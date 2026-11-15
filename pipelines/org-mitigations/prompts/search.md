@@ -58,8 +58,8 @@ Keep a mitigation only if the described action specifically targets risks from A
 
 A risk acknowledgement alone is NOT a mitigation. "AI models may produce biased outputs" states a risk but does not describe what is being done about it.
 
-EVIDENCE: for each mitigation you keep, list every excerpt that mentions it, strongest evidence first. For each mention give:
-- excerpt: the excerpt's number.
+QUOTES: for each mitigation you keep, list every excerpt that mentions it, strongest evidence first. For each mention give:
+- excerpt_number: the excerpt's number.
 - quote: the shortest verbatim span of that excerpt that shows the mitigation.
 - strength:
   - described: says what the company does and how, where, or by whom.
@@ -78,18 +78,18 @@ No mitigation in the category:
   "match_id": "<match_id>",
   "has_mitigation": false,
   "reason": "Under 80 chars",
-  "classifications": []
+  "mitigations": []
 }
 
 Mitigations in the category (one entry per mitigation, every field filled, fields in this order):
 {
   "match_id": "<match_id>",
   "has_mitigation": true,
-  "classifications": [
+  "mitigations": [
     {
-      "mitigation": "Short name of the mitigation",
-      "evidence": [
-        {"excerpt": "Excerpt number", "quote": "Verbatim span of that excerpt", "strength": "described, stated, or reference"}
+      "name": "Short name of the mitigation",
+      "quotes": [
+        {"excerpt_number": "Excerpt number", "quote": "Verbatim span of that excerpt", "strength": "described, stated, or reference"}
       ],
       "reasoning": "One sentence, max 20 words: why it belongs to the category."
     }
@@ -158,17 +158,17 @@ Category 2.1 →
 {
   "match_id": "Example_Bank__2.1",
   "has_mitigation": true,
-  "classifications": [
+  "mitigations": [
     {
-      "mitigation": "Responsible AI training for staff who build or deploy AI",
-      "evidence": [
+      "name": "Responsible AI training for staff who build or deploy AI",
+      "quotes": [
         {
-          "excerpt": "1",
+          "excerpt_number": "1",
           "quote": "We require all employees who build or deploy AI systems to complete responsible AI training",
           "strength": "described"
         },
         {
-          "excerpt": "3",
+          "excerpt_number": "3",
           "quote": "the responsible AI training described in our annual report",
           "strength": "reference"
         }
@@ -183,7 +183,7 @@ Category 1.3 →
   "match_id": "Example_Bank__1.3",
   "has_mitigation": false,
   "reason": "Policy, staff training and bias testing; nothing bounds model capabilities",
-  "classifications": []
+  "mitigations": []
 }
 </examples>
 

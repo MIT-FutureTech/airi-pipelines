@@ -27,7 +27,7 @@ def _result(code: str, mitigations: list[Mitigation]) -> SearchResult:
             match_id=f"Example_Bank__{code}",
             has_mitigation=bool(mitigations),
             reason=None,
-            classifications=mitigations,
+            mitigations=mitigations,
         ),
         model="google/gemini-3.5-flash",
         usage=None,
@@ -36,10 +36,12 @@ def _result(code: str, mitigations: list[Mitigation]) -> SearchResult:
 
 def _mitigation(name: str, *excerpts: int) -> Mitigation:
     return Mitigation(
-        mitigation=name,
-        evidence=[
+        name=name,
+        quotes=[
             Quote(
-                excerpt=excerpt, quote=f"Quote from {excerpt}", strength=Strength.STATED
+                excerpt_number=excerpt,
+                quote=f"Quote from {excerpt}",
+                strength=Strength.STATED,
             )
             for excerpt in excerpts
         ],
