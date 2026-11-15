@@ -2,9 +2,9 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
-from org_mitigations.answer import Strength
 from org_mitigations.excerpts import Excerpt, excerpt_id
-from org_mitigations.mitigations import FoundMitigation
+from org_mitigations.search.answer import Strength
+from org_mitigations.search.mitigations import FoundMitigation
 
 
 class Evidence(BaseModel):

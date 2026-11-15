@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 from org_mitigations.documents import Document
 from org_mitigations.excerpts import Excerpt
-from org_mitigations.grouping import group_excerpts
+from org_mitigations.search.grouping import group_excerpts
 
 
 class Context(BaseModel):

@@ -1,9 +1,9 @@
 import pytest
 
-from org_mitigations.answer import Answer, Mitigation, Quote, Strength
-from org_mitigations.calls import CallResult
-from org_mitigations.context import Context
-from org_mitigations.mitigations import (
+from org_mitigations.search.answer import Answer, Mitigation, Quote, Strength
+from org_mitigations.search.calls import CallResult
+from org_mitigations.search.context import Context
+from org_mitigations.search.mitigations import (
     FoundMitigation,
     FoundQuote,
     mitigations_from_results,

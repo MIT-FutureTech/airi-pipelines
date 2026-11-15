@@ -3,9 +3,9 @@ from pathlib import Path
 
 import pytest
 
-from org_mitigations.answer import Answer
-from org_mitigations.calls import CallResult
 from org_mitigations.run import Run, load_run, single_model
+from org_mitigations.search.answer import Answer
+from org_mitigations.search.calls import CallResult
 
 
 def write_output(path: Path, *, prompt_file: str, llm_model: str) -> None:

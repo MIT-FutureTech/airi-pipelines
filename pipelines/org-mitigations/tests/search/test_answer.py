@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from org_mitigations.answer import Answer, Mitigation, Quote, Strength
+from org_mitigations.search.answer import Answer, Mitigation, Quote, Strength
 
 
 class TestAnswer:

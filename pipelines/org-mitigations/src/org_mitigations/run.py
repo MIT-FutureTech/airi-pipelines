@@ -3,7 +3,7 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
-from org_mitigations.calls import CallResult
+from org_mitigations.search.calls import CallResult
 
 
 class Run(BaseModel):

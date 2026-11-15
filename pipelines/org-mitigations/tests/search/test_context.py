@@ -1,8 +1,8 @@
 import pytest
 
-from org_mitigations.context import Context, build_contexts
 from org_mitigations.documents import Document
 from org_mitigations.excerpts import Excerpt
+from org_mitigations.search.context import Context, build_contexts
 
 
 def _document(document_id: str, company_id: str, doc_type: str, title: str) -> Document:

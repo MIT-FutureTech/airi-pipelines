@@ -2,9 +2,9 @@ from collections.abc import Mapping
 
 from pydantic import BaseModel
 
-from org_mitigations.answer import Strength
-from org_mitigations.calls import CallResult
-from org_mitigations.context import Context
+from org_mitigations.search.answer import Strength
+from org_mitigations.search.calls import CallResult
+from org_mitigations.search.context import Context
 
 
 class FoundQuote(BaseModel):

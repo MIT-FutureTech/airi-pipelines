@@ -1,10 +1,10 @@
 import json
 from pathlib import Path
 
-from org_mitigations.answer import Strength
 from org_mitigations.evidence import Evidence, evidence_from_mitigations, load_evidence
 from org_mitigations.excerpts import Excerpt
-from org_mitigations.mitigations import FoundMitigation, FoundQuote
+from org_mitigations.search.answer import Strength
+from org_mitigations.search.mitigations import FoundMitigation, FoundQuote
 
 WITH_MITIGATIONS: dict[str, object] = {
     "input": {

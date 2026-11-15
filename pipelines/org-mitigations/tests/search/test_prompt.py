@@ -2,10 +2,10 @@ from pathlib import Path
 
 import pytest
 
-from org_mitigations.prompt import Prompt, load_prompt
+from org_mitigations.search.prompt import Prompt, load_prompt
 from org_mitigations.taxonomy import TAXONOMY_PATH, render_taxonomy
 
-PROMPT_PATH = Path(__file__).parent.parent / "prompts" / "prompt_v1.0.md"
+PROMPT_PATH = Path(__file__).parent.parent.parent / "prompts" / "prompt_v1.0.md"
 
 TEMPLATE = """\
 <!-- SYSTEM -->

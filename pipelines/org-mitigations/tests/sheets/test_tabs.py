@@ -4,11 +4,11 @@ from pathlib import Path
 
 import pytest
 
-from org_mitigations.answer import Strength
 from org_mitigations.companies import Company
 from org_mitigations.documents import DatePrecision, Document
 from org_mitigations.evidence import Evidence
 from org_mitigations.excerpts import Excerpt
+from org_mitigations.search.answer import Strength
 from org_mitigations.sheets.tabs import (
     EvidenceRow,
     ExcerptRow,

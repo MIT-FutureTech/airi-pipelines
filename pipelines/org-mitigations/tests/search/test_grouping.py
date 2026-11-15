@@ -1,5 +1,5 @@
 from org_mitigations.excerpts import Excerpt
-from org_mitigations.grouping import group_excerpts
+from org_mitigations.search.grouping import group_excerpts
 
 
 def _excerpts(document_id: str, *sizes: int) -> list[Excerpt]:
