@@ -22,7 +22,7 @@ class BundleSettings(
       uv run python -m org_mitigations.bundle \
         --export-dir /path/to/exports/ \
         --run-dir /path/to/output/ \
-        --prompt-file search_v1.0.md \
+        --prompt-file search.md \
         --temperature 1 \
         --reasoning-effort medium \
         --company-names Amazon --company-names Apple \
