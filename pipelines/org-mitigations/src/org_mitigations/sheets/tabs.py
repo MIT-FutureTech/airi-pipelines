@@ -129,7 +129,7 @@ def evidence_rows(
         ),
         key=lambda item: (
             company_order[company_ids_by_document[item.document_id]],
-            domain_order[item.code],
+            domain_order[item.domain_code],
             item.document_id,
         ),
     )
@@ -143,8 +143,8 @@ def evidence_rows(
                 company=company_names_by_id[company_ids_by_document[item.document_id]],
                 document_id=item.document_id,
                 excerpt_id=item.excerpt_id,
-                domain_code=item.code,
-                domain_name=domain_names[item.code],
+                domain_code=item.domain_code,
+                domain_name=domain_names[item.domain_code],
                 mitigation=item.mitigation,
                 strength=item.strength,
                 quote=item.quote,

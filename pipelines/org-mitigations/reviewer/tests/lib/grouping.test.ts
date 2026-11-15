@@ -10,7 +10,7 @@ function evidence(
 ): LocatedEvidence {
   return {
     document_id: documentId,
-    code: "2.2",
+    domain_code: "2.2",
     mitigation: "Board oversight of AI",
     quote,
     strength,

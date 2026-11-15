@@ -89,7 +89,7 @@ def evidence(evidence_id: str, excerpt_id: str, quote: str) -> Evidence:
         evidence_id=evidence_id,
         mitigation_id=mitigation_id,
         document_id=document_id,
-        code=code,
+        domain_code=code,
         mitigation="Board oversight of AI",
         reasoning="Board-level accountability for AI.",
         quote=quote,

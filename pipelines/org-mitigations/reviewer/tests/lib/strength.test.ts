@@ -6,7 +6,7 @@ import type { LocatedEvidence, Strength } from "@/lib/types";
 function evidence(strength: Strength): LocatedEvidence {
   return {
     document_id: "Bank_001",
-    code: "2.2",
+    domain_code: "2.2",
     mitigation: "Board oversight of AI",
     quote: "Our board oversees AI.",
     strength,
