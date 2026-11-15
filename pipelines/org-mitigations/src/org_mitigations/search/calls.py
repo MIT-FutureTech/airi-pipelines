@@ -4,7 +4,7 @@ from org_mitigations.companies import Company
 from org_mitigations.prompt import Prompt
 from org_mitigations.search.answer import Answer
 from org_mitigations.search.context import Context
-from toolbox.llm import TokenUsage
+from toolbox.llm import StructuredResult, TokenUsage
 
 
 class SearchResult(BaseModel):
@@ -47,3 +47,13 @@ def plan_calls(
         for context in contexts
         for domain_code in domain_codes
     ]
+
+
+def make_search_result(call: Call, response: StructuredResult[Answer]) -> SearchResult:
+    return SearchResult(
+        context_id=call.context.context_id,
+        domain_code=call.domain_code,
+        answer=response.value,
+        model=response.model,
+        usage=response.usage,
+    )

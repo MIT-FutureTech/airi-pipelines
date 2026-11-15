@@ -2,7 +2,7 @@ import logging
 
 from org_mitigations.prompt import Prompt
 from org_mitigations.search.answer import Answer
-from org_mitigations.search.calls import Call, SearchResult
+from org_mitigations.search.calls import Call, SearchResult, make_search_result
 from toolbox.classification import LLMClassifier
 from toolbox.concurrency import ConcurrentMap
 from toolbox.llm import LLMClient, ToolboxLLMInvalidResponseError
@@ -48,17 +48,8 @@ async def _make_call(
 ) -> None:
     with log_context(call_id=call.call_id):
         try:
-            result = await classifier.classify(call.user_prompt(prompt))
+            response = await classifier.classify(call.user_prompt(prompt))
         except ToolboxLLMInvalidResponseError as error:
             logger.warning(f"No usable answer, so no result saved: {error!r}")
             return
-        store.save(
-            call.call_id,
-            SearchResult(
-                context_id=call.context.context_id,
-                domain_code=call.domain_code,
-                answer=result.value,
-                model=result.model,
-                usage=result.usage,
-            ),
-        )
+        store.save(call.call_id, make_search_result(call, response))
