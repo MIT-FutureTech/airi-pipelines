@@ -7,8 +7,9 @@ from org_mitigations.domain_taxonomy import (
     load_domain_taxonomy,
     render_domain_taxonomy,
 )
+from org_mitigations.llm_calls import run_calls
 from org_mitigations.prompt import Prompt, load_prompt
-from org_mitigations.search.calls import Call, SearchResult, plan_calls, run_calls
+from org_mitigations.search.calls import Call, SearchResult, plan_calls
 from org_mitigations.search.context import build_contexts
 from org_mitigations.settings import PipelineSettings
 from toolbox.llm import OpenRouterClient
