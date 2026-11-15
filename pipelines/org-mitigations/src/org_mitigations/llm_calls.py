@@ -53,6 +53,23 @@ async def run_calls[C: LLMCall, A: BaseModel, R: BaseModel](
         pass
 
 
+def preview_calls[C: LLMCall, R: BaseModel](
+    calls: list[C],
+    *,
+    prompt: Prompt,
+    store: ResultStore[R],
+) -> None:
+    pending = [call for call in calls if not store.has(call.call_id)]
+    if len(calls) != len(pending):
+        print(f"{len(calls) - len(pending)} of {len(calls)} calls have a result")
+    if not pending:
+        return
+    print(f"\n=== System prompt ===\n{prompt.system}")
+    print(
+        f"\n=== User prompt for {pending[0].call_id} ===\n{pending[0].user_prompt(prompt)}"
+    )
+
+
 async def _make_call[C: LLMCall, A: BaseModel, R: BaseModel](
     call: C,
     *,

@@ -7,15 +7,10 @@ from org_mitigations.domain_taxonomy import (
     load_domain_taxonomy,
     render_domain_taxonomy,
 )
-from org_mitigations.llm_calls import run_calls
-from org_mitigations.prompt import Prompt, load_prompt
+from org_mitigations.llm_calls import preview_calls, run_calls
+from org_mitigations.prompt import load_prompt
 from org_mitigations.search.answer import Answer
-from org_mitigations.search.calls import (
-    Call,
-    SearchResult,
-    make_search_result,
-    plan_calls,
-)
+from org_mitigations.search.calls import SearchResult, make_search_result, plan_calls
 from org_mitigations.search.context import build_contexts
 from org_mitigations.settings import PipelineSettings
 from toolbox.llm import OpenRouterClient
@@ -59,7 +54,7 @@ async def main() -> None:
         )
         store = ResultStore(settings.output_dir / "search", SearchResult)
         if settings.dry_run:
-            _preview(calls, prompt=prompt, store=store)
+            preview_calls(calls, prompt=prompt, store=store)
             return
 
         async with OpenRouterClient(
@@ -82,23 +77,6 @@ async def main() -> None:
     except:
         logger.exception("Uncaught exception")
         raise
-
-
-def _preview(
-    calls: list[Call],
-    *,
-    prompt: Prompt,
-    store: ResultStore[SearchResult],
-) -> None:
-    pending = [call for call in calls if not store.has(call.call_id)]
-    if len(calls) != len(pending):
-        print(f"{len(calls) - len(pending)} of {len(calls)} calls have a result")
-    if not pending:
-        return
-    print(f"\n=== System prompt ===\n{prompt.system}")
-    print(
-        f"\n=== User prompt for {pending[0].call_id} ===\n{pending[0].user_prompt(prompt)}"
-    )
 
 
 if __name__ == "__main__":
