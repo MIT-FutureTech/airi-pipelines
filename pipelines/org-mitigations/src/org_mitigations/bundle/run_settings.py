@@ -1,5 +1,4 @@
 from collections.abc import Mapping
-from pathlib import Path
 
 from pydantic import BaseModel
 
@@ -11,35 +10,6 @@ class RunSettings(BaseModel):
     model: str
     temperature: float
     reasoning_effort: str
-
-
-class _Metadata(BaseModel, frozen=True):
-    prompt_file: str
-    llm_model: str
-
-
-class _LLMOutput(BaseModel):
-    metadata: _Metadata
-
-
-def load_run(
-    llm_output_dir: Path, *, temperature: float, reasoning_effort: str
-) -> RunSettings:
-    settings: set[_Metadata] = set()
-    for path in llm_output_dir.glob("*.json"):
-        output = _LLMOutput.model_validate_json(path.read_text())
-        settings.add(output.metadata)
-    if len(settings) != 1:
-        raise ValueError(
-            f"Expected one prompt and model in {llm_output_dir}, found {settings}"
-        )
-    metadata = settings.pop()
-    return RunSettings(
-        prompt_file=metadata.prompt_file,
-        model=metadata.llm_model,
-        temperature=temperature,
-        reasoning_effort=reasoning_effort,
-    )
 
 
 def single_model(results: Mapping[str, SearchResult]) -> str:
