@@ -34,12 +34,12 @@ async def main() -> None:
         contexts = build_contexts(
             corpus.excerpts, corpus.documents, max_chars=settings.max_chars
         )
-        codes = [
+        domain_codes = [
             domain.code
             for locus in load_domain_taxonomy(DOMAIN_TAXONOMY_PATH)
             for domain in locus.domains
         ]
-        calls = plan_calls(contexts, codes, companies=corpus.companies)
+        calls = plan_calls(contexts, domain_codes, companies=corpus.companies)
         covered = {context.company_id for context in contexts}
         logger.info(
             f"{len(covered)} of {len(corpus.companies)} companies have passages:"

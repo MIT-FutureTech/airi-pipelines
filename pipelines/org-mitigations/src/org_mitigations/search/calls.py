@@ -27,33 +27,33 @@ class Call(BaseModel):
     call_id: str
     company_name: str
     context: Context
-    code: str
+    domain_code: str
 
     def user_prompt(self, prompt: Prompt) -> str:
         return prompt.render_user(
             company=self.company_name,
             context=self.context.text,
-            code=self.code,
+            code=self.domain_code,
             match_id=self.call_id,
         )
 
 
 def plan_calls(
     contexts: list[Context],
-    codes: list[str],
+    domain_codes: list[str],
     *,
     companies: list[Company],
 ) -> list[Call]:
     company_names = {company.company_id: company.name for company in companies}
     return [
         Call(
-            call_id=f"{context.context_id}__{code}",
+            call_id=f"{context.context_id}__{domain_code}",
             company_name=company_names[context.company_id],
             context=context,
-            code=code,
+            domain_code=domain_code,
         )
         for context in contexts
-        for code in codes
+        for domain_code in domain_codes
     ]
 
 
@@ -101,7 +101,7 @@ async def _make_call(
             call.call_id,
             SearchResult(
                 context_id=call.context.context_id,
-                domain_code=call.code,
+                domain_code=call.domain_code,
                 answer=result.value,
                 model=result.model,
                 usage=result.usage,
