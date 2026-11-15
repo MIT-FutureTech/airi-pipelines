@@ -6,6 +6,7 @@ from pydantic_settings import BaseSettings
 from toolbox.llm import ReasoningEffort
 
 _PIPELINE_DIR = Path(__file__).parent.parent.parent
+DEFAULT_MAX_CHARS = 75_000
 
 
 class PipelineSettings(
@@ -58,7 +59,7 @@ class PipelineSettings(
         description="How much the LLM reasons before answering",
     )
     max_chars: int = Field(
-        default=75_000,
+        default=DEFAULT_MAX_CHARS,
         description="""
             Most characters of excerpts in one call. A company's documents are
             split into groups that fit.
