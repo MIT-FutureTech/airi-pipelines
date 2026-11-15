@@ -5,7 +5,7 @@ import pytest
 
 from org_mitigations.bundle.run import Run, load_run, single_model
 from org_mitigations.search.answer import Answer
-from org_mitigations.search.calls import CallResult
+from org_mitigations.search.calls import SearchResult
 
 
 def write_output(path: Path, *, prompt_file: str, llm_model: str) -> None:
@@ -46,8 +46,8 @@ class TestLoadRun:
             load_run(tmp_path, temperature=1.0, reasoning_effort="medium")
 
 
-def _result(code: str, *, model: str) -> CallResult:
-    return CallResult(
+def _result(code: str, *, model: str) -> SearchResult:
+    return SearchResult(
         context_id="Example_Bank",
         code=code,
         answer=Answer(

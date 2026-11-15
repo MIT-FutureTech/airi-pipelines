@@ -3,7 +3,7 @@ from pathlib import Path
 
 from org_mitigations.companies import Company
 from org_mitigations.search.answer import Answer
-from org_mitigations.search.calls import CallResult, plan_calls, run_calls
+from org_mitigations.search.calls import SearchResult, plan_calls, run_calls
 from org_mitigations.search.context import Context
 from org_mitigations.search.prompt import Prompt
 from toolbox.llm import Message, ToolboxLLMInvalidResponseError
@@ -49,7 +49,7 @@ def _stub(*, failing: set[str]) -> StubLLMClient:
     return StubLLMClient(answer)
 
 
-async def _run(llm: StubLLMClient, store: ResultStore[CallResult]) -> None:
+async def _run(llm: StubLLMClient, store: ResultStore[SearchResult]) -> None:
     await run_calls(
         plan_calls(CONTEXTS, ["1.1", "2.1"], companies=COMPANIES),
         prompt=PROMPT,
@@ -82,7 +82,7 @@ class TestRunCalls:
     async def test_saves_a_result_for_each_context_and_code(
         self, tmp_path: Path
     ) -> None:
-        store = ResultStore(tmp_path / "calls", CallResult)
+        store = ResultStore(tmp_path / "calls", SearchResult)
 
         await _run(_stub(failing=set()), store)
 
@@ -92,7 +92,7 @@ class TestRunCalls:
             "Example_Retail__1.1",
             "Example_Retail__2.1",
         ]
-        assert store.load("Example_Bank__2.1") == CallResult(
+        assert store.load("Example_Bank__2.1") == SearchResult(
             context_id="Example_Bank",
             code="2.1",
             answer=Answer(
@@ -110,7 +110,7 @@ class TestRunCalls:
     ) -> None:
         llm = _stub(failing=set())
 
-        await _run(llm, ResultStore(tmp_path / "calls", CallResult))
+        await _run(llm, ResultStore(tmp_path / "calls", SearchResult))
 
         assert [
             Message(role="system", content="Find mitigations."),
@@ -121,7 +121,7 @@ class TestRunCalls:
         ] in llm.messages
 
     async def test_skips_calls_that_have_a_result(self, tmp_path: Path) -> None:
-        store = ResultStore(tmp_path / "calls", CallResult)
+        store = ResultStore(tmp_path / "calls", SearchResult)
         await _run(_stub(failing=set()), store)
         llm = _stub(failing=set())
 
@@ -132,7 +132,7 @@ class TestRunCalls:
     async def test_saves_nothing_for_a_call_without_a_usable_answer(
         self, tmp_path: Path
     ) -> None:
-        store = ResultStore(tmp_path / "calls", CallResult)
+        store = ResultStore(tmp_path / "calls", SearchResult)
 
         await _run(_stub(failing={"Example_Bank__1.1"}), store)
 

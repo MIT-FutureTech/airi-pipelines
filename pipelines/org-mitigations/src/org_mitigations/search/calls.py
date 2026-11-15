@@ -15,7 +15,7 @@ from toolbox.results import ResultStore
 logger = logging.getLogger(__name__)
 
 
-class CallResult(BaseModel):
+class SearchResult(BaseModel):
     context_id: str
     code: str
     answer: Answer
@@ -62,7 +62,7 @@ async def run_calls(
     *,
     prompt: Prompt,
     llm: LLMClient,
-    store: ResultStore[CallResult],
+    store: ResultStore[SearchResult],
     max_concurrency: int,
 ) -> None:
     pending = [call for call in calls if not store.has(call.call_id)]
@@ -89,7 +89,7 @@ async def _make_call(
     *,
     prompt: Prompt,
     classifier: LLMClassifier[Answer],
-    store: ResultStore[CallResult],
+    store: ResultStore[SearchResult],
 ) -> None:
     with log_context(call_id=call.call_id):
         try:
@@ -99,7 +99,7 @@ async def _make_call(
             return
         store.save(
             call.call_id,
-            CallResult(
+            SearchResult(
                 context_id=call.context.context_id,
                 code=call.code,
                 answer=result.value,

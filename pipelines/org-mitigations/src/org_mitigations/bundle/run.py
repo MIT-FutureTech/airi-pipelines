@@ -3,7 +3,7 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
-from org_mitigations.search.calls import CallResult
+from org_mitigations.search.calls import SearchResult
 
 
 class Run(BaseModel):
@@ -40,7 +40,7 @@ def load_run(llm_output_dir: Path, *, temperature: float, reasoning_effort: str)
     )
 
 
-def single_model(results: Mapping[str, CallResult]) -> str:
+def single_model(results: Mapping[str, SearchResult]) -> str:
     models = {result.model for result in results.values()}
     if len(models) != 1:
         raise ValueError(f"Expected one model in the results, found {sorted(models)}")

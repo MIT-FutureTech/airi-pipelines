@@ -3,7 +3,7 @@ from collections.abc import Mapping
 from pydantic import BaseModel
 
 from org_mitigations.search.answer import Strength
-from org_mitigations.search.calls import CallResult
+from org_mitigations.search.calls import SearchResult
 from org_mitigations.search.context import Context
 
 
@@ -23,7 +23,7 @@ class FoundMitigation(BaseModel):
 
 
 def mitigations_from_results(
-    results: Mapping[str, CallResult],
+    results: Mapping[str, SearchResult],
     contexts: list[Context],
 ) -> list[FoundMitigation]:
     contexts_by_id = {context.context_id: context for context in contexts}

@@ -1,7 +1,7 @@
 import pytest
 
 from org_mitigations.search.answer import Answer, Mitigation, Quote, Strength
-from org_mitigations.search.calls import CallResult
+from org_mitigations.search.calls import SearchResult
 from org_mitigations.search.context import Context
 from org_mitigations.search.mitigations import (
     FoundMitigation,
@@ -19,8 +19,8 @@ CONTEXTS = [
 ]
 
 
-def _result(code: str, mitigations: list[Mitigation]) -> CallResult:
-    return CallResult(
+def _result(code: str, mitigations: list[Mitigation]) -> SearchResult:
+    return SearchResult(
         context_id="Example_Bank",
         code=code,
         answer=Answer(

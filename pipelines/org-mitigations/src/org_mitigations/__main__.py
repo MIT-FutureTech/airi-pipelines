@@ -7,7 +7,7 @@ from org_mitigations.domain_taxonomy import (
     load_domain_taxonomy,
     render_domain_taxonomy,
 )
-from org_mitigations.search.calls import Call, CallResult, plan_calls, run_calls
+from org_mitigations.search.calls import Call, SearchResult, plan_calls, run_calls
 from org_mitigations.search.context import build_contexts
 from org_mitigations.search.prompt import Prompt, load_prompt
 from org_mitigations.settings import PipelineSettings
@@ -50,7 +50,7 @@ async def main() -> None:
             settings.prompt_path,
             taxonomy=render_domain_taxonomy(DOMAIN_TAXONOMY_PATH),
         )
-        store = ResultStore(settings.output_dir / "search", CallResult)
+        store = ResultStore(settings.output_dir / "search", SearchResult)
         if settings.dry_run:
             _preview(calls, prompt=prompt, store=store)
             return
@@ -79,7 +79,7 @@ def _preview(
     calls: list[Call],
     *,
     prompt: Prompt,
-    store: ResultStore[CallResult],
+    store: ResultStore[SearchResult],
 ) -> None:
     pending = [call for call in calls if not store.has(call.call_id)]
     if len(calls) != len(pending):
