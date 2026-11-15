@@ -116,9 +116,9 @@ def evidence_rows(
     company_ids_by_document = {
         document.document_id: document.company_id for document in documents
     }
-    codes = [code for locus in taxonomy for code in locus.codes]
-    code_order = {code.code: order for order, code in enumerate(codes)}
-    code_names = {code.code: code.name for code in codes}
+    domains = [domain for locus in taxonomy for domain in locus.domains]
+    code_order = {domain.code: order for order, domain in enumerate(domains)}
+    code_names = {domain.code: domain.name for domain in domains}
     excerpts_by_id = {excerpt.excerpt_id: excerpt for excerpt in excerpts}
 
     selected = sorted(

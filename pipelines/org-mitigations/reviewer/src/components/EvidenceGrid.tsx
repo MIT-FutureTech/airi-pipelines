@@ -7,7 +7,7 @@ import {
   type Disclosure,
 } from "@/lib/decisions";
 import { STRENGTH_COLORS, strongest } from "@/lib/strength";
-import type { Code, Company, LocatedEvidence, Locus } from "@/lib/types";
+import type { Company, Domain, LocatedEvidence, Locus } from "@/lib/types";
 
 interface EvidenceGridProps {
   companies: Company[];
@@ -26,7 +26,7 @@ export function EvidenceGrid({
   selection,
   onSelect,
 }: EvidenceGridProps) {
-  const codes = taxonomy.flatMap((locus) => locus.codes);
+  const domains = taxonomy.flatMap((locus) => locus.domains);
   return (
     <Table.ScrollContainer minWidth={1100}>
       <Table withTableBorder withColumnBorders>
@@ -40,22 +40,22 @@ export function EvidenceGrid({
                 multiline
                 w={360}
               >
-                <Table.Th colSpan={locus.codes.length} ta="center">
+                <Table.Th colSpan={locus.domains.length} ta="center">
                   {locus.name}
                 </Table.Th>
               </Tooltip>
             ))}
           </Table.Tr>
           <Table.Tr>
-            {codes.map((code) => (
+            {domains.map((domain) => (
               <Tooltip
-                key={code.code}
-                label={<CodeDefinition code={code} />}
+                key={domain.code}
+                label={<DomainDefinition domain={domain} />}
                 multiline
                 w={360}
               >
                 <Table.Th fw="normal">
-                  {`${code.code} ${code.short_name}`}
+                  {`${domain.code} ${domain.short_name}`}
                 </Table.Th>
               </Tooltip>
             ))}
@@ -65,19 +65,19 @@ export function EvidenceGrid({
           {companies.map((company) => (
             <Table.Tr key={company.company_id}>
               <Table.Th scope="row">{company.name}</Table.Th>
-              {codes.map((code) => {
-                const key = cellKey(company.company_id, code.code);
+              {domains.map((domain) => {
+                const key = cellKey(company.company_id, domain.code);
                 return (
                   <GridCell
-                    key={code.code}
+                    key={domain.code}
                     evidence={cells.get(key)}
                     disclosure={decisions.get(key)?.disclosure ?? null}
                     isSelected={
                       selection?.company.company_id === company.company_id &&
-                      selection.code.code === code.code
+                      selection.domain.code === domain.code
                     }
                     onSelect={(evidence) =>
-                      onSelect({ company, code, evidence })
+                      onSelect({ company, domain, evidence })
                     }
                   />
                 );
@@ -149,12 +149,12 @@ function LocusDefinition({ locus }: { locus: Locus }) {
   );
 }
 
-function CodeDefinition({ code }: { code: Code }) {
+function DomainDefinition({ domain }: { domain: Domain }) {
   return (
     <Stack gap={4}>
-      <Text fw={600}>{`${code.code} ${code.name}`}</Text>
-      <Text>{code.definition}</Text>
-      <Text>{`Examples: ${code.examples.join("; ")}`}</Text>
+      <Text fw={600}>{`${domain.code} ${domain.name}`}</Text>
+      <Text>{domain.definition}</Text>
+      <Text>{`Examples: ${domain.examples.join("; ")}`}</Text>
     </Stack>
   );
 }

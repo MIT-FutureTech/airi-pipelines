@@ -1,13 +1,13 @@
 import type {
-  Code,
   Company,
   CompanyDocument,
+  Domain,
   LocatedEvidence,
 } from "@/lib/types";
 
 export interface CellSelection {
   company: Company;
-  code: Code;
+  domain: Domain;
   evidence: LocatedEvidence[];
 }
 

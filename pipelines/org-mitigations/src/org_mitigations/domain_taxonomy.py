@@ -7,7 +7,7 @@ DOMAIN_TAXONOMY_PATH = (
 )
 
 
-class Code(BaseModel):
+class Domain(BaseModel):
     code: str
     name: str
     short_name: str
@@ -20,7 +20,7 @@ class Locus(BaseModel):
     name: str
     short_name: str
     definition: str
-    codes: list[Code]
+    domains: list[Domain]
 
 
 class _Category(BaseModel):
@@ -42,7 +42,7 @@ _OTHER_CODE_SUFFIXES = (".A", ".C")
 
 
 def load_domain_taxonomy(path: Path) -> list[Locus]:
-    """Read the taxonomy's loci and codes, leaving out the Other codes."""
+    """Read the taxonomy's loci and domains, leaving out the Other domains."""
     taxonomy_file = _TaxonomyFile.model_validate_json(path.read_text())
     loci: dict[str, Locus] = {}
     for category in taxonomy_file.categories:
@@ -52,15 +52,15 @@ def load_domain_taxonomy(path: Path) -> list[Locus]:
                 name=category.name,
                 short_name=category.short_name,
                 definition=category.definition,
-                codes=[],
+                domains=[],
             )
             continue
         if category.code.endswith(_OTHER_CODE_SUFFIXES):
             continue
         if not category.key_examples:
-            raise ValueError(f"Code {category.code} has no examples")
-        loci[category.parent].codes.append(
-            Code(
+            raise ValueError(f"Domain {category.code} has no examples")
+        loci[category.parent].domains.append(
+            Domain(
                 code=category.code,
                 name=category.name,
                 short_name=category.short_name,

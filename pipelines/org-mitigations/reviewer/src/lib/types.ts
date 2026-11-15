@@ -6,7 +6,7 @@ export interface Run {
   reasoning_effort: string;
 }
 
-export interface Code {
+export interface Domain {
   code: string;
   name: string;
   short_name: string;
@@ -19,7 +19,7 @@ export interface Locus {
   name: string;
   short_name: string;
   definition: string;
-  codes: Code[];
+  domains: Domain[];
 }
 
 export interface Company {

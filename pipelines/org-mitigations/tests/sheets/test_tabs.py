@@ -6,7 +6,7 @@ import pytest
 
 from org_mitigations.companies import Company
 from org_mitigations.documents import DatePrecision, Document
-from org_mitigations.domain_taxonomy import Code, Locus
+from org_mitigations.domain_taxonomy import Domain, Locus
 from org_mitigations.evidence import Evidence
 from org_mitigations.excerpts import Excerpt
 from org_mitigations.search.answer import Strength
@@ -28,8 +28,8 @@ TAXONOMY = [
         name="Technical & Model",
         short_name="Technical",
         definition="Mitigations to the model itself.",
-        codes=[
-            Code(
+        domains=[
+            Domain(
                 code="1.1",
                 name="Interpretability & Transparency",
                 short_name="Interpretability",
@@ -43,8 +43,8 @@ TAXONOMY = [
         name="Human & Organization",
         short_name="Organization",
         definition="Mitigations at the organizational level.",
-        codes=[
-            Code(
+        domains=[
+            Domain(
                 code="2.2",
                 name="Accountability & Responsibility",
                 short_name="Accountability",

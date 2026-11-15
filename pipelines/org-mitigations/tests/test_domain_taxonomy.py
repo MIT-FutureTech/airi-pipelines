@@ -5,7 +5,7 @@ import pytest
 
 from org_mitigations.domain_taxonomy import (
     DOMAIN_TAXONOMY_PATH,
-    Code,
+    Domain,
     Locus,
     load_domain_taxonomy,
     render_domain_taxonomy,
@@ -104,15 +104,15 @@ class TestLoadDomainTaxonomy:
                 name="AI System",
                 short_name="AI System",
                 definition="Mitigations at the AI system level.",
-                codes=[
-                    Code(
+                domains=[
+                    Domain(
                         code="1.1",
                         name="Interpretability & Transparency",
                         short_name="Interpretability",
                         definition="Mitigations that make a model legible.",
                         examples=["Model cards", "SHAP methods"],
                     ),
-                    Code(
+                    Domain(
                         code="1.2",
                         name="Alignment & Value Learning",
                         short_name="Alignment",
@@ -126,8 +126,8 @@ class TestLoadDomainTaxonomy:
                 name="Human & Organization",
                 short_name="Organization",
                 definition="Mitigations at the organizational level.",
-                codes=[
-                    Code(
+                domains=[
+                    Domain(
                         code="2.1",
                         name="Training & Capacity-building",
                         short_name="Training",
@@ -148,7 +148,7 @@ class TestLoadDomainTaxonomy:
         path = tmp_path / "taxonomy.json"
         path.write_text(json.dumps(taxonomy_file))
 
-        with pytest.raises(ValueError, match=r"Code 1\.1 has no examples"):
+        with pytest.raises(ValueError, match=r"Domain 1\.1 has no examples"):
             load_domain_taxonomy(path)
 
     def test_loads_the_pipelines_taxonomy_file(self) -> None:

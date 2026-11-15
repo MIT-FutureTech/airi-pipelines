@@ -4,7 +4,7 @@ from org_mitigations.bundle.assemble import Bundle, LocatedEvidence, assemble_bu
 from org_mitigations.bundle.run import Run
 from org_mitigations.companies import Company
 from org_mitigations.documents import Document
-from org_mitigations.domain_taxonomy import Code, Locus
+from org_mitigations.domain_taxonomy import Domain, Locus
 from org_mitigations.evidence import Evidence
 from org_mitigations.excerpts import Excerpt
 from org_mitigations.locate import Span
@@ -22,8 +22,8 @@ TAXONOMY = [
         name="Human & Organization",
         short_name="Organization",
         definition="Mitigations at the organizational level.",
-        codes=[
-            Code(
+        domains=[
+            Domain(
                 code="2.2",
                 name="Accountability & Responsibility",
                 short_name="Accountability",

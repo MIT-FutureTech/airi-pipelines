@@ -35,9 +35,9 @@ async def main() -> None:
             corpus.excerpts, corpus.documents, max_chars=settings.max_chars
         )
         codes = [
-            code.code
+            domain.code
             for locus in load_domain_taxonomy(DOMAIN_TAXONOMY_PATH)
-            for code in locus.codes
+            for domain in locus.domains
         ]
         calls = plan_calls(contexts, codes, companies=corpus.companies)
         covered = {context.company_id for context in contexts}
