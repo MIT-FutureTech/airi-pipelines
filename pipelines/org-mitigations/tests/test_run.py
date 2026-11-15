@@ -3,7 +3,9 @@ from pathlib import Path
 
 import pytest
 
-from org_mitigations.run import Run, load_run
+from org_mitigations.answer import Answer
+from org_mitigations.calls import CallResult
+from org_mitigations.run import Run, load_run, single_model
 
 
 def write_output(path: Path, *, prompt_file: str, llm_model: str) -> None:
@@ -42,3 +44,37 @@ class TestLoadRun:
 
         with pytest.raises(ValueError, match="Expected one prompt and model"):
             load_run(tmp_path, temperature=1.0, reasoning_effort="medium")
+
+
+def _result(code: str, *, model: str) -> CallResult:
+    return CallResult(
+        context_id="Example_Bank",
+        code=code,
+        answer=Answer(
+            match_id=f"Example_Bank__{code}",
+            has_mitigation=False,
+            reason=None,
+            classifications=[],
+        ),
+        model=model,
+        usage=None,
+    )
+
+
+class TestSingleModel:
+    def test_returns_the_model_every_result_used(self) -> None:
+        results = {
+            f"Example_Bank__{code}": _result(code, model="example/model")
+            for code in ("1.1", "1.2")
+        }
+
+        assert single_model(results) == "example/model"
+
+    def test_rejects_results_from_more_than_one_model(self) -> None:
+        results = {
+            "Example_Bank__1.1": _result("1.1", model="example/model"),
+            "Example_Bank__1.2": _result("1.2", model="example/other-model"),
+        }
+
+        with pytest.raises(ValueError, match="one model"):
+            single_model(results)

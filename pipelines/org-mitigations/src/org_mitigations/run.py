@@ -1,6 +1,9 @@
+from collections.abc import Mapping
 from pathlib import Path
 
 from pydantic import BaseModel
+
+from org_mitigations.calls import CallResult
 
 
 class Run(BaseModel):
@@ -35,3 +38,10 @@ def load_run(llm_output_dir: Path, *, temperature: float, reasoning_effort: str)
         temperature=temperature,
         reasoning_effort=reasoning_effort,
     )
+
+
+def single_model(results: Mapping[str, CallResult]) -> str:
+    models = {result.model for result in results.values()}
+    if len(models) != 1:
+        raise ValueError(f"Expected one model in the results, found {sorted(models)}")
+    return models.pop()
