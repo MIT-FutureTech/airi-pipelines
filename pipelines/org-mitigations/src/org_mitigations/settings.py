@@ -30,7 +30,7 @@ class StageSettings(BaseModel):
         description="How much the LLM reasons before answering",
     )
     output_token_limit: int = Field(
-        default=8_000,
+        default=16_000,
         description="Most tokens in one answer",
     )
 
