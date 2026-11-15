@@ -63,7 +63,7 @@ class TestPlanCalls:
     def test_makes_a_call_for_each_context_and_code(self) -> None:
         calls = plan_calls(CONTEXTS, ["1.1", "2.1"], companies=COMPANIES)
 
-        assert [(call.call_id, call.company) for call in calls] == [
+        assert [(call.call_id, call.company_name) for call in calls] == [
             ("Example_Bank__1.1", "Example Bank"),
             ("Example_Bank__2.1", "Example Bank"),
             ("Example_Retail__1.1", "Example Retail"),

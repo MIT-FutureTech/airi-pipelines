@@ -25,13 +25,13 @@ class SearchResult(BaseModel):
 
 class Call(BaseModel):
     call_id: str
-    company: str
+    company_name: str
     context: Context
     code: str
 
     def user_prompt(self, prompt: Prompt) -> str:
         return prompt.render_user(
-            company=self.company,
+            company=self.company_name,
             context=self.context.text,
             code=self.code,
             match_id=self.call_id,
@@ -48,7 +48,7 @@ def plan_calls(
     return [
         Call(
             call_id=f"{context.context_id}__{code}",
-            company=company_names[context.company_id],
+            company_name=company_names[context.company_id],
             context=context,
             code=code,
         )
