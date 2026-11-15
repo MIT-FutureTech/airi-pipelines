@@ -5,7 +5,7 @@ import pytest
 from org_mitigations.domain_taxonomy import DOMAIN_TAXONOMY_PATH, render_domain_taxonomy
 from org_mitigations.search.prompt import Prompt, load_prompt
 
-PROMPT_PATH = Path(__file__).parent.parent.parent / "prompts" / "prompt_v1.0.md"
+PROMPT_PATH = Path(__file__).parent.parent.parent / "prompts" / "search_v1.0.md"
 
 TEMPLATE = """\
 <!-- SYSTEM -->

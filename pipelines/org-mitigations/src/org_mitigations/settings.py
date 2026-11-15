@@ -42,7 +42,7 @@ class PipelineSettings(
         description="The companies to include. Default: every company",
     )
     prompt_path: Path = Field(
-        default=_PIPELINE_DIR / "prompts" / "prompt_v1.0.md",
+        default=_PIPELINE_DIR / "prompts" / "search_v1.0.md",
         description="The prompt template",
     )
     model: str = Field(
