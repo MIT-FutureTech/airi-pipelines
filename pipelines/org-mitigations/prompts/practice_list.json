@@ -27,6 +27,7 @@
       ],
       "does_not_count": [
         "Fairness or safety principles with no testing.",
+        "Frameworks, methods or plans for testing, with no testing described.",
         "Adversarial testing in which people or automated tools try to break the system (Red teaming).",
         "Checks after deployment (Monitoring AI in production).",
         "Assessing risks on paper without testing (Pre-deployment risk and impact assessment)."
@@ -44,13 +45,13 @@
         "Frontier safety frameworks, responsible scaling policies and preparedness frameworks.",
         "Safety and security frameworks under the EU AI Act Code of Practice for general-purpose AI with systemic risk.",
         "Equivalent frameworks for agentic or other systems with frontier-like risks, as long as they tie required safeguards to capability or risk thresholds.",
-        "Examples of such systems are fleets of agents acting at scale, heavily delegated decision-making, and AI that runs biomedical research and synthesis.",
-        "The evaluations run under the framework."
+        "Examples of such systems are fleets of agents acting at scale, heavily delegated decision-making, and AI that runs biomedical research and synthesis."
       ],
       "does_not_count": [
         "General responsible AI policies or principles (Published AI policy).",
         "A management system modelled on a standard such as ISO/IEC 42001 (AI risk management to a recognised standard).",
-        "Frameworks that don't tie safeguards to capability or risk thresholds."
+        "Frameworks that don't tie safeguards to capability or risk thresholds.",
+        "Evaluations run under the framework, which get their own tag (Pre-deployment testing and evaluation)."
       ],
       "subtypes": [
         "Frontier model developer framework",
@@ -173,7 +174,7 @@
     },
     {
       "name": "Employee AI training",
-      "definition": "Employee AI training is a training programme in which a company gives its own staff training on AI capabilities and limitations, AI risks, responsible use or AI ethics.",
+      "definition": "Employee AI training is a training programme in which a company gives its own staff training on AI limitations, AI risks, responsible use or AI ethics.",
       "counts": [
         "AI literacy programmes.",
         "Responsible AI and AI ethics courses.",
@@ -199,8 +200,9 @@
         "A Chief AI Officer, Office of Responsible AI or named responsible AI team."
       ],
       "does_not_count": [
-        "A body that oversees risk or technology in general without naming AI.",
+        "A body that oversees privacy, data, fairness, risk or technology in general without naming AI.",
         "One-off briefings.",
+        "Requirements that board members have AI expertise.",
         "Outside advisory boards with no decision role."
       ],
       "subtypes": [
@@ -221,6 +223,7 @@
         "Certification against a standard such as ISO/IEC 42001 (AI risk management to a recognised standard).",
         "Red teaming the company commissions and directs (Red teaming).",
         "Open invitations to anyone to find and report flaws (Bug bounties and AI vulnerability reporting).",
+        "Tools or access the company offers so that anyone can inspect a system, with no named independent evaluator reporting on it.",
         "Regulator inspections with enforcement powers."
       ],
       "subtypes": [
@@ -234,15 +237,15 @@
       "counts": [
         "Certification to ISO/IEC 42001 or a similar standard, which is the strongest evidence.",
         "Described alignment with the NIST AI RMF or ISO/IEC 23894.",
-        "AI risk registers.",
-        "Inventories of the company's AI systems.",
-        "Including AI in enterprise risk management.",
-        "Model risk management in banks."
+        "AI risk registers, inventories of the company's AI systems, or AI included in enterprise risk management, where the evidence ties them to a recognised standard.",
+        "Model risk management in banks, which regulators require, where the evidence names AI."
       ],
       "does_not_count": [
         "Published principles or policies with no described system (Published AI policy).",
         "A bare statement that the company aligns with a framework, with no described process.",
+        "An in-house risk framework, committee, process or self-assessment that is not tied to a recognised standard or to regulators' model risk rules.",
         "Plans to certify.",
+        "Model risk management that doesn't name AI.",
         "Assessing a single system (Pre-deployment risk and impact assessment)."
       ],
       "subtypes": [
@@ -282,8 +285,9 @@
       ],
       "does_not_count": [
         "Passing statements of values that don't point to a published document, such as 'we take AI safety seriously'.",
+        "Policies or frameworks the company says it is developing or plans to publish, with none yet published.",
         "A safety framework for advanced AI (Safety framework for advanced AI).",
-        "A described organisation-wide system for assessing, monitoring and responding to AI risks (AI risk management to a recognised standard)."
+        "A described organisation-wide system for assessing, monitoring and responding to AI risks that is built on a recognised standard (AI risk management to a recognised standard)."
       ],
       "subtypes": []
     },
@@ -319,7 +323,7 @@
       ],
       "does_not_count": [
         "One-off testing before deployment.",
-        "General IT uptime monitoring.",
+        "General IT uptime or information-security monitoring.",
         "Statements that systems are monitored that don't say what is checked."
       ],
       "subtypes": [
@@ -364,29 +368,35 @@
     },
     {
       "name": "Reducing AI's environmental footprint",
-      "definition": "Reducing AI's environmental footprint is a disclosure practice in which a company estimates, tracks and reports the energy and water use, carbon emissions and hardware effects of training and running its AI systems, or sets targets for them.",
+      "definition": "Reducing AI's environmental footprint is an operating procedure in which a company estimates, tracks, reports or reduces the energy and water use, carbon emissions and hardware effects of training and running its AI systems, or sets targets for them.",
       "counts": [
         "AI-specific measurement, disclosure or targets for energy, emissions or water.",
-        "Measured efficiency gains for AI workloads."
+        "Measured efficiency gains for AI workloads.",
+        "Concrete measures taken to cut the environmental footprint of AI, such as cooling for AI hardware or more efficient chips or models, where the company states that environmental aim or reports the reduction achieved."
       ],
       "does_not_count": [
         "General corporate sustainability reporting that doesn't single out AI.",
-        "Renewable energy purchases not tied to AI."
+        "Renewable energy purchases not tied to AI.",
+        "Claims that AI hardware or data centres are energy efficient, with no environmental aim stated and no measured result; these may only be cost saving.",
+        "General data-storage or IT efficiency."
       ],
       "subtypes": []
     },
     {
       "name": "Privacy-preserving AI data handling",
-      "definition": "Privacy-preserving AI data handling is a technical safeguard in which a company trains or runs AI so that personal data stays protected during processing, through on-device processing, confidential computing, encryption or federated learning.",
+      "definition": "Privacy-preserving AI data handling is a technical safeguard in which a company trains or runs AI so that personal data stays protected, through data minimisation, removing personal data from training data, on-device processing, confidential computing, encryption or federated learning.",
       "counts": [
         "On-device AI.",
         "Confidential computing and secure enclaves, such as Apple's Private Cloud Compute.",
         "Federated learning.",
-        "Differential privacy in training."
+        "Differential privacy in training.",
+        "Removing personal data from training data.",
+        "Collecting only the personal data an AI system needs, stated as a rule for AI."
       ],
       "does_not_count": [
         "General data-security statements.",
-        "Limits on how long data is kept.",
+        "Statements that privacy safeguards are used in training, with no method described.",
+        "Not storing or keeping data after processing, and limits on how long data is kept.",
         "A commitment not to train on customer data (No training on customer data)."
       ],
       "subtypes": []
@@ -403,7 +413,7 @@
       "does_not_count": [
         "Research papers with no tool or dataset.",
         "Products whose main purpose is not reducing AI risk.",
-        "The company's own use of such tools; tag the matching practice instead."
+        "The company's own use of such tools, and safety features built into its own AI products, such as watermarks on its own outputs; tag the matching practice instead."
       ],
       "subtypes": []
     },
@@ -487,12 +497,13 @@
       "name": "Red lines and risk thresholds",
       "definition": "Red lines and risk thresholds are an organisational policy in which a company publicly rules out specific AI uses or capabilities, or sets testable risk or capability levels in advance and commits to the safeguards or pause each level triggers.",
       "counts": [
-        "Self-imposed bans on the company's own uses of AI, such as no AI-generated images in advertising.",
+        "Self-imposed bans on serious uses of AI, such as not using AI for domestic surveillance.",
         "Red lines for AI development.",
         "Capability thresholds and commitments to pause."
       ],
       "does_not_count": [
-        "Prohibitions the company places on customers, and rules on how its staff may use AI tools at work (AI use policies and downstream guidance)."
+        "Prohibitions the company places on customers, and rules on how its staff may use AI tools at work (AI use policies and downstream guidance).",
+        "Statements that AI supports staff in a routine business task and does not replace them, such as 'AI will not be used to automate underwriting'."
       ],
       "subtypes": [
         "Self-imposed use restriction",
