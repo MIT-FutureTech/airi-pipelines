@@ -11,8 +11,8 @@ $practices
 <named_commitments_and_bodies>
 Separately from the practices, list:
 - each named external commitment, pledge or code of conduct on AI that the quotes say the company has signed or joined, such as the Frontier AI Safety Commitments, the EU AI Pact or a joint public commitment to red lines. Relation: "signed".
-- each named external body, alliance, forum or consortium on AI safety or AI standards that the quotes say the company belongs to, including as a founding member, such as the Frontier Model Forum, the US AI Safety Institute Consortium, the MLCommons AI safety working group or C2PA. Relation: "member".
-Give each one's full name, as the quotes write it. Do not list pledges the company makes on its own with no named external commitment, events it attended, industry associations not about AI safety, laws or regulations it is subject to, standards it follows or is certified to, or bodies it only cites, collaborates with or reports to.
+- each named external body, alliance, forum or consortium on AI that the quotes say the company belongs to, including as a founding member, such as the Frontier Model Forum, the US AI Safety Institute Consortium, the MLCommons AI safety working group or C2PA. Relation: "member".
+Give each one's full name, as the quotes write it. Do not list pledges the company makes on its own with no named external commitment, events it attended, laws or regulations it is subject to, standards it follows or is certified to, or bodies it only cites, collaborates with or reports to.
 </named_commitments_and_bodies>
 
 <instructions>
