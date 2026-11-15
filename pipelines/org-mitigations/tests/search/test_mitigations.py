@@ -22,7 +22,7 @@ CONTEXTS = [
 def _result(code: str, mitigations: list[Mitigation]) -> SearchResult:
     return SearchResult(
         context_id="Example_Bank",
-        code=code,
+        domain_code=code,
         answer=Answer(
             match_id=f"Example_Bank__{code}",
             has_mitigation=bool(mitigations),

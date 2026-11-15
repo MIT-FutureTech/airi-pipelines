@@ -94,7 +94,7 @@ class TestRunCalls:
         ]
         assert store.load("Example_Bank__2.1") == SearchResult(
             context_id="Example_Bank",
-            code="2.1",
+            domain_code="2.1",
             answer=Answer(
                 match_id="Example_Bank__2.1",
                 has_mitigation=False,

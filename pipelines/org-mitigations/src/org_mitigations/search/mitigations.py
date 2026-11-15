@@ -35,7 +35,7 @@ def mitigations_from_results(
                 FoundMitigation(
                     mitigation_id=f"{call_id}__{number}",
                     company_id=context.company_id,
-                    code=result.code,
+                    code=result.domain_code,
                     name=mitigation.mitigation,
                     reasoning=mitigation.reasoning,
                     quotes=[

@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 class SearchResult(BaseModel):
     context_id: str
-    code: str
+    domain_code: str
     answer: Answer
     model: str
     usage: TokenUsage | None
@@ -101,7 +101,7 @@ async def _make_call(
             call.call_id,
             SearchResult(
                 context_id=call.context.context_id,
-                code=call.code,
+                domain_code=call.code,
                 answer=result.value,
                 model=result.model,
                 usage=result.usage,

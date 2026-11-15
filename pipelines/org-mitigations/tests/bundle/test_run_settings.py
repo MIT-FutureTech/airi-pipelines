@@ -49,7 +49,7 @@ class TestLoadRun:
 def _result(code: str, *, model: str) -> SearchResult:
     return SearchResult(
         context_id="Example_Bank",
-        code=code,
+        domain_code=code,
         answer=Answer(
             match_id=f"Example_Bank__{code}",
             has_mitigation=False,
