@@ -3,9 +3,15 @@ from pathlib import Path
 import pytest
 
 from org_mitigations.domain_taxonomy import DOMAIN_TAXONOMY_PATH, render_domain_taxonomy
+from org_mitigations.practice_list import (
+    PRACTICE_LIST_PATH,
+    load_practice_list,
+    render_practice_list,
+)
 from org_mitigations.prompt import Prompt, load_prompt
 
 PROMPT_PATH = Path(__file__).parent.parent / "prompts" / "search.md"
+PRACTICES_PROMPT_PATH = Path(__file__).parent.parent / "prompts" / "practices.md"
 
 TEMPLATE = """\
 <!-- SYSTEM -->
@@ -68,6 +74,12 @@ class TestLoadPrompt:
     def test_loads_the_pipelines_prompt(self) -> None:
         assert load_prompt(
             PROMPT_PATH, taxonomy=render_domain_taxonomy(DOMAIN_TAXONOMY_PATH)
+        )
+
+    def test_loads_the_practices_prompt(self) -> None:
+        assert load_prompt(
+            PRACTICES_PROMPT_PATH,
+            practices=render_practice_list(load_practice_list(PRACTICE_LIST_PATH)),
         )
 
 
