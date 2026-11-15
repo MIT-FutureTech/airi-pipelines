@@ -32,8 +32,8 @@ class EvidenceRow(BaseModel):
     company: str = Field(serialization_alias="Company")
     document_id: str = Field(serialization_alias="Document ID")
     excerpt_id: str = Field(serialization_alias="Excerpt ID")
-    code: str = Field(serialization_alias="Code")
-    code_name: str = Field(serialization_alias="Code name")
+    domain_code: str = Field(serialization_alias="Code")
+    domain_name: str = Field(serialization_alias="Code name")
     mitigation: str = Field(serialization_alias="Mitigation")
     strength: Strength = Field(serialization_alias="Strength")
     quote: str = Field(serialization_alias="Quote")
@@ -117,8 +117,8 @@ def evidence_rows(
         document.document_id: document.company_id for document in documents
     }
     domains = [domain for locus in taxonomy for domain in locus.domains]
-    code_order = {domain.code: order for order, domain in enumerate(domains)}
-    code_names = {domain.code: domain.name for domain in domains}
+    domain_order = {domain.code: order for order, domain in enumerate(domains)}
+    domain_names = {domain.code: domain.name for domain in domains}
     excerpts_by_id = {excerpt.excerpt_id: excerpt for excerpt in excerpts}
 
     selected = sorted(
@@ -129,7 +129,7 @@ def evidence_rows(
         ),
         key=lambda item: (
             company_order[company_ids_by_document[item.document_id]],
-            code_order[item.code],
+            domain_order[item.code],
             item.document_id,
         ),
     )
@@ -143,8 +143,8 @@ def evidence_rows(
                 company=company_names_by_id[company_ids_by_document[item.document_id]],
                 document_id=item.document_id,
                 excerpt_id=item.excerpt_id,
-                code=item.code,
-                code_name=code_names[item.code],
+                domain_code=item.code,
+                domain_name=domain_names[item.code],
                 mitigation=item.mitigation,
                 strength=item.strength,
                 quote=item.quote,
