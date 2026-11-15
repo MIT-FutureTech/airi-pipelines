@@ -15,7 +15,7 @@ from org_mitigations.sheets.tabs import (
     ExcerptRow,
     evidence_rows,
     excerpt_rows,
-    format_date,
+    format_document_date,
     write_tab,
 )
 
@@ -98,7 +98,7 @@ def evidence(evidence_id: str, excerpt_id: str, quote: str) -> Evidence:
     )
 
 
-class TestFormatDate:
+class TestFormatDocumentDate:
     @pytest.mark.parametrize(
         ("precision", "expected"),
         [
@@ -112,10 +112,10 @@ class TestFormatDate:
     ) -> None:
         dated = document("Bank_001", "recA", datetime.date(2025, 4, 29), precision)
 
-        assert format_date(dated) == expected
+        assert format_document_date(dated) == expected
 
     def test_leaves_an_undated_document_blank(self) -> None:
-        assert format_date(document("Bank_001", "recA")) == ""
+        assert format_document_date(document("Bank_001", "recA")) == ""
 
 
 class TestExcerptRows:

@@ -42,7 +42,7 @@ class EvidenceRow(BaseModel):
     reasoning: str = Field(serialization_alias="LLM reasoning")
 
 
-def format_date(document: Document) -> str:
+def format_document_date(document: Document) -> str:
     if document.date is None or document.date_precision is None:
         return ""
     match document.date_precision:
@@ -88,7 +88,7 @@ def excerpt_rows(
                         document_id=document.document_id,
                         document_title=document.title,
                         document_type=document.doc_type,
-                        document_date=format_date(document),
+                        document_date=format_document_date(document),
                         document_link=document.link,
                         order_in_document=order,
                         passage_ids=";".join(excerpt.passage_ids),
