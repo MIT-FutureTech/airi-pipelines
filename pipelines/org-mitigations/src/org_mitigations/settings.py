@@ -12,6 +12,7 @@ DEFAULT_MAX_CHARS = 75_000
 
 class PipelineStage(StrEnum):
     SEARCH = "search"
+    PRACTICES = "practices"
 
 
 class StageSettings(BaseModel):
@@ -37,6 +38,13 @@ class StageSettings(BaseModel):
 class SearchSettings(StageSettings):
     prompt_path: Path = Field(
         default=_PIPELINE_DIR / "prompts" / "search.md",
+        description="The prompt template",
+    )
+
+
+class PracticesSettings(StageSettings):
+    prompt_path: Path = Field(
+        default=_PIPELINE_DIR / "prompts" / "practices.md",
         description="The prompt template",
     )
 
@@ -77,6 +85,10 @@ class PipelineSettings(
     search: SearchSettings = Field(
         default_factory=SearchSettings,
         description="The search's prompt and LLM settings",
+    )
+    practices: PracticesSettings = Field(
+        default_factory=PracticesSettings,
+        description="The practices stage's prompt and LLM settings",
     )
     max_chars: int = Field(
         default=DEFAULT_MAX_CHARS,
