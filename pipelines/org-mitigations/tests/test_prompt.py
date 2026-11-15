@@ -65,12 +65,6 @@ class TestLoadPrompt:
         with pytest.raises(ValueError, match="system section has placeholders"):
             load_prompt(path, taxonomy="")
 
-    def test_rejects_an_unknown_placeholder(self, tmp_path: Path) -> None:
-        path = _write(tmp_path, TEMPLATE.replace("$company", "$sector"))
-
-        with pytest.raises(ValueError, match="user section has placeholders"):
-            load_prompt(path, taxonomy="")
-
     def test_loads_the_pipelines_prompt(self) -> None:
         assert load_prompt(
             PROMPT_PATH, taxonomy=render_domain_taxonomy(DOMAIN_TAXONOMY_PATH)
@@ -106,3 +100,17 @@ class TestRenderUser:
         )
 
         assert "Fees rose by $code million." in user
+
+    def test_rejects_values_that_differ_from_the_placeholders(
+        self, tmp_path: Path
+    ) -> None:
+        path = _write(tmp_path, TEMPLATE.replace("$company", "$sector"))
+        prompt = load_prompt(path, taxonomy="")
+
+        with pytest.raises(ValueError, match="user section has placeholders"):
+            prompt.render_user(
+                company="Example Bank",
+                context="<document>...</document>",
+                code="2.1",
+                match_id="Example_Bank__2.1",
+            )
