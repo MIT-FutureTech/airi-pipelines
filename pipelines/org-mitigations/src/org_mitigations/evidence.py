@@ -3,7 +3,8 @@ from pathlib import Path
 from pydantic import BaseModel
 
 from org_mitigations.answer import Strength
-from org_mitigations.excerpts import excerpt_id
+from org_mitigations.excerpts import Excerpt, excerpt_id
+from org_mitigations.mitigations import FoundMitigation
 
 
 class Evidence(BaseModel):
@@ -69,3 +70,25 @@ def load_evidence(llm_output_dir: Path) -> list[Evidence]:
                 for quote_number, quote in enumerate(mitigation.evidence, start=1)
             )
     return evidence
+
+
+def evidence_from_mitigations(
+    mitigations: list[FoundMitigation],
+    excerpts: list[Excerpt],
+) -> list[Evidence]:
+    document_ids = {excerpt.excerpt_id: excerpt.document_id for excerpt in excerpts}
+    return [
+        Evidence(
+            evidence_id=f"{mitigation.mitigation_id}.{number}",
+            mitigation_id=mitigation.mitigation_id,
+            document_id=document_ids[quote.excerpt_id],
+            code=mitigation.code,
+            mitigation=mitigation.name,
+            reasoning=mitigation.reasoning,
+            quote=quote.quote,
+            strength=quote.strength,
+            excerpt_id=quote.excerpt_id,
+        )
+        for mitigation in mitigations
+        for number, quote in enumerate(mitigation.quotes, start=1)
+    ]
