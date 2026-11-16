@@ -25,7 +25,8 @@ compile. See `uv run python -m org_mitigations.bundle --help`.
 
 ## Exporting evidence for a spreadsheet
 
-The Python code can also write companies' excerpts and the LLM's evidence as
-CSV files, one per spreadsheet tab. Unlike the bundle, they include every
-excerpt the LLM read, including those it found no evidence in. See
+The Python code can also write companies' excerpts, the LLM's evidence and the
+mitigations it found, with their practices, as CSV files, one per spreadsheet
+tab. Unlike the bundle, they include every excerpt the LLM read, including those
+it found no evidence in. The run needs results from both stages. See
 `uv run python -m org_mitigations.sheets --help`.

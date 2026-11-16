@@ -1,5 +1,6 @@
 import csv
 from collections import defaultdict
+from collections.abc import Mapping
 from pathlib import Path
 
 from pydantic import BaseModel, Field
@@ -10,7 +11,9 @@ from org_mitigations.domain_taxonomy import Locus
 from org_mitigations.evidence import Evidence
 from org_mitigations.excerpts import Excerpt
 from org_mitigations.locate import locate_quote
+from org_mitigations.practices.calls import PracticesResult
 from org_mitigations.search.answer import Strength
+from org_mitigations.search.mitigations import FoundMitigation
 
 
 class ExcerptRow(BaseModel):
@@ -40,6 +43,18 @@ class EvidenceRow(BaseModel):
     quote_start: int | None = Field(serialization_alias="Quote start")
     quote_end: int | None = Field(serialization_alias="Quote end")
     reasoning: str = Field(serialization_alias="LLM reasoning")
+
+
+class MitigationRow(BaseModel):
+    mitigation_id: str = Field(serialization_alias="Mitigation ID")
+    company: str = Field(serialization_alias="Company")
+    sector: str = Field(serialization_alias="Sector")
+    domain_code: str = Field(serialization_alias="Domain code")
+    domain_name: str = Field(serialization_alias="Domain name")
+    mitigation_name: str = Field(serialization_alias="Mitigation")
+    reasoning: str = Field(serialization_alias="LLM reasoning")
+    quotes: str = Field(serialization_alias="Quotes")
+    practices: str = Field(serialization_alias="Practices")
 
 
 def format_document_date(document: Document) -> str:
@@ -154,6 +169,67 @@ def evidence_rows(
             )
         )
     return rows
+
+
+def mitigation_rows(
+    *,
+    company_names: list[str],
+    taxonomy: list[Locus],
+    companies: list[Company],
+    mitigations: list[FoundMitigation],
+    practices_results: Mapping[str, PracticesResult],
+) -> list[MitigationRow]:
+    companies_by_name = {company.name: company for company in companies}
+    company_order = {
+        companies_by_name[name].company_id: order
+        for order, name in enumerate(company_names)
+    }
+    companies_by_id = {company.company_id: company for company in companies}
+    domains = [domain for locus in taxonomy for domain in locus.domains]
+    domain_order = {domain.code: order for order, domain in enumerate(domains)}
+    domain_names = {domain.code: domain.name for domain in domains}
+
+    selected = sorted(
+        (
+            mitigation
+            for mitigation in mitigations
+            if mitigation.company_id in company_order
+        ),
+        key=lambda mitigation: (
+            company_order[mitigation.company_id],
+            domain_order[mitigation.domain_code],
+        ),
+    )
+    missing = [
+        mitigation.mitigation_id
+        for mitigation in selected
+        if mitigation.mitigation_id not in practices_results
+    ]
+    if missing:
+        raise ValueError(
+            f"No practices result for {len(missing)} of {len(selected)}"
+            + f" mitigations, such as {missing[0]}"
+        )
+
+    return [
+        MitigationRow(
+            mitigation_id=mitigation.mitigation_id,
+            company=companies_by_id[mitigation.company_id].name,
+            sector=companies_by_id[mitigation.company_id].sector,
+            domain_code=mitigation.domain_code,
+            domain_name=domain_names[mitigation.domain_code],
+            mitigation_name=mitigation.name,
+            reasoning=mitigation.reasoning,
+            quotes="\n\n".join(quote.quote for quote in mitigation.quotes),
+            practices="; ".join(
+                tagged.name
+                for tagged in practices_results[
+                    mitigation.mitigation_id
+                ].answer.tagged_practices
+            ),
+        )
+        for mitigation in selected
+    ]
 
 
 def write_tab[Row: BaseModel](path: Path, row_type: type[Row], rows: list[Row]) -> None:

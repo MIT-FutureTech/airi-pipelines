@@ -1,5 +1,6 @@
 import csv
 import datetime
+import re
 from pathlib import Path
 
 import pytest
@@ -9,13 +10,18 @@ from org_mitigations.documents import DatePrecision, Document
 from org_mitigations.domain_taxonomy import Domain, Locus
 from org_mitigations.evidence import Evidence
 from org_mitigations.excerpts import Excerpt
+from org_mitigations.practices.answer import Answer, TaggedPractice
+from org_mitigations.practices.calls import PracticesResult
 from org_mitigations.search.answer import Strength
+from org_mitigations.search.mitigations import FoundMitigation, FoundQuote
 from org_mitigations.sheets.tabs import (
     EvidenceRow,
     ExcerptRow,
+    MitigationRow,
     evidence_rows,
     excerpt_rows,
     format_document_date,
+    mitigation_rows,
     write_tab,
 )
 
@@ -95,6 +101,47 @@ def evidence(evidence_id: str, excerpt_id: str, quote: str) -> Evidence:
         quote=quote,
         strength=Strength.STATED,
         excerpt_id=excerpt_id,
+    )
+
+
+def found_mitigation(mitigation_id: str, company_id: str) -> FoundMitigation:
+    _, code, _ = mitigation_id.split("__")
+    return FoundMitigation(
+        mitigation_id=mitigation_id,
+        company_id=company_id,
+        domain_code=code,
+        name="Board oversight of AI",
+        reasoning="Board-level accountability for AI.",
+        quotes=[
+            FoundQuote(
+                excerpt_id="Bank_001_excerpt1",
+                quote="Our board oversees AI.",
+                strength=Strength.DESCRIBED,
+            ),
+            FoundQuote(
+                excerpt_id="Bank_001_excerpt1",
+                quote="It meets quarterly.",
+                strength=Strength.STATED,
+            ),
+        ],
+    )
+
+
+def practices_result(mitigation_id: str, *practices: str) -> PracticesResult:
+    return PracticesResult(
+        mitigation_id=mitigation_id,
+        answer=Answer(
+            match_id=mitigation_id,
+            tagged_practices=[
+                TaggedPractice(
+                    name=practice, subtypes=[], quote_numbers=[1], reasoning="Fits."
+                )
+                for practice in practices
+            ],
+            affiliations=[],
+        ),
+        model="test-model",
+        usage=None,
     )
 
 
@@ -247,6 +294,70 @@ class TestEvidenceRows:
         unlocated = next(row for row in rows if row.quote == "Our board")
 
         assert (unlocated.quote_start, unlocated.quote_end) == (None, None)
+
+
+class TestMitigationRows:
+    @pytest.fixture
+    def rows(self) -> list[MitigationRow]:
+        return mitigation_rows(
+            company_names=["Example Retail", "Example Bank"],
+            taxonomy=TAXONOMY,
+            companies=[BANK, RETAIL, INSURER],
+            mitigations=[
+                found_mitigation("Example_Bank__2.2__1", "recA"),
+                found_mitigation("Example_Bank__1.1__1", "recA"),
+                found_mitigation("Example_Retail__2.2__1", "recB"),
+                found_mitigation("Example_Insurer__2.2__1", "recC"),
+            ],
+            practices_results={
+                "Example_Bank__2.2__1": practices_result(
+                    "Example_Bank__2.2__1",
+                    "Named accountability for AI risk",
+                    "Published AI policy",
+                ),
+                "Example_Bank__1.1__1": practices_result("Example_Bank__1.1__1"),
+                "Example_Retail__2.2__1": practices_result(
+                    "Example_Retail__2.2__1", "Named accountability for AI risk"
+                ),
+            },
+        )
+
+    def test_lists_the_named_companies_by_code(self, rows: list[MitigationRow]) -> None:
+        mitigation_ids = [row.mitigation_id for row in rows]
+
+        assert mitigation_ids == [
+            "Example_Retail__2.2__1",
+            "Example_Bank__1.1__1",
+            "Example_Bank__2.2__1",
+        ]
+
+    def test_describes_each_mitigation(self, rows: list[MitigationRow]) -> None:
+        assert rows[2] == MitigationRow(
+            mitigation_id="Example_Bank__2.2__1",
+            company="Example Bank",
+            sector="Finance",
+            domain_code="2.2",
+            domain_name="Accountability & Responsibility",
+            mitigation_name="Board oversight of AI",
+            reasoning="Board-level accountability for AI.",
+            quotes="Our board oversees AI.\n\nIt meets quarterly.",
+            practices="Named accountability for AI risk; Published AI policy",
+        )
+
+    def test_leaves_an_untagged_mitigations_practices_blank(
+        self, rows: list[MitigationRow]
+    ) -> None:
+        assert rows[1].practices == ""
+
+    def test_rejects_a_mitigation_with_no_practices_result(self) -> None:
+        with pytest.raises(ValueError, match=re.escape("Example_Bank__2.2__1")):
+            mitigation_rows(
+                company_names=["Example Bank"],
+                taxonomy=TAXONOMY,
+                companies=[BANK],
+                mitigations=[found_mitigation("Example_Bank__2.2__1", "recA")],
+                practices_results={},
+            )
 
 
 class TestWriteTab:

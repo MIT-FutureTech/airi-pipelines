@@ -15,8 +15,8 @@ class SheetsSettings(
     cli_prog_name="org_mitigations.sheets",
 ):
     r"""
-    Write companies' excerpts and the LLM's evidence as CSV files, one per
-    spreadsheet tab.
+    Write companies' excerpts, the LLM's evidence and the mitigations it found,
+    with their practices, as CSV files, one per spreadsheet tab.
 
     Example usage:
 
