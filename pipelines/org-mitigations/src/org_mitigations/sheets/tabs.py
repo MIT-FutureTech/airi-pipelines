@@ -11,6 +11,7 @@ from org_mitigations.domain_taxonomy import Locus
 from org_mitigations.evidence import Evidence
 from org_mitigations.excerpts import Excerpt
 from org_mitigations.locate import locate_quote
+from org_mitigations.practices.answer import Affiliation, Relation
 from org_mitigations.practices.calls import PracticesResult
 from org_mitigations.search.answer import Strength
 from org_mitigations.search.mitigations import FoundMitigation
@@ -68,6 +69,16 @@ class PracticeRow(BaseModel):
     subtypes: str = Field(serialization_alias="Subtypes")
     reasoning: str = Field(serialization_alias="LLM reasoning")
     quotes: str = Field(serialization_alias="Quotes")
+
+
+class AffiliationRow(BaseModel):
+    name: str = Field(serialization_alias="Name")
+    relation: Relation = Field(serialization_alias="Relation")
+    company_count: int = Field(serialization_alias="Companies")
+    companies: str = Field(serialization_alias="Company names")
+    mention_count: int = Field(serialization_alias="Mentions")
+    example_mitigation_id: str = Field(serialization_alias="Example mitigation ID")
+    example_quotes: str = Field(serialization_alias="Example quotes")
 
 
 def format_document_date(document: Document) -> str:
@@ -263,6 +274,60 @@ def practice_rows(
             mitigation.mitigation_id
         ].answer.tagged_practices
     ]
+
+
+def affiliation_rows(
+    *,
+    company_names: list[str],
+    taxonomy: list[Locus],
+    companies: list[Company],
+    mitigations: list[FoundMitigation],
+    practices_results: Mapping[str, PracticesResult],
+) -> list[AffiliationRow]:
+    companies_by_id = {company.company_id: company for company in companies}
+    selected = _selected_mitigations(
+        company_names=company_names,
+        taxonomy=taxonomy,
+        companies=companies,
+        mitigations=mitigations,
+        practices_results=practices_results,
+    )
+    mentions: defaultdict[
+        tuple[str, Relation], list[tuple[FoundMitigation, Affiliation]]
+    ] = defaultdict(list)
+    for mitigation in selected:
+        for affiliation in practices_results[
+            mitigation.mitigation_id
+        ].answer.affiliations:
+            mentions[(affiliation.name, affiliation.relation)].append(
+                (mitigation, affiliation)
+            )
+
+    rows: list[AffiliationRow] = []
+    for (name, relation), found in mentions.items():
+        company_ids = list(
+            dict.fromkeys(mitigation.company_id for mitigation, _ in found)
+        )
+        example_mitigation, example_affiliation = found[0]
+        rows.append(
+            AffiliationRow(
+                name=name,
+                relation=relation,
+                company_count=len(company_ids),
+                companies="; ".join(
+                    companies_by_id[company_id].name for company_id in company_ids
+                ),
+                mention_count=len(found),
+                example_mitigation_id=example_mitigation.mitigation_id,
+                example_quotes="\n\n".join(
+                    _cited_quote(example_mitigation, number)
+                    for number in example_affiliation.quote_numbers
+                ),
+            )
+        )
+    return sorted(
+        rows, key=lambda row: (-row.company_count, row.name.casefold(), row.relation)
+    )
 
 
 def _selected_mitigations(

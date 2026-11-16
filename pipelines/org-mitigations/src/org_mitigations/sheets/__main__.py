@@ -10,10 +10,12 @@ from org_mitigations.search.mitigations import mitigations_from_results
 from org_mitigations.settings import PipelineStage
 from org_mitigations.sheets.settings import SheetsSettings
 from org_mitigations.sheets.tabs import (
+    AffiliationRow,
     EvidenceRow,
     ExcerptRow,
     MitigationRow,
     PracticeRow,
+    affiliation_rows,
     evidence_rows,
     excerpt_rows,
     mitigation_rows,
@@ -80,6 +82,13 @@ def main() -> None:
         mitigations=mitigations,
         practices_results=practices_results,
     )
+    affiliation_tab = affiliation_rows(
+        company_names=company_names,
+        taxonomy=taxonomy,
+        companies=corpus.companies,
+        mitigations=mitigations,
+        practices_results=practices_results,
+    )
 
     settings.output_dir.mkdir(parents=True, exist_ok=True)
     excerpts_path = settings.output_dir / "excerpts.csv"
@@ -97,6 +106,9 @@ def main() -> None:
     practices_path = settings.output_dir / "practices.csv"
     write_tab(practices_path, PracticeRow, practice_tab)
     logger.info(f"Wrote {len(practice_tab)} practice tags to {practices_path}")
+    affiliations_path = settings.output_dir / "affiliations.csv"
+    write_tab(affiliations_path, AffiliationRow, affiliation_tab)
+    logger.info(f"Wrote {len(affiliation_tab)} affiliations to {affiliations_path}")
 
 
 if __name__ == "__main__":

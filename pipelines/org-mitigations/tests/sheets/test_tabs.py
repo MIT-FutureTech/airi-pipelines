@@ -10,15 +10,22 @@ from org_mitigations.documents import DatePrecision, Document
 from org_mitigations.domain_taxonomy import Domain, Locus
 from org_mitigations.evidence import Evidence
 from org_mitigations.excerpts import Excerpt
-from org_mitigations.practices.answer import Answer, TaggedPractice
+from org_mitigations.practices.answer import (
+    Affiliation,
+    Answer,
+    Relation,
+    TaggedPractice,
+)
 from org_mitigations.practices.calls import PracticesResult
 from org_mitigations.search.answer import Strength
 from org_mitigations.search.mitigations import FoundMitigation, FoundQuote
 from org_mitigations.sheets.tabs import (
+    AffiliationRow,
     EvidenceRow,
     ExcerptRow,
     MitigationRow,
     PracticeRow,
+    affiliation_rows,
     evidence_rows,
     excerpt_rows,
     format_document_date,
@@ -140,13 +147,17 @@ def tag(
     )
 
 
-def practices_result(mitigation_id: str, *tags: TaggedPractice) -> PracticesResult:
+def practices_result(
+    mitigation_id: str,
+    *tags: TaggedPractice,
+    affiliations: tuple[Affiliation, ...] = (),
+) -> PracticesResult:
     return PracticesResult(
         mitigation_id=mitigation_id,
         answer=Answer(
             match_id=mitigation_id,
             tagged_practices=list(tags),
-            affiliations=[],
+            affiliations=list(affiliations),
         ),
         model="test-model",
         usage=None,
@@ -450,6 +461,76 @@ class TestPracticeRows:
                     )
                 },
             )
+
+
+FORUM = "Frontier Model Forum"
+PACT = "EU AI Pact"
+
+
+class TestAffiliationRows:
+    @pytest.fixture
+    def rows(self) -> list[AffiliationRow]:
+        return affiliation_rows(
+            company_names=["Example Retail", "Example Bank"],
+            taxonomy=TAXONOMY,
+            companies=[BANK, RETAIL],
+            mitigations=[
+                found_mitigation("Example_Bank__2.2__1", "recA"),
+                found_mitigation("Example_Bank__1.1__1", "recA"),
+                found_mitigation("Example_Retail__2.2__1", "recB"),
+            ],
+            practices_results={
+                "Example_Bank__2.2__1": practices_result(
+                    "Example_Bank__2.2__1",
+                    affiliations=(
+                        Affiliation(
+                            name=PACT, relation=Relation.SIGNED, quote_numbers=[1]
+                        ),
+                        Affiliation(
+                            name=FORUM, relation=Relation.MEMBER, quote_numbers=[2]
+                        ),
+                    ),
+                ),
+                "Example_Bank__1.1__1": practices_result(
+                    "Example_Bank__1.1__1",
+                    affiliations=(
+                        Affiliation(
+                            name=FORUM, relation=Relation.MEMBER, quote_numbers=[1]
+                        ),
+                    ),
+                ),
+                "Example_Retail__2.2__1": practices_result(
+                    "Example_Retail__2.2__1",
+                    affiliations=(
+                        Affiliation(
+                            name=FORUM,
+                            relation=Relation.MEMBER,
+                            quote_numbers=[1, 2],
+                        ),
+                    ),
+                ),
+            },
+        )
+
+    def test_lists_each_name_by_number_of_companies(
+        self, rows: list[AffiliationRow]
+    ) -> None:
+        names = [(row.name, row.company_count, row.mention_count) for row in rows]
+
+        assert names == [(FORUM, 2, 3), (PACT, 1, 1)]
+
+    def test_describes_each_name_with_its_first_mention(
+        self, rows: list[AffiliationRow]
+    ) -> None:
+        assert rows[0] == AffiliationRow(
+            name=FORUM,
+            relation=Relation.MEMBER,
+            company_count=2,
+            companies="Example Retail; Example Bank",
+            mention_count=3,
+            example_mitigation_id="Example_Retail__2.2__1",
+            example_quotes="Our board oversees AI.\n\nIt meets quarterly.",
+        )
 
 
 class TestWriteTab:
