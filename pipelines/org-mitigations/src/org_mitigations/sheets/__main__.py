@@ -34,15 +34,19 @@ def main() -> None:
         SearchResult,
     ).load_all()
     mitigations = mitigations_from_results(results, contexts)
+    if settings.company_names is None:
+        company_names = sorted(company.name for company in corpus.companies)
+    else:
+        company_names = settings.company_names
 
     excerpt_tab = excerpt_rows(
-        company_names=settings.company_names,
+        company_names=company_names,
         companies=corpus.companies,
         documents=corpus.documents,
         excerpts=corpus.excerpts,
     )
     evidence_tab = evidence_rows(
-        company_names=settings.company_names,
+        company_names=company_names,
         taxonomy=load_domain_taxonomy(DOMAIN_TAXONOMY_PATH),
         companies=corpus.companies,
         documents=corpus.documents,

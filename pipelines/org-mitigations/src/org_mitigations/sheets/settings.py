@@ -39,9 +39,10 @@ class SheetsSettings(
         default=DEFAULT_MAX_CHARS,
         description="The --max-chars the run used",
     )
-    company_names: list[str] = Field(
-        default=...,
-        description="The companies to include, in the order to list them",
+    company_names: list[str] | None = Field(
+        default=None,
+        description="The companies to include, in the order to list them."
+        + " Default: every company, by name",
     )
     output_dir: Path = Field(
         default=...,
