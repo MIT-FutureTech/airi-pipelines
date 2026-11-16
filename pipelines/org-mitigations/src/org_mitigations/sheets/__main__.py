@@ -13,9 +13,11 @@ from org_mitigations.sheets.tabs import (
     EvidenceRow,
     ExcerptRow,
     MitigationRow,
+    PracticeRow,
     evidence_rows,
     excerpt_rows,
     mitigation_rows,
+    practice_rows,
     write_tab,
 )
 from toolbox.log import configure_logging
@@ -71,6 +73,13 @@ def main() -> None:
         practices_results=practices_results,
     )
     untagged_tab = [row for row in mitigation_tab if not row.practices]
+    practice_tab = practice_rows(
+        company_names=company_names,
+        taxonomy=taxonomy,
+        companies=corpus.companies,
+        mitigations=mitigations,
+        practices_results=practices_results,
+    )
 
     settings.output_dir.mkdir(parents=True, exist_ok=True)
     excerpts_path = settings.output_dir / "excerpts.csv"
@@ -85,6 +94,9 @@ def main() -> None:
     untagged_path = settings.output_dir / "untagged_mitigations.csv"
     write_tab(untagged_path, MitigationRow, untagged_tab)
     logger.info(f"Wrote {len(untagged_tab)} untagged mitigations to {untagged_path}")
+    practices_path = settings.output_dir / "practices.csv"
+    write_tab(practices_path, PracticeRow, practice_tab)
+    logger.info(f"Wrote {len(practice_tab)} practice tags to {practices_path}")
 
 
 if __name__ == "__main__":

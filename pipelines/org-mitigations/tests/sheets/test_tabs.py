@@ -18,10 +18,12 @@ from org_mitigations.sheets.tabs import (
     EvidenceRow,
     ExcerptRow,
     MitigationRow,
+    PracticeRow,
     evidence_rows,
     excerpt_rows,
     format_document_date,
     mitigation_rows,
+    practice_rows,
     write_tab,
 )
 
@@ -127,17 +129,23 @@ def found_mitigation(mitigation_id: str, company_id: str) -> FoundMitigation:
     )
 
 
-def practices_result(mitigation_id: str, *practices: str) -> PracticesResult:
+def tag(
+    practice: str, *subtypes: str, quote_numbers: tuple[int, ...] = (1,)
+) -> TaggedPractice:
+    return TaggedPractice(
+        name=practice,
+        subtypes=list(subtypes),
+        quote_numbers=list(quote_numbers),
+        reasoning=f"Fits {practice}.",
+    )
+
+
+def practices_result(mitigation_id: str, *tags: TaggedPractice) -> PracticesResult:
     return PracticesResult(
         mitigation_id=mitigation_id,
         answer=Answer(
             match_id=mitigation_id,
-            tagged_practices=[
-                TaggedPractice(
-                    name=practice, subtypes=[], quote_numbers=[1], reasoning="Fits."
-                )
-                for practice in practices
-            ],
+            tagged_practices=list(tags),
             affiliations=[],
         ),
         model="test-model",
@@ -312,12 +320,12 @@ class TestMitigationRows:
             practices_results={
                 "Example_Bank__2.2__1": practices_result(
                     "Example_Bank__2.2__1",
-                    "Named accountability for AI risk",
-                    "Published AI policy",
+                    tag("Named accountability for AI risk"),
+                    tag("Published AI policy"),
                 ),
                 "Example_Bank__1.1__1": practices_result("Example_Bank__1.1__1"),
                 "Example_Retail__2.2__1": practices_result(
-                    "Example_Retail__2.2__1", "Named accountability for AI risk"
+                    "Example_Retail__2.2__1", tag("Named accountability for AI risk")
                 ),
             },
         )
@@ -357,6 +365,90 @@ class TestMitigationRows:
                 companies=[BANK],
                 mitigations=[found_mitigation("Example_Bank__2.2__1", "recA")],
                 practices_results={},
+            )
+
+
+class TestPracticeRows:
+    @pytest.fixture
+    def rows(self) -> list[PracticeRow]:
+        return practice_rows(
+            company_names=["Example Retail", "Example Bank"],
+            taxonomy=TAXONOMY,
+            companies=[BANK, RETAIL],
+            mitigations=[
+                found_mitigation("Example_Bank__2.2__1", "recA"),
+                found_mitigation("Example_Bank__1.1__1", "recA"),
+                found_mitigation("Example_Retail__2.2__1", "recB"),
+            ],
+            practices_results={
+                "Example_Bank__2.2__1": practices_result(
+                    "Example_Bank__2.2__1",
+                    tag(
+                        "Named accountability for AI risk",
+                        "Board of directors oversight",
+                        quote_numbers=(1, 2),
+                    ),
+                    tag("Published AI policy", quote_numbers=(2,)),
+                ),
+                "Example_Bank__1.1__1": practices_result("Example_Bank__1.1__1"),
+                "Example_Retail__2.2__1": practices_result(
+                    "Example_Retail__2.2__1", tag("Named accountability for AI risk")
+                ),
+            },
+        )
+
+    def test_lists_each_tag_by_company_then_code(self, rows: list[PracticeRow]) -> None:
+        tags = [(row.mitigation_id, row.practice) for row in rows]
+
+        assert tags == [
+            ("Example_Retail__2.2__1", "Named accountability for AI risk"),
+            ("Example_Bank__2.2__1", "Named accountability for AI risk"),
+            ("Example_Bank__2.2__1", "Published AI policy"),
+        ]
+
+    def test_describes_each_tag_with_the_quotes_it_cites(
+        self, rows: list[PracticeRow]
+    ) -> None:
+        assert rows[1:] == [
+            PracticeRow(
+                mitigation_id="Example_Bank__2.2__1",
+                company="Example Bank",
+                sector="Finance",
+                domain_code="2.2",
+                domain_name="Accountability & Responsibility",
+                mitigation_name="Board oversight of AI",
+                practice="Named accountability for AI risk",
+                subtypes="Board of directors oversight",
+                reasoning="Fits Named accountability for AI risk.",
+                quotes="Our board oversees AI.\n\nIt meets quarterly.",
+            ),
+            PracticeRow(
+                mitigation_id="Example_Bank__2.2__1",
+                company="Example Bank",
+                sector="Finance",
+                domain_code="2.2",
+                domain_name="Accountability & Responsibility",
+                mitigation_name="Board oversight of AI",
+                practice="Published AI policy",
+                subtypes="",
+                reasoning="Fits Published AI policy.",
+                quotes="It meets quarterly.",
+            ),
+        ]
+
+    def test_rejects_a_cited_quote_the_mitigation_lacks(self) -> None:
+        with pytest.raises(ValueError, match="cites quote 3"):
+            practice_rows(
+                company_names=["Example Bank"],
+                taxonomy=TAXONOMY,
+                companies=[BANK],
+                mitigations=[found_mitigation("Example_Bank__2.2__1", "recA")],
+                practices_results={
+                    "Example_Bank__2.2__1": practices_result(
+                        "Example_Bank__2.2__1",
+                        tag("Published AI policy", quote_numbers=(3,)),
+                    )
+                },
             )
 
 

@@ -57,6 +57,19 @@ class MitigationRow(BaseModel):
     practices: str = Field(serialization_alias="Practices")
 
 
+class PracticeRow(BaseModel):
+    mitigation_id: str = Field(serialization_alias="Mitigation ID")
+    company: str = Field(serialization_alias="Company")
+    sector: str = Field(serialization_alias="Sector")
+    domain_code: str = Field(serialization_alias="Domain code")
+    domain_name: str = Field(serialization_alias="Domain name")
+    mitigation_name: str = Field(serialization_alias="Mitigation")
+    practice: str = Field(serialization_alias="Practice")
+    subtypes: str = Field(serialization_alias="Subtypes")
+    reasoning: str = Field(serialization_alias="LLM reasoning")
+    quotes: str = Field(serialization_alias="Quotes")
+
+
 def format_document_date(document: Document) -> str:
     if document.date is None or document.date_precision is None:
         return ""
@@ -179,15 +192,94 @@ def mitigation_rows(
     mitigations: list[FoundMitigation],
     practices_results: Mapping[str, PracticesResult],
 ) -> list[MitigationRow]:
+    companies_by_id = {company.company_id: company for company in companies}
+    domain_names = {
+        domain.code: domain.name for locus in taxonomy for domain in locus.domains
+    }
+    selected = _selected_mitigations(
+        company_names=company_names,
+        taxonomy=taxonomy,
+        companies=companies,
+        mitigations=mitigations,
+        practices_results=practices_results,
+    )
+    return [
+        MitigationRow(
+            mitigation_id=mitigation.mitigation_id,
+            company=companies_by_id[mitigation.company_id].name,
+            sector=companies_by_id[mitigation.company_id].sector,
+            domain_code=mitigation.domain_code,
+            domain_name=domain_names[mitigation.domain_code],
+            mitigation_name=mitigation.name,
+            reasoning=mitigation.reasoning,
+            quotes="\n\n".join(quote.quote for quote in mitigation.quotes),
+            practices="; ".join(
+                tagged.name
+                for tagged in practices_results[
+                    mitigation.mitigation_id
+                ].answer.tagged_practices
+            ),
+        )
+        for mitigation in selected
+    ]
+
+
+def practice_rows(
+    *,
+    company_names: list[str],
+    taxonomy: list[Locus],
+    companies: list[Company],
+    mitigations: list[FoundMitigation],
+    practices_results: Mapping[str, PracticesResult],
+) -> list[PracticeRow]:
+    companies_by_id = {company.company_id: company for company in companies}
+    domain_names = {
+        domain.code: domain.name for locus in taxonomy for domain in locus.domains
+    }
+    selected = _selected_mitigations(
+        company_names=company_names,
+        taxonomy=taxonomy,
+        companies=companies,
+        mitigations=mitigations,
+        practices_results=practices_results,
+    )
+    return [
+        PracticeRow(
+            mitigation_id=mitigation.mitigation_id,
+            company=companies_by_id[mitigation.company_id].name,
+            sector=companies_by_id[mitigation.company_id].sector,
+            domain_code=mitigation.domain_code,
+            domain_name=domain_names[mitigation.domain_code],
+            mitigation_name=mitigation.name,
+            practice=tagged.name,
+            subtypes="; ".join(tagged.subtypes),
+            reasoning=tagged.reasoning,
+            quotes="\n\n".join(
+                _cited_quote(mitigation, number) for number in tagged.quote_numbers
+            ),
+        )
+        for mitigation in selected
+        for tagged in practices_results[
+            mitigation.mitigation_id
+        ].answer.tagged_practices
+    ]
+
+
+def _selected_mitigations(
+    *,
+    company_names: list[str],
+    taxonomy: list[Locus],
+    companies: list[Company],
+    mitigations: list[FoundMitigation],
+    practices_results: Mapping[str, PracticesResult],
+) -> list[FoundMitigation]:
     companies_by_name = {company.name: company for company in companies}
     company_order = {
         companies_by_name[name].company_id: order
         for order, name in enumerate(company_names)
     }
-    companies_by_id = {company.company_id: company for company in companies}
     domains = [domain for locus in taxonomy for domain in locus.domains]
     domain_order = {domain.code: order for order, domain in enumerate(domains)}
-    domain_names = {domain.code: domain.name for domain in domains}
 
     selected = sorted(
         (
@@ -210,26 +302,16 @@ def mitigation_rows(
             f"No practices result for {len(missing)} of {len(selected)}"
             + f" mitigations, such as {missing[0]}"
         )
+    return selected
 
-    return [
-        MitigationRow(
-            mitigation_id=mitigation.mitigation_id,
-            company=companies_by_id[mitigation.company_id].name,
-            sector=companies_by_id[mitigation.company_id].sector,
-            domain_code=mitigation.domain_code,
-            domain_name=domain_names[mitigation.domain_code],
-            mitigation_name=mitigation.name,
-            reasoning=mitigation.reasoning,
-            quotes="\n\n".join(quote.quote for quote in mitigation.quotes),
-            practices="; ".join(
-                tagged.name
-                for tagged in practices_results[
-                    mitigation.mitigation_id
-                ].answer.tagged_practices
-            ),
+
+def _cited_quote(mitigation: FoundMitigation, number: int) -> str:
+    if not 1 <= number <= len(mitigation.quotes):
+        raise ValueError(
+            f"The practices answer for {mitigation.mitigation_id} cites quote"
+            + f" {number}, but the mitigation has {len(mitigation.quotes)}"
         )
-        for mitigation in selected
-    ]
+    return mitigation.quotes[number - 1].quote
 
 
 def write_tab[Row: BaseModel](path: Path, row_type: type[Row], rows: list[Row]) -> None:
