@@ -16,9 +16,10 @@
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@api/*": ["./api/*"]
     }
   },
-  "include": ["src", "tests", "vite.config.ts"],
+  "include": ["src", "api", "tests", "vite.config.ts"],
   "exclude": ["node_modules", "dist"]
 }
