@@ -12,6 +12,7 @@ from org_mitigations.prompt import Prompt, load_prompt
 
 SEARCH_PROMPT_PATH = Path(__file__).parent.parent / "prompts" / "search.md"
 PRACTICES_PROMPT_PATH = Path(__file__).parent.parent / "prompts" / "practices.md"
+INSTRUMENTS_PROMPT_PATH = Path(__file__).parent.parent / "prompts" / "instruments.md"
 
 TEMPLATE = """\
 <!-- SYSTEM -->
@@ -81,6 +82,9 @@ class TestLoadPrompt:
             PRACTICES_PROMPT_PATH,
             practices=render_practice_list(load_practice_list(PRACTICE_LIST_PATH)),
         )
+
+    def test_loads_the_instruments_prompt(self) -> None:
+        assert load_prompt(INSTRUMENTS_PROMPT_PATH)
 
 
 class TestRenderUser:
