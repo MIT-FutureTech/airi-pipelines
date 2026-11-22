@@ -13,6 +13,7 @@ DEFAULT_MAX_CHARS = 75_000
 class PipelineStage(StrEnum):
     SEARCH = "search"
     PRACTICES = "practices"
+    INSTRUMENTS = "instruments"
 
 
 class StageSettings(BaseModel):
@@ -49,6 +50,13 @@ class PracticesSettings(StageSettings):
     )
 
 
+class InstrumentsSettings(StageSettings):
+    prompt_path: Path = Field(
+        default=_PIPELINE_DIR / "prompts" / "instruments.md",
+        description="The prompt template",
+    )
+
+
 class PipelineSettings(
     BaseSettings,
     cli_parse_args=True,
@@ -60,14 +68,15 @@ class PipelineSettings(
 ):
     r"""
     Ask an LLM which mitigations each company's documents describe, with quotes
-    as evidence, then which practices each mitigation shows.
+    as evidence, then which practices each mitigation shows and which
+    instrument it uses.
 
     Example usage:
 
       uv run --env-file=.env python -m org_mitigations \
         --export-dir /path/to/exports/ \
         --output-dir /path/to/output/ \
-        --stages search,practices \
+        --stages search,practices,instruments \
         --company-names "Example Bank" --company-names "Example Retail"
     """
 
@@ -97,6 +106,10 @@ class PipelineSettings(
     practices: PracticesSettings = Field(
         default_factory=PracticesSettings,
         description="The practices stage's prompt and LLM settings",
+    )
+    instruments: InstrumentsSettings = Field(
+        default_factory=InstrumentsSettings,
+        description="The instruments stage's prompt and LLM settings",
     )
     max_chars: int = Field(
         default=DEFAULT_MAX_CHARS,
