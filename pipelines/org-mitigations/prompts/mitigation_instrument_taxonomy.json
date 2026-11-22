@@ -1,0 +1,172 @@
+{
+  "name": "Mitigation Instrument Taxonomy",
+  "version": "0.8",
+  "levels": 2,
+  "categories": [
+    {
+      "code": "1",
+      "name": "Inform",
+      "short_name": "Inform",
+      "level": 1,
+      "parent": null,
+      "definition": "Mitigations that work by changing what is known or believed about AI.",
+      "scope": "",
+      "exclusions": "",
+      "key_examples": ""
+    },
+    {
+      "code": "1.1",
+      "name": "Research & Evidence",
+      "short_name": "Research",
+      "level": 2,
+      "parent": "1",
+      "definition": "Mitigations involving the generation and dissemination of new knowledge and evidence.",
+      "scope": "Studies, data collection, research resources and tools, datasets, shared research infrastructure.",
+      "exclusions": "Instruments involving testing → Evaluation. Dissemination as training/education/literacy → Training domain. Non-research reporting → Disclosure.",
+      "key_examples": "Research studies; Research datasets; Foresight/horizon scanning"
+    },
+    {
+      "code": "1.2",
+      "name": "Information Sharing & Disclosure",
+      "short_name": "Disclosure",
+      "level": 2,
+      "parent": "1",
+      "definition": "Mitigations involving the open communication and sharing of information across actors.",
+      "scope": "Disclosure, reporting, notification, and information sharing across actors.",
+      "exclusions": "Generation of new knowledge or evidence → Research. Creation of a rule requiring disclosure → Standards/Law/Policies.",
+      "key_examples": "Disclosure and reporting of incidents; Information sharing on industry registries"
+    },
+    {
+      "code": "2",
+      "name": "Govern",
+      "short_name": "Govern",
+      "level": 1,
+      "parent": null,
+      "definition": "Mitigations that work by changing the rules that AI actors are expected to follow.",
+      "scope": "",
+      "exclusions": "",
+      "key_examples": ""
+    },
+    {
+      "code": "2.1",
+      "name": "Law & Regulation",
+      "short_name": "Law",
+      "level": 2,
+      "parent": "2",
+      "definition": "Mitigations involving the creation or adoption of systematic rules by an external authority with jurisdiction over the target.",
+      "scope": "Statute, legislature, court rulings, contracts, liability regimes.",
+      "exclusions": "",
+      "key_examples": "EU AI Act; Export controls on AI chips; Statutory requirement to conduct risk assessments"
+    },
+    {
+      "code": "2.2",
+      "name": "External Standards",
+      "short_name": "Standards",
+      "level": 2,
+      "parent": "2",
+      "definition": "Mitigations involving the creation and adoption of shared systematic rules from a peer or industry body (external, voluntary).",
+      "scope": "Industry standards, codes of practice, shared frameworks.",
+      "exclusions": "Evaluating/auditing/certifying against a standard → Evaluation. A standard mandated by regulation stays here, but the mandating regulation → Law. Co-regulation or government-endorsed → Law. Rules an actor authors for itself → Policies. Built controls → Technical. Contracts → Law.",
+      "key_examples": "NIST AI RMF; OECD AI principles; Industry safety pledges"
+    },
+    {
+      "code": "2.3",
+      "name": "Internal Policies",
+      "short_name": "Policies",
+      "level": 2,
+      "parent": "2",
+      "definition": "Mitigations involving the creation and adoption of systematic rules by an actor for itself, internally, including for its own staff.",
+      "scope": "Internal policies, public commitments, named plans and frameworks authored by the actor.",
+      "exclusions": "Vague, one-off, generic, or unnamed rules → Practices. Operational workflows that are not named rules → Practices. Shared rules from a peer/industry body → Standards.",
+      "key_examples": "Internal responsible-AI policy; A named safety framework the org authors"
+    },
+    {
+      "code": "3",
+      "name": "Implement",
+      "short_name": "Implement",
+      "level": 1,
+      "parent": null,
+      "definition": "Mitigations that work by directly changing what is done to and around AI systems in practice.",
+      "scope": "",
+      "exclusions": "",
+      "key_examples": ""
+    },
+    {
+      "code": "3.1",
+      "name": "Technical Artifacts",
+      "short_name": "Technical",
+      "level": 2,
+      "parent": "3",
+      "definition": "Mitigations that are built into the AI system or its supporting infrastructure.",
+      "scope": "Technical tools, innovations, systems, architecture, interfaces, and environments.",
+      "exclusions": "",
+      "key_examples": "Content filters; Sandboxing; Watermarking"
+    },
+    {
+      "code": "3.2",
+      "name": "Practices & Processes",
+      "short_name": "Practices",
+      "level": 2,
+      "parent": "3",
+      "definition": "Mitigations consisting of procedures, workflows, or ways of working that humans carry out.",
+      "scope": "Procedures, workflows, guidance.",
+      "exclusions": "A well-defined rule or policy an actor authors or adopts → Standards/Law/Policies. Continuous observation to surface problems → Monitoring.",
+      "key_examples": "Incident-response procedures; Review and sign-off workflows; Pre-deployment checklists"
+    },
+    {
+      "code": "3.3",
+      "name": "Monitoring",
+      "short_name": "Monitoring",
+      "level": 2,
+      "parent": "3",
+      "definition": "Mitigations consisting of the continuous observation of an AI system, its behaviour, use, or effects to surface problems on an ongoing basis.",
+      "scope": "Ongoing, continuous observation; logging; drift and anomaly detection.",
+      "exclusions": "Organizational reporting externally → Disclosure. A one-off procedure → Practices. A built monitor is Monitoring by function, not Technical. A discrete evaluative act → Evaluation.",
+      "key_examples": "Run-time behaviour monitoring; Logging/audit trails; Drift detection"
+    },
+    {
+      "code": "3.4",
+      "name": "Evaluation & Audit",
+      "short_name": "Evaluation",
+      "level": 2,
+      "parent": "3",
+      "definition": "Mitigations that primarily involve testing or checking against a standard or expectation; a discrete evaluative act producing an assessment.",
+      "scope": "Testing, audit, compliance checking.",
+      "exclusions": "Automatic runtime conditionals → Technical. The creation of a standard or framework → Standards. A catalogue of controls is Standards/Policies until it is implemented. Continuous ongoing observation → Monitoring. Knowledge generation with no criterion → Research.",
+      "key_examples": "Testing a model against benchmarks; Third-party audits; Dangerous-capability evaluations"
+    },
+    {
+      "code": "O",
+      "name": "Other",
+      "short_name": "Other",
+      "level": 1,
+      "parent": null,
+      "definition": "Mitigations whose instrument does not fit in the above modalities or which are unclassifiable for other reasons.",
+      "scope": "",
+      "exclusions": "",
+      "key_examples": ""
+    },
+    {
+      "code": "O.A",
+      "name": "Other (Additional)",
+      "short_name": "Other-A",
+      "level": 2,
+      "parent": "O",
+      "definition": "Clear instruments not captured above (e.g., training/education, advocacy, market mechanisms — levers that are folded into the domain axis; tag the instrument here).",
+      "scope": "",
+      "exclusions": "",
+      "key_examples": ""
+    },
+    {
+      "code": "O.C",
+      "name": "Other (Cross-cutting)",
+      "short_name": "Other-C",
+      "level": 2,
+      "parent": "O",
+      "definition": "Instruments that are broad, ambiguous, a combination, or cross-cutting across modalities, or otherwise cannot be confidently classified.",
+      "scope": "",
+      "exclusions": "",
+      "key_examples": ""
+    }
+  ]
+}
