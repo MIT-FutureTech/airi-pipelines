@@ -16,8 +16,8 @@ class SheetsSettings(
 ):
     r"""
     Write companies' excerpts, the LLM's evidence, the mitigations it found
-    with their practices, and the bodies and commitments the mitigations name,
-    as CSV files, one per spreadsheet tab.
+    with their practices and instruments, and the bodies and commitments the
+    mitigations name, as CSV files, one per spreadsheet tab.
 
     Example usage:
 

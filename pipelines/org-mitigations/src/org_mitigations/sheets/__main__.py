@@ -3,6 +3,11 @@ import logging
 from org_mitigations.corpus import load_corpus
 from org_mitigations.domain_taxonomy import DOMAIN_TAXONOMY_PATH, load_domain_taxonomy
 from org_mitigations.evidence import evidence_from_mitigations
+from org_mitigations.instrument_taxonomy import (
+    INSTRUMENT_TAXONOMY_PATH,
+    load_instrument_taxonomy,
+)
+from org_mitigations.instruments.calls import InstrumentsResult
 from org_mitigations.practices.calls import PracticesResult
 from org_mitigations.search.calls import SearchResult
 from org_mitigations.search.context import build_contexts
@@ -45,6 +50,10 @@ def main() -> None:
         settings.run_dir / PipelineStage.PRACTICES,
         PracticesResult,
     ).load_all()
+    instruments_results = ResultStore(
+        settings.run_dir / PipelineStage.INSTRUMENTS,
+        InstrumentsResult,
+    ).load_all()
     taxonomy = load_domain_taxonomy(DOMAIN_TAXONOMY_PATH)
     if settings.company_names is None:
         company_names = sorted(company.name for company in corpus.companies)
@@ -70,9 +79,11 @@ def main() -> None:
     mitigation_tab = mitigation_rows(
         company_names=company_names,
         taxonomy=taxonomy,
+        instrument_taxonomy=load_instrument_taxonomy(INSTRUMENT_TAXONOMY_PATH),
         companies=corpus.companies,
         mitigations=mitigations,
         practices_results=practices_results,
+        instruments_results=instruments_results,
     )
     untagged_tab = [row for row in mitigation_tab if not row.practices]
     practice_tab = practice_rows(

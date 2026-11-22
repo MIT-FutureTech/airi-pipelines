@@ -10,6 +10,9 @@ from org_mitigations.documents import DatePrecision, Document
 from org_mitigations.domain_taxonomy import Domain, Locus
 from org_mitigations.evidence import Evidence
 from org_mitigations.excerpts import Excerpt
+from org_mitigations.instrument_taxonomy import Instrument, Modality
+from org_mitigations.instruments.answer import Answer as InstrumentsAnswer
+from org_mitigations.instruments.calls import InstrumentsResult
 from org_mitigations.practices.answer import (
     Affiliation,
     Answer,
@@ -67,6 +70,19 @@ TAXONOMY = [
                 examples=["Board oversight"],
             ),
         ],
+    ),
+]
+
+INSTRUMENT_TAXONOMY = [
+    Modality(
+        code="2",
+        name="Govern",
+        instruments=[Instrument(code="2.3", name="Internal Policies")],
+    ),
+    Modality(
+        code="3",
+        name="Implement",
+        instruments=[Instrument(code="3.2", name="Practices & Processes")],
     ),
 ]
 
@@ -316,12 +332,27 @@ class TestEvidenceRows:
         assert (unlocated.quote_start, unlocated.quote_end) == (None, None)
 
 
+def instruments_result(mitigation_id: str, instrument_code: str) -> InstrumentsResult:
+    return InstrumentsResult(
+        mitigation_id=mitigation_id,
+        answer=InstrumentsAnswer(
+            lever="A lever.",
+            modality=instrument_code.split(".", maxsplit=1)[0],
+            instrument_code=instrument_code,
+            reasoning=f"Uses {instrument_code}.",
+        ),
+        model="test-model",
+        usage=None,
+    )
+
+
 class TestMitigationRows:
     @pytest.fixture
     def rows(self) -> list[MitigationRow]:
         return mitigation_rows(
             company_names=["Example Retail", "Example Bank"],
             taxonomy=TAXONOMY,
+            instrument_taxonomy=INSTRUMENT_TAXONOMY,
             companies=[BANK, RETAIL, INSURER],
             mitigations=[
                 found_mitigation("Example_Bank__2.2__1", "recA"),
@@ -338,6 +369,17 @@ class TestMitigationRows:
                 "Example_Bank__1.1__1": practices_result("Example_Bank__1.1__1"),
                 "Example_Retail__2.2__1": practices_result(
                     "Example_Retail__2.2__1", tag("Named accountability for AI risk")
+                ),
+            },
+            instruments_results={
+                "Example_Bank__2.2__1": instruments_result(
+                    "Example_Bank__2.2__1", "3.2"
+                ),
+                "Example_Bank__1.1__1": instruments_result(
+                    "Example_Bank__1.1__1", "2.3"
+                ),
+                "Example_Retail__2.2__1": instruments_result(
+                    "Example_Retail__2.2__1", "3.2"
                 ),
             },
         )
@@ -362,6 +404,9 @@ class TestMitigationRows:
             reasoning="Board-level accountability for AI.",
             quotes="Our board oversees AI.\n\nIt meets quarterly.",
             practices="Named accountability for AI risk; Published AI policy",
+            instrument_code="3.2",
+            instrument_name="Practices & Processes",
+            instrument_reasoning="Uses 3.2.",
         )
 
     def test_leaves_an_untagged_mitigations_practices_blank(
@@ -374,9 +419,29 @@ class TestMitigationRows:
             mitigation_rows(
                 company_names=["Example Bank"],
                 taxonomy=TAXONOMY,
+                instrument_taxonomy=INSTRUMENT_TAXONOMY,
                 companies=[BANK],
                 mitigations=[found_mitigation("Example_Bank__2.2__1", "recA")],
                 practices_results={},
+                instruments_results={
+                    "Example_Bank__2.2__1": instruments_result(
+                        "Example_Bank__2.2__1", "3.2"
+                    )
+                },
+            )
+
+    def test_rejects_a_mitigation_with_no_instruments_result(self) -> None:
+        with pytest.raises(ValueError, match="No instruments result"):
+            mitigation_rows(
+                company_names=["Example Bank"],
+                taxonomy=TAXONOMY,
+                instrument_taxonomy=INSTRUMENT_TAXONOMY,
+                companies=[BANK],
+                mitigations=[found_mitigation("Example_Bank__2.2__1", "recA")],
+                practices_results={
+                    "Example_Bank__2.2__1": practices_result("Example_Bank__2.2__1")
+                },
+                instruments_results={},
             )
 
 

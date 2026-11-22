@@ -10,6 +10,8 @@ from org_mitigations.documents import DatePrecision, Document
 from org_mitigations.domain_taxonomy import Locus
 from org_mitigations.evidence import Evidence
 from org_mitigations.excerpts import Excerpt
+from org_mitigations.instrument_taxonomy import Modality
+from org_mitigations.instruments.calls import InstrumentsResult
 from org_mitigations.locate import locate_quote
 from org_mitigations.practices.answer import Affiliation, Relation
 from org_mitigations.practices.calls import PracticesResult
@@ -56,6 +58,9 @@ class MitigationRow(BaseModel):
     reasoning: str = Field(serialization_alias="LLM reasoning")
     quotes: str = Field(serialization_alias="Quotes")
     practices: str = Field(serialization_alias="Practices")
+    instrument_code: str = Field(serialization_alias="Instrument code")
+    instrument_name: str = Field(serialization_alias="Instrument name")
+    instrument_reasoning: str = Field(serialization_alias="Instrument reasoning")
 
 
 class PracticeRow(BaseModel):
@@ -199,13 +204,20 @@ def mitigation_rows(
     *,
     company_names: list[str],
     taxonomy: list[Locus],
+    instrument_taxonomy: list[Modality],
     companies: list[Company],
     mitigations: list[FoundMitigation],
     practices_results: Mapping[str, PracticesResult],
+    instruments_results: Mapping[str, InstrumentsResult],
 ) -> list[MitigationRow]:
     companies_by_id = {company.company_id: company for company in companies}
     domain_names = {
         domain.code: domain.name for locus in taxonomy for domain in locus.domains
+    }
+    instrument_names = {
+        instrument.code: instrument.name
+        for modality in instrument_taxonomy
+        for instrument in modality.instruments
     }
     selected = _selected_mitigations(
         company_names=company_names,
@@ -214,25 +226,39 @@ def mitigation_rows(
         mitigations=mitigations,
         practices_results=practices_results,
     )
-    return [
-        MitigationRow(
-            mitigation_id=mitigation.mitigation_id,
-            company=companies_by_id[mitigation.company_id].name,
-            sector=companies_by_id[mitigation.company_id].sector,
-            domain_code=mitigation.domain_code,
-            domain_name=domain_names[mitigation.domain_code],
-            mitigation_name=mitigation.name,
-            reasoning=mitigation.reasoning,
-            quotes="\n\n".join(quote.quote for quote in mitigation.quotes),
-            practices="; ".join(
-                tagged.name
-                for tagged in practices_results[
-                    mitigation.mitigation_id
-                ].answer.tagged_practices
-            ),
-        )
+    missing = [
+        mitigation.mitigation_id
         for mitigation in selected
+        if mitigation.mitigation_id not in instruments_results
     ]
+    if missing:
+        raise ValueError(
+            f"No instruments result for {len(missing)} of {len(selected)}"
+            + f" mitigations, such as {missing[0]}"
+        )
+    rows: list[MitigationRow] = []
+    for mitigation in selected:
+        practices = practices_results[mitigation.mitigation_id].answer
+        instrument = instruments_results[mitigation.mitigation_id].answer
+        rows.append(
+            MitigationRow(
+                mitigation_id=mitigation.mitigation_id,
+                company=companies_by_id[mitigation.company_id].name,
+                sector=companies_by_id[mitigation.company_id].sector,
+                domain_code=mitigation.domain_code,
+                domain_name=domain_names[mitigation.domain_code],
+                mitigation_name=mitigation.name,
+                reasoning=mitigation.reasoning,
+                quotes="\n\n".join(quote.quote for quote in mitigation.quotes),
+                practices="; ".join(
+                    tagged.name for tagged in practices.tagged_practices
+                ),
+                instrument_code=instrument.instrument_code,
+                instrument_name=instrument_names[instrument.instrument_code],
+                instrument_reasoning=instrument.reasoning,
+            )
+        )
+    return rows
 
 
 def practice_rows(
