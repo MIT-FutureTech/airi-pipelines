@@ -13,3 +13,13 @@ export interface Judgement {
 export interface JudgementsResponse {
   judgements: Judgement[];
 }
+
+export interface SaveJudgementRequest {
+  companyId: string;
+  companyName: string;
+  codeRecordId: string;
+  codeKey: string;
+  decision: Decision | null;
+  comment: string;
+  supportingMitigationRecordIds: string[];
+}
