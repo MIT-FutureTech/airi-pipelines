@@ -51,6 +51,7 @@ TAXONOMY_FILE = {
             "1",
             "Mitigations that make a model legible.",
             "Model cards; SHAP methods",
+            boundary_question="Does it make the model understandable?",
         ),
         _category(
             "1.2",
@@ -59,6 +60,8 @@ TAXONOMY_FILE = {
             "1",
             "Mitigations that shape a model's goals.",
             "RLHF",
+            boundary_question="Does it change what the model wants?",
+            exclusions="Runtime filters → Operational.",
         ),
         _category(
             "1.A",
@@ -81,6 +84,7 @@ TAXONOMY_FILE = {
             "2",
             "Mitigations that build AI-safety skills.",
             "Staff safety training",
+            boundary_question="Does it build people's skills?",
         ),
         _category(
             "2.C",
@@ -110,14 +114,18 @@ class TestLoadDomainTaxonomy:
                         name="Interpretability & Transparency",
                         short_name="Interpretability",
                         definition="Mitigations that make a model legible.",
+                        boundary_question="Does it make the model understandable?",
                         examples=["Model cards", "SHAP methods"],
+                        exclusions=None,
                     ),
                     Domain(
                         code="1.2",
                         name="Alignment & Value Learning",
                         short_name="Alignment",
                         definition="Mitigations that shape a model's goals.",
+                        boundary_question="Does it change what the model wants?",
                         examples=["RLHF"],
+                        exclusions="Runtime filters → Operational.",
                     ),
                 ],
             ),
@@ -132,17 +140,39 @@ class TestLoadDomainTaxonomy:
                         name="Training & Capacity-building",
                         short_name="Training",
                         definition="Mitigations that build AI-safety skills.",
+                        boundary_question="Does it build people's skills?",
                         examples=["Staff safety training"],
+                        exclusions=None,
                     ),
                 ],
             ),
         ]
 
+    def test_rejects_a_code_without_a_boundary_question(self, tmp_path: Path) -> None:
+        taxonomy_file = {
+            "categories": [
+                _category("1", "AI System", "AI System", None, "..."),
+                _category("1.1", "Interpretability", "Interp", "1", "...", "Probes"),
+            ]
+        }
+        path = tmp_path / "taxonomy.json"
+        path.write_text(json.dumps(taxonomy_file))
+
+        with pytest.raises(ValueError, match=r"Domain 1\.1 has no boundary question"):
+            load_domain_taxonomy(path)
+
     def test_rejects_a_code_without_examples(self, tmp_path: Path) -> None:
         taxonomy_file = {
             "categories": [
                 _category("1", "AI System", "AI System", None, "..."),
-                _category("1.1", "Interpretability", "Interp", "1", "..."),
+                _category(
+                    "1.1",
+                    "Interpretability",
+                    "Interp",
+                    "1",
+                    "...",
+                    boundary_question="?",
+                ),
             ]
         }
         path = tmp_path / "taxonomy.json"
