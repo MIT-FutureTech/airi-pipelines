@@ -3,6 +3,10 @@ from pathlib import Path
 import pytest
 
 from org_mitigations.domain_taxonomy import DOMAIN_TAXONOMY_PATH, render_domain_taxonomy
+from org_mitigations.instrument_taxonomy import (
+    INSTRUMENT_TAXONOMY_PATH,
+    render_instrument_taxonomy,
+)
 from org_mitigations.practice_list import (
     PRACTICE_LIST_PATH,
     load_practice_list,
@@ -84,7 +88,10 @@ class TestLoadPrompt:
         )
 
     def test_loads_the_instruments_prompt(self) -> None:
-        assert load_prompt(INSTRUMENTS_PROMPT_PATH)
+        assert load_prompt(
+            INSTRUMENTS_PROMPT_PATH,
+            instruments=render_instrument_taxonomy(INSTRUMENT_TAXONOMY_PATH),
+        )
 
 
 class TestRenderUser:

@@ -8,28 +8,7 @@ Note: this taxonomy classifies HOW the mitigation creates change (its lever), no
 <taxonomy>
 The taxonomy has 3 substantive instrument modalities (Inform, Govern, Implement) plus Other. Always classify at level 2.
 
-MODALITY 1: INFORM
-Mitigations that work by changing what is known or believed about AI.
-- 1.1: Research & Evidence — Mitigations involving the generation and dissemination of new knowledge and evidence. Scope: Studies, data collection, research resources and tools, datasets, shared research infrastructure. Examples: Research studies; Research datasets; Foresight/horizon scanning. (Instruments involving testing → Evaluation. Dissemination as training/education/literacy → Training domain. Non-research reporting → Disclosure.)
-- 1.2: Information Sharing & Disclosure — Mitigations involving the open communication and sharing of information across actors. Scope: Disclosure, reporting, notification, and information sharing across actors. Examples: Disclosure and reporting of incidents; Information sharing on industry registries. (Generation of new knowledge or evidence → Research. Creation of a rule requiring disclosure → Standards/Law/Policies.)
-
-MODALITY 2: GOVERN
-Mitigations that work by changing the rules that AI actors are expected to follow.
-- 2.1: Law & Regulation — Mitigations involving the creation or adoption of systematic rules by an external authority with jurisdiction over the target. Scope: Statute, legislature, court rulings, contracts, liability regimes. Examples: EU AI Act; Export controls on AI chips; Statutory requirement to conduct risk assessments.
-- 2.2: External Standards — Mitigations involving the creation and adoption of shared systematic rules from a peer or industry body (external, voluntary). Scope: Industry standards, codes of practice, shared frameworks. Examples: NIST AI RMF; OECD AI principles; Industry safety pledges. (Evaluating/auditing/certifying against a standard → Evaluation. A standard mandated by regulation stays here, but the mandating regulation → Law. Co-regulation or government-endorsed → Law. Rules an actor authors for itself → Policies. Built controls → Technical. Contracts → Law.)
-- 2.3: Internal Policies — Mitigations involving the creation and adoption of systematic rules by an actor for itself, internally, including for its own staff. Scope: Internal policies, public commitments, named plans and frameworks authored by the actor. Examples: Internal responsible-AI policy; A named safety framework the org authors. (Vague, one-off, generic, or unnamed rules → Practices. Operational workflows that are not named rules → Practices. Shared rules from a peer/industry body → Standards.)
-
-MODALITY 3: IMPLEMENT
-Mitigations that work by directly changing what is done to and around AI systems in practice.
-- 3.1: Technical Artifacts — Mitigations that are built into the AI system or its supporting infrastructure. Scope: Technical tools, innovations, systems, architecture, interfaces, and environments. Examples: Content filters; Sandboxing; Watermarking.
-- 3.2: Practices & Processes — Mitigations consisting of procedures, workflows, or ways of working that humans carry out. Scope: Procedures, workflows, guidance. Examples: Incident-response procedures; Review and sign-off workflows; Pre-deployment checklists. (A well-defined rule or policy an actor authors or adopts → Standards/Law/Policies. Continuous observation to surface problems → Monitoring.)
-- 3.3: Monitoring — Mitigations consisting of the continuous observation of an AI system, its behaviour, use, or effects to surface problems on an ongoing basis. Scope: Ongoing, continuous observation; logging; drift and anomaly detection. Examples: Run-time behaviour monitoring; Logging/audit trails; Drift detection. (Organizational reporting externally → Disclosure. A one-off procedure → Practices. A built monitor is Monitoring by function, not Technical. A discrete evaluative act → Evaluation.)
-- 3.4: Evaluation & Audit — Mitigations that primarily involve testing or checking against a standard or expectation; a discrete evaluative act producing an assessment. Scope: Testing, audit, compliance checking. Examples: Testing a model against benchmarks; Third-party audits; Dangerous-capability evaluations. (Automatic runtime conditionals → Technical. The creation of a standard or framework → Standards. A catalogue of controls is Standards/Policies until it is implemented. Continuous ongoing observation → Monitoring. Knowledge generation with no criterion → Research.)
-
-MODALITY O: OTHER
-Mitigations whose instrument does not fit in the above modalities or which are unclassifiable for other reasons.
-- O.A: Other (Additional) — Clear instruments not captured above (e.g., training/education, advocacy, market mechanisms — levers that are folded into the domain axis; tag the instrument here).
-- O.C: Other (Cross-cutting) — Instruments that are broad, ambiguous, a combination, or cross-cutting across modalities, or otherwise cannot be confidently classified.
+$instruments
 </taxonomy>
 
 <instructions>
