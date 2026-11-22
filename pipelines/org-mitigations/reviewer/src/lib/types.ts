@@ -1,4 +1,3 @@
-// biome-ignore-all lint/style/useNamingConvention: these fields must match what Python outputs
 export interface RunSettings {
   prompt_file: string;
   model: string;
