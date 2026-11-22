@@ -2,6 +2,7 @@ export interface WorkerEnv {
   AIRTABLE_PAT?: string;
   AIRTABLE_BASE_ID?: string;
   AIRTABLE_JUDGEMENTS_TABLE?: string;
+  LOCAL_USER_EMAIL?: string;
 }
 
 export interface AirtableEnv {
