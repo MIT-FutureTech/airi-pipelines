@@ -1,8 +1,10 @@
 import asyncio
 import logging
 from collections.abc import Mapping, Sequence
+from itertools import batched
 
 from pydantic import BaseModel
+from tqdm import tqdm
 
 from org_mitigations.corpus import load_corpus
 from org_mitigations.documents import load_document_record_ids
@@ -26,7 +28,8 @@ from org_mitigations.sync.quotes import QUOTE_FIELD_TYPES, quote_records
 from org_mitigations.sync.record_ids import record_ids_by_key
 from org_mitigations.sync.schema import FieldType, field_mismatches
 from org_mitigations.sync.settings import SyncSettings
-from toolbox.airtable import AirtableClient, Table
+from toolbox.airtable import AirtableClient, Record, Table
+from toolbox.airtable.table import BATCH_SIZE
 from toolbox.log import configure_logging
 from toolbox.results import ResultStore
 
@@ -151,8 +154,11 @@ async def _create_missing(
     )
     if dry_run:
         return existing | {row[key_field]: f"(new) {row[key_field]}" for row in missing}
-    logger.info(f"Creating {len(missing)} records in {table_name}")
-    created = await table.batch_create(missing)
+    created: list[Record] = []
+    with tqdm(desc=table_name, total=len(missing), unit="record") as progress:
+        for batch in batched(missing, BATCH_SIZE):
+            created.extend(await table.batch_create(batch))
+            progress.update(len(batch))
     return existing | record_ids_by_key(created, key_field)
 
 
