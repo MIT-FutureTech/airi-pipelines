@@ -32,7 +32,8 @@ partway. See `uv run python -m org_mitigations.sync --help`.
 ## Bundling evidence for the reviewer
 
 The reviewer app reads its data from a JSON file which the Python code can
-compile. See `uv run python -m org_mitigations.bundle --help`.
+compile from the records copied to Airtable and the export. See
+`uv run python -m org_mitigations.bundle --help`.
 
 ## Exporting evidence for a spreadsheet
 
