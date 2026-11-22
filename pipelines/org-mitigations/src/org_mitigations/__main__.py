@@ -2,6 +2,7 @@ import asyncio
 import logging
 
 from org_mitigations.corpus import load_corpus
+from org_mitigations.instruments.stage import run_instruments
 from org_mitigations.practices.stage import run_practices
 from org_mitigations.search.context import build_contexts
 from org_mitigations.search.stage import run_search
@@ -31,6 +32,8 @@ async def main() -> None:
             await run_search(contexts, companies=corpus.companies, settings=settings)
         if PipelineStage.PRACTICES in settings.stages:
             await run_practices(contexts, companies=corpus.companies, settings=settings)
+        if PipelineStage.INSTRUMENTS in settings.stages:
+            await run_instruments(contexts, settings=settings)
     except:
         logger.exception("Uncaught exception")
         raise
