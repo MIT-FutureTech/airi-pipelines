@@ -3,6 +3,9 @@ from pathlib import Path
 
 from org_mitigations.instrument_taxonomy import (
     INSTRUMENT_TAXONOMY_PATH,
+    Instrument,
+    Modality,
+    load_instrument_taxonomy,
     render_instrument_taxonomy,
 )
 
@@ -28,6 +31,42 @@ def _category(
         "exclusions": exclusions,
         "key_examples": key_examples,
     }
+
+
+class TestLoadInstrumentTaxonomy:
+    def test_nests_instruments_under_their_modality(self, tmp_path: Path) -> None:
+        taxonomy_file = {
+            "categories": [
+                _category("1", "Inform", None, "Mitigations that change knowledge."),
+                _category("1.1", "Research & Evidence", "1", "Generate knowledge."),
+                _category("1.2", "Information Sharing & Disclosure", "1", "Share."),
+                _category("O", "Other", None, "Mitigations that fit nowhere above."),
+                _category("O.C", "Other (Cross-cutting)", "O", "Broad or vague."),
+            ]
+        }
+        path = tmp_path / "taxonomy.json"
+        path.write_text(json.dumps(taxonomy_file))
+
+        assert load_instrument_taxonomy(path) == [
+            Modality(
+                code="1",
+                name="Inform",
+                instruments=[
+                    Instrument(code="1.1", name="Research & Evidence"),
+                    Instrument(code="1.2", name="Information Sharing & Disclosure"),
+                ],
+            ),
+            Modality(
+                code="O",
+                name="Other",
+                instruments=[Instrument(code="O.C", name="Other (Cross-cutting)")],
+            ),
+        ]
+
+    def test_loads_the_pipelines_taxonomy_file(self) -> None:
+        modalities = load_instrument_taxonomy(INSTRUMENT_TAXONOMY_PATH)
+
+        assert [len(modality.instruments) for modality in modalities] == [2, 3, 4, 2]
 
 
 class TestRenderInstrumentTaxonomy:

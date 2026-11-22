@@ -9,6 +9,17 @@ INSTRUMENT_TAXONOMY_PATH = (
 )
 
 
+class Instrument(BaseModel):
+    code: str
+    name: str
+
+
+class Modality(BaseModel):
+    code: str
+    name: str
+    instruments: list[Instrument]
+
+
 class _Category(BaseModel):
     code: str
     name: str
@@ -21,6 +32,21 @@ class _Category(BaseModel):
 
 class _TaxonomyFile(BaseModel):
     categories: list[_Category]
+
+
+def load_instrument_taxonomy(path: Path) -> list[Modality]:
+    taxonomy_file = _TaxonomyFile.model_validate_json(path.read_text())
+    modalities: dict[str, Modality] = {}
+    for category in taxonomy_file.categories:
+        if category.parent is None:
+            modalities[category.code] = Modality(
+                code=category.code, name=category.name, instruments=[]
+            )
+        else:
+            modalities[category.parent].instruments.append(
+                Instrument(code=category.code, name=category.name)
+            )
+    return list(modalities.values())
 
 
 def render_instrument_taxonomy(path: Path) -> str:
