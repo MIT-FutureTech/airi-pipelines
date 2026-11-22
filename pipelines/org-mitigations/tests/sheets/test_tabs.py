@@ -321,7 +321,7 @@ class TestEvidenceRows:
             quote="text",
             quote_start=20,
             quote_end=24,
-            reasoning="Board-level accountability for AI.",
+            search_reasoning="Board-level accountability for AI.",
         )
 
     def test_leaves_the_position_of_an_unlocated_quote_blank(
@@ -401,7 +401,7 @@ class TestMitigationRows:
             domain_code="2.2",
             domain_name="Accountability & Responsibility",
             mitigation_name="Board oversight of AI",
-            reasoning="Board-level accountability for AI.",
+            search_reasoning="Board-level accountability for AI.",
             quotes="Our board oversees AI.\n\nIt meets quarterly.",
             practices="Named accountability for AI risk; Published AI policy",
             instrument_code="3.2",

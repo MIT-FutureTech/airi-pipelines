@@ -45,7 +45,7 @@ class EvidenceRow(BaseModel):
     quote: str = Field(serialization_alias="Quote")
     quote_start: int | None = Field(serialization_alias="Quote start")
     quote_end: int | None = Field(serialization_alias="Quote end")
-    reasoning: str = Field(serialization_alias="LLM reasoning")
+    search_reasoning: str = Field(serialization_alias="Search reasoning")
 
 
 class MitigationRow(BaseModel):
@@ -55,7 +55,7 @@ class MitigationRow(BaseModel):
     domain_code: str = Field(serialization_alias="Domain code")
     domain_name: str = Field(serialization_alias="Domain name")
     mitigation_name: str = Field(serialization_alias="Mitigation")
-    reasoning: str = Field(serialization_alias="LLM reasoning")
+    search_reasoning: str = Field(serialization_alias="Search reasoning")
     quotes: str = Field(serialization_alias="Quotes")
     practices: str = Field(serialization_alias="Practices")
     instrument_code: str = Field(serialization_alias="Instrument code")
@@ -194,7 +194,7 @@ def evidence_rows(
                 quote=item.quote,
                 quote_start=location.start if location else None,
                 quote_end=location.end if location else None,
-                reasoning=item.reasoning,
+                search_reasoning=item.reasoning,
             )
         )
     return rows
@@ -250,7 +250,7 @@ def mitigation_rows(
                 domain_code=mitigation.domain_code,
                 domain_name=domain_names[mitigation.domain_code],
                 mitigation_name=mitigation.name,
-                reasoning=mitigation.reasoning,
+                search_reasoning=mitigation.reasoning,
                 quotes="\n\n".join(quote.quote for quote in mitigation.quotes),
                 practices="; ".join(
                     tagged.name for tagged in practices.tagged_practices
