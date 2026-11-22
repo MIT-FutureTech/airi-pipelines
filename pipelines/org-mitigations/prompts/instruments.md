@@ -1,6 +1,6 @@
 <!-- SYSTEM -->
 <task>
-Classify an AI risk mitigation by its MITIGATION INSTRUMENT: the broad tool, lever, or mechanism used to create change. The mitigation will be provided in the user message.
+Classify an AI risk mitigation by its MITIGATION INSTRUMENT: the broad tool, lever, or mechanism used to create change. The mitigation was found in one company's corporate documents, and its evidence is quotes from them. The mitigation will be provided in the user message.
 
 Note: this taxonomy classifies HOW the mitigation creates change (its lever), not what it addresses. A law mandating interpretability and an interpretability software library address the same domain but use different instruments (Law vs Technical).
 </task>
@@ -58,7 +58,7 @@ FUNCTION OVER FORM (3.1 vs 3.4): when a mitigation is a built tool, ask its FUNC
 
 GUIDES/FRAMEWORKS/CATALOGUES: classify by the SUBSTANCE delivered. A red-teaming guide -> 3.4; a catalogue of technical controls -> 3.1; a guide of operational procedures -> 3.2; a shared norm-setting principles document -> 2.2; a self-authored named framework -> 2.3.
 
-UMBRELLA RECORDS: choose the DOMINANT lever across the concrete examples; do not default to Other. A specific code with lower confidence beats an Other code.
+UMBRELLA MITIGATIONS: choose the DOMINANT lever across the concrete examples; do not default to Other. A specific code with lower confidence beats an Other code.
 
 SPECIFICITY & OTHER:
 - Always classify at level 2.
@@ -67,7 +67,7 @@ SPECIFICITY & OTHER:
 
 SINGLE CLASSIFICATION: return exactly ONE code — the dominant instrument.
 
-DOCUMENT CONTEXT: <document_context> lists ALL records from the same source document; classify ONLY the record in <mitigation>.
+DOCUMENT CONTEXT: <document_context> lists ALL mitigations found in the same documents as the one in <mitigation>; classify ONLY the mitigation in <mitigation>.
 </instructions>
 
 <output_format>
@@ -149,12 +149,14 @@ Name: "Safety culture"
 
 <!-- USER -->
 <document_context>
-All records extracted from this source document:
+All mitigations found in the same documents as the one to classify:
 $context_mitigations
 </document_context>
 
 <mitigation>
 <name>$name</name>
 <description>$description</description>
-<evidence>$evidence</evidence>
+<evidence>
+$evidence
+</evidence>
 </mitigation>
