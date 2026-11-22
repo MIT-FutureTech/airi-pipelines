@@ -77,16 +77,29 @@ DOMAIN_TAXONOMY = [
     ),
 ]
 
+
+def _instrument(code: str, name: str) -> Instrument:
+    return Instrument(
+        code=code,
+        name=name,
+        short_name=name,
+        definition=f"Mitigations that work through {name}.",
+        scope=None,
+        examples=[],
+        exclusions=None,
+    )
+
+
 INSTRUMENT_TAXONOMY = [
     Modality(
         code="2",
         name="Govern",
-        instruments=[Instrument(code="2.3", name="Internal Policies")],
+        instruments=[_instrument("2.3", "Internal Policies")],
     ),
     Modality(
         code="3",
         name="Implement",
-        instruments=[Instrument(code="3.2", name="Practices & Processes")],
+        instruments=[_instrument("3.2", "Practices & Processes")],
     ),
 ]
 

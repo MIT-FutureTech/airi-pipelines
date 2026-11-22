@@ -38,7 +38,15 @@ class TestLoadInstrumentTaxonomy:
         taxonomy_file = {
             "categories": [
                 _category("1", "Inform", None, "Mitigations that change knowledge."),
-                _category("1.1", "Research & Evidence", "1", "Generate knowledge."),
+                _category(
+                    "1.1",
+                    "Research & Evidence",
+                    "1",
+                    "Generate knowledge.",
+                    scope="Studies and datasets.",
+                    key_examples="Research studies; Research datasets",
+                    exclusions="Testing → Evaluation.",
+                ),
                 _category("1.2", "Information Sharing & Disclosure", "1", "Share."),
                 _category("O", "Other", None, "Mitigations that fit nowhere above."),
                 _category("O.C", "Other (Cross-cutting)", "O", "Broad or vague."),
@@ -52,14 +60,40 @@ class TestLoadInstrumentTaxonomy:
                 code="1",
                 name="Inform",
                 instruments=[
-                    Instrument(code="1.1", name="Research & Evidence"),
-                    Instrument(code="1.2", name="Information Sharing & Disclosure"),
+                    Instrument(
+                        code="1.1",
+                        name="Research & Evidence",
+                        short_name="Research & Evidence",
+                        definition="Generate knowledge.",
+                        scope="Studies and datasets.",
+                        examples=["Research studies", "Research datasets"],
+                        exclusions="Testing → Evaluation.",
+                    ),
+                    Instrument(
+                        code="1.2",
+                        name="Information Sharing & Disclosure",
+                        short_name="Information Sharing & Disclosure",
+                        definition="Share.",
+                        scope=None,
+                        examples=[],
+                        exclusions=None,
+                    ),
                 ],
             ),
             Modality(
                 code="O",
                 name="Other",
-                instruments=[Instrument(code="O.C", name="Other (Cross-cutting)")],
+                instruments=[
+                    Instrument(
+                        code="O.C",
+                        name="Other (Cross-cutting)",
+                        short_name="Other (Cross-cutting)",
+                        definition="Broad or vague.",
+                        scope=None,
+                        examples=[],
+                        exclusions=None,
+                    )
+                ],
             ),
         ]
 

@@ -1,19 +1,32 @@
 from org_mitigations.instrument_taxonomy import Instrument, Modality
 from org_mitigations.instruments.answer import Answer, invalid_code_reason
 
+
+def _instrument(code: str, name: str) -> Instrument:
+    return Instrument(
+        code=code,
+        name=name,
+        short_name=name,
+        definition=f"Mitigations that work through {name}.",
+        scope=None,
+        examples=[],
+        exclusions=None,
+    )
+
+
 MODALITIES = [
     Modality(
         code="2",
         name="Govern",
         instruments=[
-            Instrument(code="2.2", name="External Standards"),
-            Instrument(code="2.3", name="Internal Policies"),
+            _instrument("2.2", "External Standards"),
+            _instrument("2.3", "Internal Policies"),
         ],
     ),
     Modality(
         code="3",
         name="Implement",
-        instruments=[Instrument(code="3.2", name="Practices & Processes")],
+        instruments=[_instrument("3.2", "Practices & Processes")],
     ),
 ]
 

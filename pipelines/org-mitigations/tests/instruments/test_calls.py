@@ -16,6 +16,19 @@ from org_mitigations.search.mitigations import FoundMitigation, FoundQuote
 from toolbox.llm import StructuredResult, ToolboxLLMInvalidResponseError
 from toolbox.llm.stub import STUB_MODEL, STUB_USAGE
 
+
+def _instrument(code: str, name: str) -> Instrument:
+    return Instrument(
+        code=code,
+        name=name,
+        short_name=name,
+        definition=f"Mitigations that work through {name}.",
+        scope=None,
+        examples=[],
+        exclusions=None,
+    )
+
+
 PROMPT = Prompt(
     system="Classify instruments.",
     user_template="$context_mitigations\n---\n$name|$description\n$evidence",
@@ -24,7 +37,7 @@ MODALITIES = [
     Modality(
         code="2",
         name="Govern",
-        instruments=[Instrument(code="2.3", name="Internal Policies")],
+        instruments=[_instrument("2.3", "Internal Policies")],
     ),
 ]
 
