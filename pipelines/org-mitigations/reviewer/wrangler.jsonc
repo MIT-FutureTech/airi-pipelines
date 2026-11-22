@@ -5,7 +5,20 @@
   "main": "./api/worker.ts",
   "compatibility_date": "2026-10-18",
   "preview_urls": true,
+  "observability": {
+    "enabled": true,
+    "logs": {
+      "enabled": true
+    }
+  },
   "assets": {
     "run_worker_first": ["/api/*"]
+  },
+  "vars": {
+    "AIRTABLE_BASE_ID": "appHrhJQHkZz4c82U",
+    "AIRTABLE_JUDGEMENTS_TABLE": "Mitigation Judgements"
+  },
+  "secrets": {
+    "required": ["AIRTABLE_PAT"]
   }
 }
