@@ -71,80 +71,103 @@ DOCUMENT CONTEXT: <document_context> lists ALL mitigations found in the same doc
 </instructions>
 
 <output_format>
-Respond with ONLY the XML below. No preamble.
-
-<lever>One sentence: what is the primary lever this mitigation uses?</lever>
-<modality>1, 2, 3, or O</modality>
-<primary>CODE</primary>
-<reasoning>One sentence, max 20 words.</reasoning>
+Respond with ONLY a JSON object. No preamble. Fields in this order:
+{
+  "lever": "One sentence: what is the primary lever this mitigation uses?",
+  "modality": "1, 2, 3, or O",
+  "instrument_code": "CODE",
+  "reasoning": "One sentence, max 20 words."
+}
 </output_format>
 
 <examples>
 Name: "AI incident database for researchers"
-<lever>Builds a shared evidence resource with no test criterion.</lever>
-<modality>1</modality>
-<primary>1.1</primary>
-<reasoning>Knowledge/evidence resource — Research & Evidence.</reasoning>
+{
+  "lever": "Builds a shared evidence resource with no test criterion.",
+  "modality": "1",
+  "instrument_code": "1.1",
+  "reasoning": "Knowledge/evidence resource — Research & Evidence."
+}
 
 Name: "Disclose incidents to a regulator / publish a transparency report"
-<lever>Openly communicates information to other actors.</lever>
-<modality>1</modality>
-<primary>1.2</primary>
-<reasoning>Sharing/reporting of information — Information Sharing & Disclosure.</reasoning>
+{
+  "lever": "Openly communicates information to other actors.",
+  "modality": "1",
+  "instrument_code": "1.2",
+  "reasoning": "Sharing/reporting of information — Information Sharing & Disclosure."
+}
 
 Name: "EU AI Act"
-<lever>Binding legal rules from an external authority.</lever>
-<modality>2</modality>
-<primary>2.1</primary>
-<reasoning>Binding legislation — Law & Regulation.</reasoning>
+{
+  "lever": "Binding legal rules from an external authority.",
+  "modality": "2",
+  "instrument_code": "2.1",
+  "reasoning": "Binding legislation — Law & Regulation."
+}
 
 Name: "Adopt the NIST AI RMF / sign an industry safety pledge"
-<lever>Voluntarily adopting a shared peer/industry rule.</lever>
-<modality>2</modality>
-<primary>2.2</primary>
-<reasoning>Shared external voluntary standard — External Standards.</reasoning>
+{
+  "lever": "Voluntarily adopting a shared peer/industry rule.",
+  "modality": "2",
+  "instrument_code": "2.2",
+  "reasoning": "Shared external voluntary standard — External Standards."
+}
 
 Name: "Author an internal responsible-AI policy / named safety framework"
-<lever>Creating a rule for itself, internally.</lever>
-<modality>2</modality>
-<primary>2.3</primary>
-<reasoning>Self-authored internal rule — Internal Policies.</reasoning>
+{
+  "lever": "Creating a rule for itself, internally.",
+  "modality": "2",
+  "instrument_code": "2.3",
+  "reasoning": "Self-authored internal rule — Internal Policies."
+}
 
 Name: "Content filter / sandboxing / watermarking"
-<lever>Something built into the technical system.</lever>
-<modality>3</modality>
-<primary>3.1</primary>
-<reasoning>Built technical control — Technical Artifacts.</reasoning>
+{
+  "lever": "Something built into the technical system.",
+  "modality": "3",
+  "instrument_code": "3.1",
+  "reasoning": "Built technical control — Technical Artifacts."
+}
 
 Name: "Incident-response procedure / pre-deployment checklist"
-<lever>A procedure people carry out.</lever>
-<modality>3</modality>
-<primary>3.2</primary>
-<reasoning>Carried-out procedure — Practices & Processes.</reasoning>
+{
+  "lever": "A procedure people carry out.",
+  "modality": "3",
+  "instrument_code": "3.2",
+  "reasoning": "Carried-out procedure — Practices & Processes."
+}
 
 Name: "Continuous run-time behaviour monitoring / drift detection"
-<lever>Ongoing observation of the system to surface problems over time.</lever>
-<modality>3</modality>
-<primary>3.3</primary>
-<reasoning>Continuous ongoing observation — Monitoring.</reasoning>
+{
+  "lever": "Ongoing observation of the system to surface problems over time.",
+  "modality": "3",
+  "instrument_code": "3.3",
+  "reasoning": "Continuous ongoing observation — Monitoring."
+}
 
 Name: "Third-party audit / benchmark suite / red-teaming exercise"
-<lever>Checking systems against a standard or expectation.</lever>
-<modality>3</modality>
-<primary>3.4</primary>
-<reasoning>Discrete evaluative act — Evaluation & Audit.</reasoning>
+{
+  "lever": "Checking systems against a standard or expectation.",
+  "modality": "3",
+  "instrument_code": "3.4",
+  "reasoning": "Discrete evaluative act — Evaluation & Audit."
+}
 
 Name: "Red-team / evaluator training program for staff"
-<lever>An education/training lever folded into the domain axis.</lever>
-<modality>O</modality>
-<primary>O.A</primary>
-<reasoning>Training is an ex-instrument — tag the instrument as Other (Additional).</reasoning>
+{
+  "lever": "An education/training lever folded into the domain axis.",
+  "modality": "O",
+  "instrument_code": "O.A",
+  "reasoning": "Training is an ex-instrument — tag the instrument as Other (Additional)."
+}
 
 Name: "Safety culture"
-<lever>Too vague to identify a specific lever.</lever>
-<modality>O</modality>
-<primary>O.C</primary>
-<reasoning>No identifiable instrument from the name — broad/unclassifiable.</reasoning>
+{
+  "lever": "Too vague to identify a specific lever.",
+  "modality": "O",
+  "instrument_code": "O.C",
+  "reasoning": "No identifiable instrument from the name — broad/unclassifiable."
+}
 </examples>
 
 <!-- USER -->
