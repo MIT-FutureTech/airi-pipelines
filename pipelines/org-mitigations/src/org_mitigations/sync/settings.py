@@ -11,6 +11,7 @@ class SyncSettings(
     cli_parse_args=True,
     cli_enforce_required=True,
     cli_kebab_case=True,
+    cli_implicit_flags=True,
     cli_hide_none_type=True,
     cli_prog_name="org_mitigations.sync",
 ):
@@ -24,7 +25,8 @@ class SyncSettings(
 
       uv run python -m org_mitigations.sync \
         --export-dir /path/to/exports/ \
-        --run-dir /path/to/output/
+        --run-dir /path/to/output/ \
+        --dry-run
     """
 
     export_dir: Path = Field(
@@ -43,4 +45,9 @@ class SyncSettings(
         default="appHrhJQHkZz4c82U",
         description="The Airtable base that holds the export's companies,"
         + " documents and passages",
+    )
+    dry_run: bool = Field(
+        default=False,
+        description="Build every record and report what would be created,"
+        + " without writing to Airtable",
     )
