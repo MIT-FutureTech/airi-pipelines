@@ -652,6 +652,7 @@ dependencies = [
     { name = "pydantic" },
     { name = "pydantic-settings" },
     { name = "toolbox" },
+    { name = "tqdm" },
 ]
 
 [package.metadata]
@@ -659,6 +660,7 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.12.5" },
     { name = "pydantic-settings", specifier = ">=2.13.1" },
     { name = "toolbox", editable = "toolbox-lib" },
+    { name = "tqdm", specifier = ">=4.67.3" },
 ]
 
 [[package]]
