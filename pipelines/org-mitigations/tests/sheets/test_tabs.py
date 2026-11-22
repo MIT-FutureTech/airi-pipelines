@@ -114,9 +114,10 @@ def evidence(evidence_id: str, excerpt_id: str, quote: str) -> Evidence:
 
 
 def found_mitigation(mitigation_id: str, company_id: str) -> FoundMitigation:
-    _, code, _ = mitigation_id.split("__")
+    context_id, code, _ = mitigation_id.split("__")
     return FoundMitigation(
         mitigation_id=mitigation_id,
+        context_id=context_id,
         company_id=company_id,
         domain_code=code,
         name="Board oversight of AI",

@@ -40,10 +40,12 @@ CALL = Call(
 
 
 def _mitigation(mitigation_id: str, company_id: str, *quotes: str) -> FoundMitigation:
+    context_id, domain_code, _ = mitigation_id.split("__")
     return FoundMitigation(
         mitigation_id=mitigation_id,
+        context_id=context_id,
         company_id=company_id,
-        domain_code="2.2",
+        domain_code=domain_code,
         name="Board oversight of AI",
         reasoning="Board-level accountability for AI.",
         quotes=[

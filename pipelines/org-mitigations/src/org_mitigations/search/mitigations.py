@@ -15,6 +15,7 @@ class FoundQuote(BaseModel):
 
 class FoundMitigation(BaseModel):
     mitigation_id: str
+    context_id: str
     company_id: str
     domain_code: str
     name: str
@@ -34,6 +35,7 @@ def mitigations_from_results(
             mitigations.append(
                 FoundMitigation(
                     mitigation_id=f"{call_id}__{number}",
+                    context_id=context.context_id,
                     company_id=context.company_id,
                     domain_code=result.domain_code,
                     name=mitigation.name,

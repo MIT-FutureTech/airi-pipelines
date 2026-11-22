@@ -62,6 +62,7 @@ class TestFoundMitigations:
         assert mitigations_from_results(results, CONTEXTS) == [
             FoundMitigation(
                 mitigation_id="Example_Bank__2.2__1",
+                context_id="Example_Bank",
                 company_id="recA",
                 domain_code="2.2",
                 name="Board oversight",
@@ -76,6 +77,7 @@ class TestFoundMitigations:
             ),
             FoundMitigation(
                 mitigation_id="Example_Bank__2.2__2",
+                context_id="Example_Bank",
                 company_id="recA",
                 domain_code="2.2",
                 name="AI policy",
