@@ -16,7 +16,10 @@
   },
   "vars": {
     "AIRTABLE_BASE_ID": "appHrhJQHkZz4c82U",
-    "AIRTABLE_JUDGEMENTS_TABLE": "Mitigation Judgements"
+    "AIRTABLE_JUDGEMENTS_TABLE": "Mitigation Judgements",
+    // Declared here so that `npm run dev` passes the value from
+    // .env when running locally.
+    "LOCAL_USER_EMAIL": ""
   },
   "secrets": {
     "required": ["AIRTABLE_PAT"]
