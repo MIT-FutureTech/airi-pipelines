@@ -21,6 +21,14 @@ options.
 
 The pipeline needs the `OPENROUTER_API_KEY` environment variable to be set.
 
+## Copying results to Airtable
+
+The Python code can copy a run's mitigations, their quotes, and the domains,
+instruments and practices they're tagged with into Airtable, linked to the
+companies, documents and passages already there. It creates the records that
+aren't there yet and leaves the others alone, so it can be run again if it stops
+partway. See `uv run python -m org_mitigations.sync --help`.
+
 ## Bundling evidence for the reviewer
 
 The reviewer app reads its data from a JSON file which the Python code can
