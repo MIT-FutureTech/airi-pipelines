@@ -40,7 +40,7 @@ from org_mitigations.sheets.tabs import (
 BANK = Company(company_id="recA", name="Example Bank", sector="Finance")
 RETAIL = Company(company_id="recB", name="Example Retail", sector="Trade")
 INSURER = Company(company_id="recC", name="Example Insurer", sector="Finance")
-TAXONOMY = [
+DOMAIN_TAXONOMY = [
     Locus(
         code="1",
         name="Technical & Model",
@@ -270,7 +270,7 @@ class TestEvidenceRows:
     def rows(self) -> list[EvidenceRow]:
         return evidence_rows(
             company_names=["Example Retail", "Example Bank"],
-            taxonomy=TAXONOMY,
+            domain_taxonomy=DOMAIN_TAXONOMY,
             companies=[BANK, RETAIL, INSURER],
             documents=[
                 document("Bank_001", "recA"),
@@ -351,7 +351,7 @@ class TestMitigationRows:
     def rows(self) -> list[MitigationRow]:
         return mitigation_rows(
             company_names=["Example Retail", "Example Bank"],
-            taxonomy=TAXONOMY,
+            domain_taxonomy=DOMAIN_TAXONOMY,
             instrument_taxonomy=INSTRUMENT_TAXONOMY,
             companies=[BANK, RETAIL, INSURER],
             mitigations=[
@@ -418,7 +418,7 @@ class TestMitigationRows:
         with pytest.raises(ValueError, match=re.escape("Example_Bank__2.2__1")):
             mitigation_rows(
                 company_names=["Example Bank"],
-                taxonomy=TAXONOMY,
+                domain_taxonomy=DOMAIN_TAXONOMY,
                 instrument_taxonomy=INSTRUMENT_TAXONOMY,
                 companies=[BANK],
                 mitigations=[found_mitigation("Example_Bank__2.2__1", "recA")],
@@ -434,7 +434,7 @@ class TestMitigationRows:
         with pytest.raises(ValueError, match="No instruments result"):
             mitigation_rows(
                 company_names=["Example Bank"],
-                taxonomy=TAXONOMY,
+                domain_taxonomy=DOMAIN_TAXONOMY,
                 instrument_taxonomy=INSTRUMENT_TAXONOMY,
                 companies=[BANK],
                 mitigations=[found_mitigation("Example_Bank__2.2__1", "recA")],
@@ -450,7 +450,7 @@ class TestPracticeRows:
     def rows(self) -> list[PracticeRow]:
         return practice_rows(
             company_names=["Example Retail", "Example Bank"],
-            taxonomy=TAXONOMY,
+            domain_taxonomy=DOMAIN_TAXONOMY,
             companies=[BANK, RETAIL],
             mitigations=[
                 found_mitigation("Example_Bank__2.2__1", "recA"),
@@ -517,7 +517,7 @@ class TestPracticeRows:
         with pytest.raises(ValueError, match="cites quote 3"):
             practice_rows(
                 company_names=["Example Bank"],
-                taxonomy=TAXONOMY,
+                domain_taxonomy=DOMAIN_TAXONOMY,
                 companies=[BANK],
                 mitigations=[found_mitigation("Example_Bank__2.2__1", "recA")],
                 practices_results={
@@ -538,7 +538,7 @@ class TestAffiliationRows:
     def rows(self) -> list[AffiliationRow]:
         return affiliation_rows(
             company_names=["Example Retail", "Example Bank"],
-            taxonomy=TAXONOMY,
+            domain_taxonomy=DOMAIN_TAXONOMY,
             companies=[BANK, RETAIL],
             mitigations=[
                 found_mitigation("Example_Bank__2.2__1", "recA"),

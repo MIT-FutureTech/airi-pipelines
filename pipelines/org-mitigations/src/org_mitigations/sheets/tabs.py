@@ -145,7 +145,7 @@ def excerpt_rows(
 def evidence_rows(
     *,
     company_names: list[str],
-    taxonomy: list[Locus],
+    domain_taxonomy: list[Locus],
     companies: list[Company],
     documents: list[Document],
     excerpts: list[Excerpt],
@@ -160,7 +160,7 @@ def evidence_rows(
     company_ids_by_document = {
         document.document_id: document.company_id for document in documents
     }
-    domains = [domain for locus in taxonomy for domain in locus.domains]
+    domains = [domain for locus in domain_taxonomy for domain in locus.domains]
     domain_order = {domain.code: order for order, domain in enumerate(domains)}
     domain_names = {domain.code: domain.name for domain in domains}
     excerpts_by_id = {excerpt.excerpt_id: excerpt for excerpt in excerpts}
@@ -203,7 +203,7 @@ def evidence_rows(
 def mitigation_rows(
     *,
     company_names: list[str],
-    taxonomy: list[Locus],
+    domain_taxonomy: list[Locus],
     instrument_taxonomy: list[Modality],
     companies: list[Company],
     mitigations: list[FoundMitigation],
@@ -212,7 +212,9 @@ def mitigation_rows(
 ) -> list[MitigationRow]:
     companies_by_id = {company.company_id: company for company in companies}
     domain_names = {
-        domain.code: domain.name for locus in taxonomy for domain in locus.domains
+        domain.code: domain.name
+        for locus in domain_taxonomy
+        for domain in locus.domains
     }
     instrument_names = {
         instrument.code: instrument.name
@@ -221,7 +223,7 @@ def mitigation_rows(
     }
     selected = _selected_mitigations(
         company_names=company_names,
-        taxonomy=taxonomy,
+        domain_taxonomy=domain_taxonomy,
         companies=companies,
         mitigations=mitigations,
         practices_results=practices_results,
@@ -264,18 +266,20 @@ def mitigation_rows(
 def practice_rows(
     *,
     company_names: list[str],
-    taxonomy: list[Locus],
+    domain_taxonomy: list[Locus],
     companies: list[Company],
     mitigations: list[FoundMitigation],
     practices_results: Mapping[str, PracticesResult],
 ) -> list[PracticeRow]:
     companies_by_id = {company.company_id: company for company in companies}
     domain_names = {
-        domain.code: domain.name for locus in taxonomy for domain in locus.domains
+        domain.code: domain.name
+        for locus in domain_taxonomy
+        for domain in locus.domains
     }
     selected = _selected_mitigations(
         company_names=company_names,
-        taxonomy=taxonomy,
+        domain_taxonomy=domain_taxonomy,
         companies=companies,
         mitigations=mitigations,
         practices_results=practices_results,
@@ -305,7 +309,7 @@ def practice_rows(
 def affiliation_rows(
     *,
     company_names: list[str],
-    taxonomy: list[Locus],
+    domain_taxonomy: list[Locus],
     companies: list[Company],
     mitigations: list[FoundMitigation],
     practices_results: Mapping[str, PracticesResult],
@@ -313,7 +317,7 @@ def affiliation_rows(
     companies_by_id = {company.company_id: company for company in companies}
     selected = _selected_mitigations(
         company_names=company_names,
-        taxonomy=taxonomy,
+        domain_taxonomy=domain_taxonomy,
         companies=companies,
         mitigations=mitigations,
         practices_results=practices_results,
@@ -359,7 +363,7 @@ def affiliation_rows(
 def _selected_mitigations(
     *,
     company_names: list[str],
-    taxonomy: list[Locus],
+    domain_taxonomy: list[Locus],
     companies: list[Company],
     mitigations: list[FoundMitigation],
     practices_results: Mapping[str, PracticesResult],
@@ -369,7 +373,7 @@ def _selected_mitigations(
         companies_by_name[name].company_id: order
         for order, name in enumerate(company_names)
     }
-    domains = [domain for locus in taxonomy for domain in locus.domains]
+    domains = [domain for locus in domain_taxonomy for domain in locus.domains]
     domain_order = {domain.code: order for order, domain in enumerate(domains)}
 
     selected = sorted(

@@ -54,7 +54,7 @@ def main() -> None:
         settings.run_dir / PipelineStage.INSTRUMENTS,
         InstrumentsResult,
     ).load_all()
-    taxonomy = load_domain_taxonomy(DOMAIN_TAXONOMY_PATH)
+    domain_taxonomy = load_domain_taxonomy(DOMAIN_TAXONOMY_PATH)
     if settings.company_names is None:
         company_names = sorted(company.name for company in corpus.companies)
     else:
@@ -68,7 +68,7 @@ def main() -> None:
     )
     evidence_tab = evidence_rows(
         company_names=company_names,
-        taxonomy=taxonomy,
+        domain_taxonomy=domain_taxonomy,
         companies=corpus.companies,
         documents=corpus.documents,
         excerpts=corpus.excerpts,
@@ -78,7 +78,7 @@ def main() -> None:
     logger.info(f"Located {located} of {len(evidence_tab)} quotes")
     mitigation_tab = mitigation_rows(
         company_names=company_names,
-        taxonomy=taxonomy,
+        domain_taxonomy=domain_taxonomy,
         instrument_taxonomy=load_instrument_taxonomy(INSTRUMENT_TAXONOMY_PATH),
         companies=corpus.companies,
         mitigations=mitigations,
@@ -88,14 +88,14 @@ def main() -> None:
     untagged_tab = [row for row in mitigation_tab if not row.practices]
     practice_tab = practice_rows(
         company_names=company_names,
-        taxonomy=taxonomy,
+        domain_taxonomy=domain_taxonomy,
         companies=corpus.companies,
         mitigations=mitigations,
         practices_results=practices_results,
     )
     affiliation_tab = affiliation_rows(
         company_names=company_names,
-        taxonomy=taxonomy,
+        domain_taxonomy=domain_taxonomy,
         companies=corpus.companies,
         mitigations=mitigations,
         practices_results=practices_results,
