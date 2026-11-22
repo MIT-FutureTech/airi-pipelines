@@ -8,6 +8,7 @@ from org_mitigations.practices.answer import TaggedPractice
 from org_mitigations.practices.calls import PracticesResult
 from org_mitigations.search.mitigations import FoundMitigation
 from org_mitigations.sync.codes import domain_key, instrument_key, practice_key
+from org_mitigations.sync.schema import FieldType
 
 
 class Status(StrEnum):
@@ -32,6 +33,21 @@ class MitigationRecord(BaseModel):
     @field_serializer("company_record_id", "domain_record_id", "instrument_record_id")
     def _serialize_link(self, record_id: str) -> list[str]:
         return [record_id]
+
+
+MITIGATION_FIELD_TYPES = {
+    "ID": FieldType.SINGLE_LINE_TEXT,
+    "Company": FieldType.LINKS,
+    "Domain": FieldType.LINKS,
+    "Instrument": FieldType.LINKS,
+    "Practices": FieldType.LINKS,
+    "Name": FieldType.SINGLE_LINE_TEXT,
+    "Search reasoning": FieldType.LONG_TEXT,
+    "Instrument reasoning": FieldType.LONG_TEXT,
+    "Practice tags": FieldType.LONG_TEXT,
+    "Pipeline run": FieldType.SINGLE_LINE_TEXT,
+    "Status": FieldType.SINGLE_SELECT,
+}
 
 
 def mitigation_records(

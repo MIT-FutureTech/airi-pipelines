@@ -7,6 +7,7 @@ from org_mitigations.excerpts import Excerpt
 from org_mitigations.locate import Span, locate_quote
 from org_mitigations.passages import Passage
 from org_mitigations.search.answer import Strength
+from org_mitigations.sync.schema import FieldType
 
 _STRENGTH_LABELS = {
     Strength.DESCRIBED: "Described",
@@ -30,6 +31,16 @@ class QuoteRecord(BaseModel):
     @field_serializer("strength")
     def _serialize_strength(self, strength: Strength) -> str:
         return _STRENGTH_LABELS[strength]
+
+
+QUOTE_FIELD_TYPES = {
+    "ID": FieldType.SINGLE_LINE_TEXT,
+    "Mitigation": FieldType.LINKS,
+    "Document": FieldType.LINKS,
+    "Passages": FieldType.LINKS,
+    "Quote": FieldType.LONG_TEXT,
+    "Strength": FieldType.SINGLE_SELECT,
+}
 
 
 def quote_records(

@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 from org_mitigations.domain_taxonomy import Domain, Locus
 from org_mitigations.instrument_taxonomy import Instrument, Modality
 from org_mitigations.practice_list import Practice
+from org_mitigations.sync.schema import FieldType
 
 
 class Taxonomy(StrEnum):
@@ -23,6 +24,19 @@ class CodeRecord(BaseModel):
     order: int = Field(serialization_alias="Order")
     definition: str = Field(serialization_alias="Definition")
     details: str | None = Field(serialization_alias="Details")
+
+
+CODE_FIELD_TYPES = {
+    "Key": FieldType.SINGLE_LINE_TEXT,
+    "Taxonomy": FieldType.SINGLE_SELECT,
+    "Code": FieldType.SINGLE_LINE_TEXT,
+    "Name": FieldType.SINGLE_LINE_TEXT,
+    "Short name": FieldType.SINGLE_LINE_TEXT,
+    "Group": FieldType.SINGLE_LINE_TEXT,
+    "Order": FieldType.NUMBER,
+    "Definition": FieldType.LONG_TEXT,
+    "Details": FieldType.LONG_TEXT,
+}
 
 
 def domain_key(domain_code: str) -> str:
