@@ -16,8 +16,9 @@ class SyncSettings(
     cli_prog_name="org_mitigations.sync",
 ):
     r"""
-    Count how many of a run's mitigations, their quotes, and the codes they're
-    tagged with are already in Airtable.
+    Copy a run's mitigations, their quotes, and the codes they're tagged with
+    into Airtable. Creates the records that aren't there yet and leaves the
+    others alone.
 
     Needs the AIRTABLE_TOKEN environment variable.
 
