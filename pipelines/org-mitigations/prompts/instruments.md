@@ -179,4 +179,3 @@ $context_mitigations
 <description>$description</description>
 <evidence>$evidence</evidence>
 </mitigation>
-</output>
