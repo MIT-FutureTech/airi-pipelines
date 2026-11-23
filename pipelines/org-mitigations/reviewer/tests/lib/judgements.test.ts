@@ -4,6 +4,7 @@ import {
   emptyJudgement,
   judgementsByCell,
   parseDecision,
+  saveRequest,
 } from "@/lib/judgements";
 
 describe("parseDecision", () => {
@@ -42,5 +43,25 @@ describe("judgementsByCell", () => {
         [cellKey("recRetail", "recModelCards"), retail],
       ]),
     );
+  });
+});
+
+describe("saveRequest", () => {
+  it("adds the names the saved judgement's key needs", () => {
+    expect(
+      saveRequest(
+        emptyJudgement("recBank", "recDomain22"),
+        "Example Bank",
+        "Domain 2.2",
+      ),
+    ).toEqual({
+      companyId: "recBank",
+      companyName: "Example Bank",
+      codeRecordId: "recDomain22",
+      codeKey: "Domain 2.2",
+      decision: null,
+      comment: "",
+      supportingMitigationRecordIds: [],
+    });
   });
 });

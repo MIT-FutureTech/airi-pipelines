@@ -1,4 +1,9 @@
-import { DECISIONS, type Decision, type Judgement } from "@shared/judgements";
+import {
+  DECISIONS,
+  type Decision,
+  type Judgement,
+  type SaveJudgementRequest,
+} from "@shared/judgements";
 import { cellKey } from "@/lib/cells";
 
 export const DECISION_LABELS: Record<Decision, string> = {
@@ -43,4 +48,12 @@ export function judgementsByCell(
       judgement,
     ]),
   );
+}
+
+export function saveRequest(
+  judgement: Judgement,
+  companyName: string,
+  codeKey: string,
+): SaveJudgementRequest {
+  return { ...judgement, companyName, codeKey };
 }

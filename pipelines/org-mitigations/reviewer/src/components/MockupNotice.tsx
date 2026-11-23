@@ -13,9 +13,6 @@ export function MockupNotice({ companyCount }: MockupNoticeProps) {
       </Text>
       <List mt="xs">
         <List.Item>
-          Nothing is saved. Your choices disappear when you reload the page.
-        </List.Item>
-        <List.Item>
           The quotes were found by an LLM and haven't been reviewed. There are
           likely false positives and false negatives.
         </List.Item>

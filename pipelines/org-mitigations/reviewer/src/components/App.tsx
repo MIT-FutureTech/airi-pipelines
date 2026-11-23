@@ -26,8 +26,9 @@ import {
   TAXONOMIES,
   TAXONOMY_LABELS,
 } from "@/lib/codes";
-import { emptyJudgement, judgementsByCell } from "@/lib/judgements";
+import { emptyJudgement } from "@/lib/judgements";
 import type { Taxonomy } from "@/lib/types";
+import { useJudgements } from "@/lib/useJudgements";
 
 export function App() {
   return (
@@ -55,8 +56,8 @@ function Reviewer() {
     bundle.excerpts.map((excerpt) => [excerpt.excerpt_id, excerpt]),
   );
   const [selection, setSelection] = useState<CellSelection | null>(null);
-  const [judgements, setJudgements] = useState(() =>
-    judgementsByCell(saved.judgements),
+  const { judgements, saveStatuses, change, save } = useJudgements(
+    saved.judgements,
   );
   useHotkeys([["Escape", () => setSelection(null)]]);
 
@@ -116,10 +117,10 @@ function Reviewer() {
                 selection.code.record_id,
               )
             }
-            onJudgementChange={(judgement) =>
-              setJudgements((current) =>
-                new Map(current).set(selectedKey, judgement),
-              )
+            saveStatus={saveStatuses.get(selectedKey) ?? null}
+            onJudgementChange={change}
+            onJudgementSave={(judgement) =>
+              save(judgement, selection.company.name, selection.code.key)
             }
             onClose={() => setSelection(null)}
           />

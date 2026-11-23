@@ -18,6 +18,7 @@ import { type CellSelection, cellQuotes } from "@/lib/cells";
 import { fullLabel } from "@/lib/codes";
 import { formatDate } from "@/lib/dates";
 import { highlightWindow } from "@/lib/highlight";
+import type { SaveStatus } from "@/lib/saving";
 import {
   STRENGTH_COLORS,
   STRENGTH_LABELS,
@@ -49,7 +50,9 @@ interface EvidencePanelProps {
   documents: Map<string, CompanyDocument>;
   excerpts: Map<string, Excerpt>;
   judgement: Judgement;
+  saveStatus: SaveStatus | null;
   onJudgementChange: (judgement: Judgement) => void;
+  onJudgementSave: (judgement: Judgement) => void;
   onClose: () => void;
 }
 
@@ -59,14 +62,16 @@ export function EvidencePanel({
   documents,
   excerpts,
   judgement,
+  saveStatus,
   onJudgementChange,
+  onJudgementSave,
   onClose,
 }: EvidencePanelProps) {
   const { company, code, mitigations } = selection;
   const quoteCount = cellQuotes(mitigations, quotes).length;
   const supporting = judgement.supportingMitigationRecordIds;
   const toggleSupporting = (recordId: string) => {
-    onJudgementChange({
+    onJudgementSave({
       ...judgement,
       supportingMitigationRecordIds: supporting.includes(recordId)
         ? supporting.filter((supportingId) => supportingId !== recordId)
@@ -110,9 +115,25 @@ export function EvidencePanel({
           companyName={company.name}
           judgement={judgement}
           onChange={onJudgementChange}
+          onSave={onJudgementSave}
         />
+        {saveStatus !== null && <SaveStatusText status={saveStatus} />}
       </AppShell.Section>
     </>
+  );
+}
+
+const SAVE_STATUS_TEXT: Record<SaveStatus, string> = {
+  saving: "Saving…",
+  saved: "Saved",
+  failed: "Couldn't save your last change. Your next change will try again.",
+};
+
+function SaveStatusText({ status }: { status: SaveStatus }) {
+  return (
+    <Text mt="xs" c={status === "failed" ? "red" : undefined}>
+      {SAVE_STATUS_TEXT[status]}
+    </Text>
   );
 }
 
