@@ -30,23 +30,27 @@ export function EvidenceGrid({
   onSelect,
 }: EvidenceGridProps) {
   const codes = groups.flatMap((group) => group.codes);
+  const isGrouped = groups.some((group) => group.name !== null);
   return (
     <Table.ScrollContainer minWidth={1100}>
       <Table withTableBorder withColumnBorders>
         <Table.Thead>
+          {isGrouped && (
+            <Table.Tr>
+              <Table.Th rowSpan={2}>Company</Table.Th>
+              {groups.map((group) => (
+                <Table.Th
+                  key={group.codes[0].record_id}
+                  colSpan={group.codes.length}
+                  ta="center"
+                >
+                  {group.name}
+                </Table.Th>
+              ))}
+            </Table.Tr>
+          )}
           <Table.Tr>
-            <Table.Th rowSpan={2}>Company</Table.Th>
-            {groups.map((group) => (
-              <Table.Th
-                key={group.codes[0].record_id}
-                colSpan={group.codes.length}
-                ta="center"
-              >
-                {group.name}
-              </Table.Th>
-            ))}
-          </Table.Tr>
-          <Table.Tr>
+            {!isGrouped && <Table.Th>Company</Table.Th>}
             {codes.map((code) => (
               <Tooltip
                 key={code.record_id}

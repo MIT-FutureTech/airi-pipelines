@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { codeGroups, fullLabel, shortLabel } from "@/lib/codes";
+import { codeGroups, fullLabel, parseTaxonomy, shortLabel } from "@/lib/codes";
 import type { Code, Taxonomy } from "@/lib/types";
 
 function code(
@@ -58,5 +58,15 @@ describe("labels", () => {
 
     expect(shortLabel(practice)).toBe("Practice number 4");
     expect(fullLabel(practice)).toBe("Practice number 4");
+  });
+});
+
+describe("parseTaxonomy", () => {
+  it("accepts a taxonomy", () => {
+    expect(parseTaxonomy("Instrument")).toBe("Instrument");
+  });
+
+  it("rejects anything else", () => {
+    expect(() => parseTaxonomy("Locus")).toThrow("Unknown taxonomy Locus");
   });
 });

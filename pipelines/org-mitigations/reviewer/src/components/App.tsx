@@ -1,4 +1,11 @@
-import { Alert, AppShell, Loader, Stack, Title } from "@mantine/core";
+import {
+  Alert,
+  AppShell,
+  Loader,
+  SegmentedControl,
+  Stack,
+  Title,
+} from "@mantine/core";
 import { useHotkeys } from "@mantine/hooks";
 import { Suspense, use, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
@@ -13,8 +20,14 @@ import {
   mitigationsByCell,
   quotesByMitigation,
 } from "@/lib/cells";
-import { codeGroups } from "@/lib/codes";
+import {
+  codeGroups,
+  parseTaxonomy,
+  TAXONOMIES,
+  TAXONOMY_LABELS,
+} from "@/lib/codes";
 import { type Decision, NO_DECISION } from "@/lib/decisions";
+import type { Taxonomy } from "@/lib/types";
 
 export function App() {
   return (
@@ -28,9 +41,10 @@ export function App() {
 
 function Reviewer() {
   const bundle = use(getBundle());
-  const cells = mitigationsByCell(bundle.mitigations, "Domain");
+  const [taxonomy, setTaxonomy] = useState<Taxonomy>("Domain");
+  const cells = mitigationsByCell(bundle.mitigations, taxonomy);
   const quotes = quotesByMitigation(bundle.quotes);
-  const groups = codeGroups(bundle.codes, "Domain");
+  const groups = codeGroups(bundle.codes, taxonomy);
   const documents = new Map(
     bundle.documents.map((document) => [document.document_id, document]),
   );
@@ -57,11 +71,20 @@ function Reviewer() {
       <AppShell.Main>
         <Stack>
           <Title order={2}>Organization Mitigations Reviewer</Title>
-          <MockupNotice
-            companyCount={bundle.companies.length}
-            codeCount={groups.flatMap((group) => group.codes).length}
-          />
+          <MockupNotice companyCount={bundle.companies.length} />
           <StrengthLegend />
+          <SegmentedControl
+            aria-label="Taxonomy"
+            data={TAXONOMIES.map((value) => ({
+              value,
+              label: TAXONOMY_LABELS[value],
+            }))}
+            value={taxonomy}
+            onChange={(value) => {
+              setTaxonomy(parseTaxonomy(value));
+              setSelection(null);
+            }}
+          />
           <EvidenceGrid
             companies={bundle.companies}
             groups={groups}

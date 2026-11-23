@@ -1,5 +1,21 @@
 import type { Code, Taxonomy } from "@/lib/types";
 
+export const TAXONOMIES: Taxonomy[] = ["Domain", "Instrument", "Practice"];
+
+export const TAXONOMY_LABELS: Record<Taxonomy, string> = {
+  Domain: "Domains",
+  Instrument: "Instruments",
+  Practice: "Practices",
+};
+
+export function parseTaxonomy(value: string): Taxonomy {
+  const taxonomy = TAXONOMIES.find((candidate) => candidate === value);
+  if (taxonomy === undefined) {
+    throw new Error(`Unknown taxonomy ${value}`);
+  }
+  return taxonomy;
+}
+
 export interface CodeGroup {
   name: string | null;
   codes: Code[];

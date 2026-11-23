@@ -2,10 +2,9 @@ import { Alert, List, Text } from "@mantine/core";
 
 interface MockupNoticeProps {
   companyCount: number;
-  codeCount: number;
 }
 
-export function MockupNotice({ companyCount, codeCount }: MockupNoticeProps) {
+export function MockupNotice({ companyCount }: MockupNoticeProps) {
   return (
     <Alert color="blue" title="A mock-up for feedback">
       <Text>
@@ -21,7 +20,7 @@ export function MockupNotice({ companyCount, codeCount }: MockupNoticeProps) {
           likely false positives and false negatives.
         </List.Item>
         <List.Item>
-          {`It covers ${companyCount} companies and the ${codeCount} mitigation domain codes. The instrument taxonomy isn't included.`}
+          {`It covers the ${companyCount} companies where the LLM found at least one mitigation.`}
         </List.Item>
       </List>
     </Alert>
