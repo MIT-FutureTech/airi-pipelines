@@ -7,6 +7,7 @@ import {
   Title,
 } from "@mantine/core";
 import { useHotkeys } from "@mantine/hooks";
+import type { Judgement } from "@shared/judgements";
 import { Suspense, use, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { EvidenceGrid } from "@/components/EvidenceGrid";
@@ -26,7 +27,7 @@ import {
   TAXONOMIES,
   TAXONOMY_LABELS,
 } from "@/lib/codes";
-import { type Decision, NO_DECISION } from "@/lib/decisions";
+import { emptyJudgement } from "@/lib/judgements";
 import type { Taxonomy } from "@/lib/types";
 
 export function App() {
@@ -52,7 +53,9 @@ function Reviewer() {
     bundle.excerpts.map((excerpt) => [excerpt.excerpt_id, excerpt]),
   );
   const [selection, setSelection] = useState<CellSelection | null>(null);
-  const [decisions, setDecisions] = useState(() => new Map<string, Decision>());
+  const [judgements, setJudgements] = useState(
+    () => new Map<string, Judgement>(),
+  );
   useHotkeys([["Escape", () => setSelection(null)]]);
 
   const selectedKey =
@@ -90,7 +93,7 @@ function Reviewer() {
             groups={groups}
             cells={cells}
             quotes={quotes}
-            decisions={decisions}
+            judgements={judgements}
             selection={selection}
             onSelect={setSelection}
           />
@@ -104,10 +107,16 @@ function Reviewer() {
             quotes={quotes}
             documents={documents}
             excerpts={excerpts}
-            decision={decisions.get(selectedKey) ?? NO_DECISION}
-            onDecisionChange={(decision) =>
-              setDecisions((current) =>
-                new Map(current).set(selectedKey, decision),
+            judgement={
+              judgements.get(selectedKey) ??
+              emptyJudgement(
+                selection.company.company_id,
+                selection.code.record_id,
+              )
+            }
+            onJudgementChange={(judgement) =>
+              setJudgements((current) =>
+                new Map(current).set(selectedKey, judgement),
               )
             }
             onClose={() => setSelection(null)}

@@ -12,11 +12,11 @@ import {
   Title,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
+import type { Judgement } from "@shared/judgements";
 import { DecisionControls } from "@/components/DecisionControls";
 import { type CellSelection, cellQuotes } from "@/lib/cells";
 import { fullLabel } from "@/lib/codes";
 import { formatDate } from "@/lib/dates";
-import type { Decision } from "@/lib/decisions";
 import { highlightWindow } from "@/lib/highlight";
 import {
   STRENGTH_COLORS,
@@ -48,8 +48,8 @@ interface EvidencePanelProps {
   quotes: Map<string, Quote[]>;
   documents: Map<string, CompanyDocument>;
   excerpts: Map<string, Excerpt>;
-  decision: Decision;
-  onDecisionChange: (decision: Decision) => void;
+  judgement: Judgement;
+  onJudgementChange: (judgement: Judgement) => void;
   onClose: () => void;
 }
 
@@ -58,20 +58,20 @@ export function EvidencePanel({
   quotes,
   documents,
   excerpts,
-  decision,
-  onDecisionChange,
+  judgement,
+  onJudgementChange,
   onClose,
 }: EvidencePanelProps) {
   const { company, code, mitigations } = selection;
   const quoteCount = cellQuotes(mitigations, quotes).length;
+  const supporting = judgement.supportingMitigationRecordIds;
   const toggleSupporting = (recordId: string) => {
-    const supportingMitigations = new Set(decision.supportingMitigations);
-    if (supportingMitigations.has(recordId)) {
-      supportingMitigations.delete(recordId);
-    } else {
-      supportingMitigations.add(recordId);
-    }
-    onDecisionChange({ ...decision, supportingMitigations });
+    onJudgementChange({
+      ...judgement,
+      supportingMitigationRecordIds: supporting.includes(recordId)
+        ? supporting.filter((supportingId) => supportingId !== recordId)
+        : [...supporting, recordId],
+    });
   };
   return (
     <>
@@ -99,9 +99,7 @@ export function EvidencePanel({
               quotes={cellQuotes([mitigation], quotes)}
               documents={documents}
               excerpts={excerpts}
-              isSupporting={decision.supportingMitigations.has(
-                mitigation.record_id,
-              )}
+              isSupporting={supporting.includes(mitigation.record_id)}
               onToggleSupporting={() => toggleSupporting(mitigation.record_id)}
             />
           ))}
@@ -110,8 +108,8 @@ export function EvidencePanel({
       <AppShell.Section mt="md" pt="md" style={FOOTER_BORDER}>
         <DecisionControls
           companyName={company.name}
-          decision={decision}
-          onChange={onDecisionChange}
+          judgement={judgement}
+          onChange={onJudgementChange}
         />
       </AppShell.Section>
     </>

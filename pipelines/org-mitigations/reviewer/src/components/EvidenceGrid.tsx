@@ -1,12 +1,8 @@
 import { Stack, Table, Text, Tooltip, UnstyledButton } from "@mantine/core";
+import type { Decision, Judgement } from "@shared/judgements";
 import { type CellSelection, cellKey, cellQuotes } from "@/lib/cells";
 import { type CodeGroup, fullLabel, shortLabel } from "@/lib/codes";
-import {
-  type Decision,
-  DISCLOSURE_LABELS,
-  DISCLOSURE_MARKS,
-  type Disclosure,
-} from "@/lib/decisions";
+import { DECISION_LABELS, DECISION_MARKS } from "@/lib/judgements";
 import { STRENGTH_COLORS, strongest } from "@/lib/strength";
 import type { Code, Company, Mitigation, Quote } from "@/lib/types";
 
@@ -15,7 +11,7 @@ interface EvidenceGridProps {
   groups: CodeGroup[];
   cells: Map<string, Mitigation[]>;
   quotes: Map<string, Quote[]>;
-  decisions: Map<string, Decision>;
+  judgements: Map<string, Judgement>;
   selection: CellSelection | null;
   onSelect: (selection: CellSelection) => void;
 }
@@ -25,7 +21,7 @@ export function EvidenceGrid({
   groups,
   cells,
   quotes,
-  decisions,
+  judgements,
   selection,
   onSelect,
 }: EvidenceGridProps) {
@@ -79,7 +75,7 @@ export function EvidenceGrid({
                         ? []
                         : cellQuotes(mitigations, quotes)
                     }
-                    disclosure={decisions.get(key)?.disclosure ?? null}
+                    decision={judgements.get(key)?.decision ?? null}
                     isSelected={
                       selection?.company.company_id === company.company_id &&
                       selection.code.record_id === code.record_id
@@ -103,7 +99,7 @@ const SELECTED_OUTLINE = "inset 0 0 0 3px currentColor";
 interface GridCellProps {
   mitigations: Mitigation[] | undefined;
   quotes: Quote[];
-  disclosure: Disclosure | null;
+  decision: Decision | null;
   isSelected: boolean;
   onSelect: (mitigations: Mitigation[]) => void;
 }
@@ -111,7 +107,7 @@ interface GridCellProps {
 function GridCell({
   mitigations,
   quotes,
-  disclosure,
+  decision,
   isSelected,
   onSelect,
 }: GridCellProps) {
@@ -124,9 +120,7 @@ function GridCell({
       ? "1 mitigation"
       : `${mitigations.length} mitigations`;
   const decided =
-    disclosure === null
-      ? "undecided"
-      : `decided ${DISCLOSURE_LABELS[disclosure]}`;
+    decision === null ? "undecided" : `decided ${DECISION_LABELS[decision]}`;
   return (
     <Table.Td
       p={0}
@@ -144,9 +138,9 @@ function GridCell({
         aria-label={`${count}, strongest quote ${strength}, ${decided}`}
         onClick={() => onSelect(mitigations)}
       >
-        {disclosure === null
+        {decision === null
           ? mitigations.length
-          : `${mitigations.length} ${DISCLOSURE_MARKS[disclosure]}`}
+          : `${mitigations.length} ${DECISION_MARKS[decision]}`}
       </UnstyledButton>
     </Table.Td>
   );

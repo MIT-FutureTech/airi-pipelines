@@ -1,37 +1,33 @@
 import { Group, Radio, Stack, Textarea } from "@mantine/core";
-import {
-  type Decision,
-  DISCLOSURE_LABELS,
-  DISCLOSURES,
-  parseDisclosure,
-} from "@/lib/decisions";
+import { DECISIONS, type Judgement } from "@shared/judgements";
+import { DECISION_LABELS, parseDecision } from "@/lib/judgements";
 
 interface DecisionControlsProps {
   companyName: string;
-  decision: Decision;
-  onChange: (decision: Decision) => void;
+  judgement: Judgement;
+  onChange: (judgement: Judgement) => void;
 }
 
 export function DecisionControls({
   companyName,
-  decision,
+  judgement,
   onChange,
 }: DecisionControlsProps) {
   return (
     <Stack gap="sm">
       <Radio.Group
         label={`Does ${companyName} disclose a mitigation of this kind?`}
-        value={decision.disclosure}
+        value={judgement.decision}
         onChange={(value) =>
-          onChange({ ...decision, disclosure: parseDisclosure(value) })
+          onChange({ ...judgement, decision: parseDecision(value) })
         }
       >
         <Group mt="xs">
-          {DISCLOSURES.map((disclosure) => (
+          {DECISIONS.map((decision) => (
             <Radio
-              key={disclosure}
-              value={disclosure}
-              label={DISCLOSURE_LABELS[disclosure]}
+              key={decision}
+              value={decision}
+              label={DECISION_LABELS[decision]}
             />
           ))}
         </Group>
@@ -41,9 +37,9 @@ export function DecisionControls({
         autosize
         minRows={2}
         maxRows={6}
-        value={decision.comment}
+        value={judgement.comment}
         onChange={(event) =>
-          onChange({ ...decision, comment: event.currentTarget.value })
+          onChange({ ...judgement, comment: event.currentTarget.value })
         }
       />
     </Stack>
