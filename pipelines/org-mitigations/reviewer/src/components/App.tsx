@@ -4,6 +4,7 @@ import {
   Loader,
   SegmentedControl,
   Stack,
+  Text,
   Title,
 } from "@mantine/core";
 import { useHotkeys } from "@mantine/hooks";
@@ -11,7 +12,6 @@ import { Suspense, use, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { EvidenceGrid } from "@/components/EvidenceGrid";
 import { EvidencePanel } from "@/components/EvidencePanel";
-import { MockupNotice } from "@/components/MockupNotice";
 import { StrengthLegend } from "@/components/StrengthLegend";
 import { getBundle, getJudgements } from "@/lib/api";
 import {
@@ -104,7 +104,10 @@ function Reviewer() {
       <AppShell.Main>
         <Stack>
           <Title order={2}>Organization Mitigations Reviewer</Title>
-          <MockupNotice companyCount={bundle.companies.length} />
+          <Text>
+            Click a shaded cell to see the mitigations and quotes behind it,
+            then record your judgement.
+          </Text>
           <StrengthLegend />
           <SegmentedControl
             aria-label="Taxonomy"
