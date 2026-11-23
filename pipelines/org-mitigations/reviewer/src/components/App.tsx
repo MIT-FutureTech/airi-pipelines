@@ -7,7 +7,13 @@ import { EvidencePanel } from "@/components/EvidencePanel";
 import { MockupNotice } from "@/components/MockupNotice";
 import { StrengthLegend } from "@/components/StrengthLegend";
 import { getBundle } from "@/lib/api";
-import { type CellSelection, cellKey, evidenceByCell } from "@/lib/cells";
+import {
+  type CellSelection,
+  cellKey,
+  mitigationsByCell,
+  quotesByMitigation,
+} from "@/lib/cells";
+import { codeGroups } from "@/lib/codes";
 import { type Decision, NO_DECISION } from "@/lib/decisions";
 
 export function App() {
@@ -22,7 +28,9 @@ export function App() {
 
 function Reviewer() {
   const bundle = use(getBundle());
-  const cells = evidenceByCell(bundle.evidence, bundle.documents);
+  const cells = mitigationsByCell(bundle.mitigations, "Domain");
+  const quotes = quotesByMitigation(bundle.quotes);
+  const groups = codeGroups(bundle.codes, "Domain");
   const documents = new Map(
     bundle.documents.map((document) => [document.document_id, document]),
   );
@@ -34,7 +42,8 @@ function Reviewer() {
   useHotkeys([["Escape", () => setSelection(null)]]);
 
   const selectedKey =
-    selection && cellKey(selection.company.company_id, selection.domain.code);
+    selection &&
+    cellKey(selection.company.company_id, selection.code.record_id);
   const isPanelClosed = selection === null;
   return (
     <AppShell
@@ -49,15 +58,15 @@ function Reviewer() {
         <Stack>
           <Title order={2}>Organization Mitigations Reviewer</Title>
           <MockupNotice
-            run={bundle.run}
             companyCount={bundle.companies.length}
-            codeCount={bundle.taxonomy.flatMap((locus) => locus.domains).length}
+            codeCount={groups.flatMap((group) => group.codes).length}
           />
           <StrengthLegend />
           <EvidenceGrid
             companies={bundle.companies}
-            taxonomy={bundle.taxonomy}
+            groups={groups}
             cells={cells}
+            quotes={quotes}
             decisions={decisions}
             selection={selection}
             onSelect={setSelection}
@@ -69,6 +78,7 @@ function Reviewer() {
           <EvidencePanel
             key={selectedKey}
             selection={selection}
+            quotes={quotes}
             documents={documents}
             excerpts={excerpts}
             decision={decisions.get(selectedKey) ?? NO_DECISION}

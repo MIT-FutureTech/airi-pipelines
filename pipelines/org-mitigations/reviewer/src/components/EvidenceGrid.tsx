@@ -1,5 +1,6 @@
 import { Stack, Table, Text, Tooltip, UnstyledButton } from "@mantine/core";
-import { type CellSelection, cellKey } from "@/lib/cells";
+import { type CellSelection, cellKey, cellQuotes } from "@/lib/cells";
+import { type CodeGroup, fullLabel, shortLabel } from "@/lib/codes";
 import {
   type Decision,
   DISCLOSURE_LABELS,
@@ -7,12 +8,13 @@ import {
   type Disclosure,
 } from "@/lib/decisions";
 import { STRENGTH_COLORS, strongest } from "@/lib/strength";
-import type { Company, Domain, LocatedEvidence, Locus } from "@/lib/types";
+import type { Code, Company, Mitigation, Quote } from "@/lib/types";
 
 interface EvidenceGridProps {
   companies: Company[];
-  taxonomy: Locus[];
-  cells: Map<string, LocatedEvidence[]>;
+  groups: CodeGroup[];
+  cells: Map<string, Mitigation[]>;
+  quotes: Map<string, Quote[]>;
   decisions: Map<string, Decision>;
   selection: CellSelection | null;
   onSelect: (selection: CellSelection) => void;
@@ -20,43 +22,39 @@ interface EvidenceGridProps {
 
 export function EvidenceGrid({
   companies,
-  taxonomy,
+  groups,
   cells,
+  quotes,
   decisions,
   selection,
   onSelect,
 }: EvidenceGridProps) {
-  const domains = taxonomy.flatMap((locus) => locus.domains);
+  const codes = groups.flatMap((group) => group.codes);
   return (
     <Table.ScrollContainer minWidth={1100}>
       <Table withTableBorder withColumnBorders>
         <Table.Thead>
           <Table.Tr>
             <Table.Th rowSpan={2}>Company</Table.Th>
-            {taxonomy.map((locus) => (
-              <Tooltip
-                key={locus.code}
-                label={<LocusDefinition locus={locus} />}
-                multiline
-                w={360}
+            {groups.map((group) => (
+              <Table.Th
+                key={group.codes[0].record_id}
+                colSpan={group.codes.length}
+                ta="center"
               >
-                <Table.Th colSpan={locus.domains.length} ta="center">
-                  {locus.name}
-                </Table.Th>
-              </Tooltip>
+                {group.name}
+              </Table.Th>
             ))}
           </Table.Tr>
           <Table.Tr>
-            {domains.map((domain) => (
+            {codes.map((code) => (
               <Tooltip
-                key={domain.code}
-                label={<DomainDefinition domain={domain} />}
+                key={code.record_id}
+                label={<CodeDefinition code={code} />}
                 multiline
                 w={360}
               >
-                <Table.Th fw="normal">
-                  {`${domain.code} ${domain.short_name}`}
-                </Table.Th>
+                <Table.Th fw="normal">{shortLabel(code)}</Table.Th>
               </Tooltip>
             ))}
           </Table.Tr>
@@ -65,19 +63,25 @@ export function EvidenceGrid({
           {companies.map((company) => (
             <Table.Tr key={company.company_id}>
               <Table.Th scope="row">{company.name}</Table.Th>
-              {domains.map((domain) => {
-                const key = cellKey(company.company_id, domain.code);
+              {codes.map((code) => {
+                const key = cellKey(company.company_id, code.record_id);
+                const mitigations = cells.get(key);
                 return (
                   <GridCell
-                    key={domain.code}
-                    evidence={cells.get(key)}
+                    key={code.record_id}
+                    mitigations={mitigations}
+                    quotes={
+                      mitigations === undefined
+                        ? []
+                        : cellQuotes(mitigations, quotes)
+                    }
                     disclosure={decisions.get(key)?.disclosure ?? null}
                     isSelected={
                       selection?.company.company_id === company.company_id &&
-                      selection.domain.code === domain.code
+                      selection.code.record_id === code.record_id
                     }
-                    onSelect={(evidence) =>
-                      onSelect({ company, domain, evidence })
+                    onSelect={(selected) =>
+                      onSelect({ company, code, mitigations: selected })
                     }
                   />
                 );
@@ -93,24 +97,28 @@ export function EvidenceGrid({
 const SELECTED_OUTLINE = "inset 0 0 0 3px currentColor";
 
 interface GridCellProps {
-  evidence: LocatedEvidence[] | undefined;
+  mitigations: Mitigation[] | undefined;
+  quotes: Quote[];
   disclosure: Disclosure | null;
   isSelected: boolean;
-  onSelect: (evidence: LocatedEvidence[]) => void;
+  onSelect: (mitigations: Mitigation[]) => void;
 }
 
 function GridCell({
-  evidence,
+  mitigations,
+  quotes,
   disclosure,
   isSelected,
   onSelect,
 }: GridCellProps) {
-  if (evidence === undefined) {
+  if (mitigations === undefined) {
     return <Table.Td />;
   }
-  const strength = strongest(evidence);
-  const quotes =
-    evidence.length === 1 ? "1 quote" : `${evidence.length} quotes`;
+  const strength = strongest(quotes);
+  const count =
+    mitigations.length === 1
+      ? "1 mitigation"
+      : `${mitigations.length} mitigations`;
   const decided =
     disclosure === null
       ? "undecided"
@@ -129,32 +137,25 @@ function GridCell({
         fz="sm"
         ta="center"
         aria-pressed={isSelected}
-        aria-label={`${quotes}, strongest ${strength}, ${decided}`}
-        onClick={() => onSelect(evidence)}
+        aria-label={`${count}, strongest quote ${strength}, ${decided}`}
+        onClick={() => onSelect(mitigations)}
       >
         {disclosure === null
-          ? evidence.length
-          : `${evidence.length} ${DISCLOSURE_MARKS[disclosure]}`}
+          ? mitigations.length
+          : `${mitigations.length} ${DISCLOSURE_MARKS[disclosure]}`}
       </UnstyledButton>
     </Table.Td>
   );
 }
 
-function LocusDefinition({ locus }: { locus: Locus }) {
+function CodeDefinition({ code }: { code: Code }) {
   return (
     <Stack gap={4}>
-      <Text fw={600}>{locus.name}</Text>
-      <Text>{locus.definition}</Text>
-    </Stack>
-  );
-}
-
-function DomainDefinition({ domain }: { domain: Domain }) {
-  return (
-    <Stack gap={4}>
-      <Text fw={600}>{`${domain.code} ${domain.name}`}</Text>
-      <Text>{domain.definition}</Text>
-      <Text>{`Examples: ${domain.examples.join("; ")}`}</Text>
+      <Text fw={600}>{fullLabel(code)}</Text>
+      <Text>{code.definition}</Text>
+      {code.details !== null && (
+        <Text style={{ whiteSpace: "pre-line" }}>{code.details}</Text>
+      )}
     </Stack>
   );
 }

@@ -1,13 +1,13 @@
 // biome-ignore-all lint/style/useNamingConvention: these fixtures mirror what Python outputs
 import { describe, expect, it } from "vitest";
 import { sortByStrength, strongest } from "@/lib/strength";
-import type { LocatedEvidence, Strength } from "@/lib/types";
+import type { Quote, Strength } from "@/lib/types";
 
-function evidence(strength: Strength): LocatedEvidence {
+function evidence(strength: Strength): Quote {
   return {
+    evidence_id: "Bank__2.2__1.1",
+    mitigation_record_id: "recMitigation",
     document_id: "Bank_001",
-    domain_code: "2.2",
-    mitigation_name: "Board oversight of AI",
     quote: "Our board oversees AI.",
     strength,
     excerpt_id: "Bank_001_excerpt1",

@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import type { LocatedEvidence, Strength } from "@/lib/types";
+import type { Quote, Strength } from "@/lib/types";
 
 export const STRENGTHS: Strength[] = ["described", "stated", "reference"];
 
@@ -25,13 +25,13 @@ export const STRENGTH_COLORS: Record<Strength, CSSProperties> = {
   },
 };
 
-export function sortByStrength(evidence: LocatedEvidence[]): LocatedEvidence[] {
+export function sortByStrength(evidence: Quote[]): Quote[] {
   return evidence.toSorted(
     (a, b) => STRENGTHS.indexOf(a.strength) - STRENGTHS.indexOf(b.strength),
   );
 }
 
-export function strongest(evidence: LocatedEvidence[]): Strength {
+export function strongest(evidence: Quote[]): Strength {
   const strength = STRENGTHS.find((candidate) =>
     evidence.some((item) => item.strength === candidate),
   );

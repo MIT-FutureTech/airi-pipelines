@@ -1,24 +1,16 @@
-export interface RunSettings {
-  prompt_file: string;
-  model: string;
-  temperature: number;
-  reasoning_effort: string;
-}
+export type Taxonomy = "Domain" | "Instrument" | "Practice";
 
-export interface Domain {
-  code: string;
+export interface Code {
+  record_id: string;
+  key: string;
+  taxonomy: Taxonomy;
+  code: string | null;
   name: string;
-  short_name: string;
+  short_name: string | null;
+  group: string | null;
+  order: number;
   definition: string;
-  examples: string[];
-}
-
-export interface Locus {
-  code: string;
-  name: string;
-  short_name: string;
-  definition: string;
-  domains: Domain[];
+  details: string | null;
 }
 
 export interface Company {
@@ -46,6 +38,20 @@ export interface Excerpt {
   passage_ids: string[];
 }
 
+export interface Mitigation {
+  record_id: string;
+  mitigation_id: string;
+  company_id: string;
+  domain_record_id: string;
+  instrument_record_id: string;
+  practice_record_ids: string[];
+  name: string;
+  search_reasoning: string;
+  instrument_reasoning: string;
+  practice_tags: string | null;
+  pipeline_run: string;
+}
+
 export type Strength = "described" | "stated" | "reference";
 
 export interface Span {
@@ -53,21 +59,21 @@ export interface Span {
   end: number;
 }
 
-export interface LocatedEvidence {
+export interface Quote {
+  evidence_id: string;
+  mitigation_record_id: string;
   document_id: string;
-  domain_code: string;
-  mitigation_name: string;
+  excerpt_id: string;
   quote: string;
   strength: Strength;
-  excerpt_id: string;
   location: Span | null;
 }
 
 export interface Bundle {
-  run: RunSettings;
-  taxonomy: Locus[];
+  codes: Code[];
   companies: Company[];
   documents: CompanyDocument[];
   excerpts: Excerpt[];
-  evidence: LocatedEvidence[];
+  mitigations: Mitigation[];
+  quotes: Quote[];
 }

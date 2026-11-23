@@ -16,18 +16,14 @@ import {
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { DecisionControls } from "@/components/DecisionControls";
-import { type CellSelection, quoteKey } from "@/lib/cells";
+import { type CellSelection, cellQuotes } from "@/lib/cells";
+import { fullLabel } from "@/lib/codes";
 import { formatDate } from "@/lib/dates";
 import type { Decision } from "@/lib/decisions";
 import { type DocumentGroup, groupByDocument } from "@/lib/grouping";
 import { highlightWindow } from "@/lib/highlight";
 import { STRENGTH_COLORS, STRENGTH_LABELS } from "@/lib/strength";
-import type {
-  CompanyDocument,
-  Excerpt,
-  LocatedEvidence,
-  Span,
-} from "@/lib/types";
+import type { CompanyDocument, Excerpt, Quote, Span } from "@/lib/types";
 
 const CONTEXT_CHARACTERS = 300;
 const CONTEXT_BORDER = {
@@ -39,6 +35,7 @@ const FOOTER_BORDER = {
 
 interface EvidencePanelProps {
   selection: CellSelection;
+  quotes: Map<string, Quote[]>;
   documents: Map<string, CompanyDocument>;
   excerpts: Map<string, Excerpt>;
   decision: Decision;
@@ -48,13 +45,18 @@ interface EvidencePanelProps {
 
 export function EvidencePanel({
   selection,
+  quotes,
   documents,
   excerpts,
   decision,
   onDecisionChange,
   onClose,
 }: EvidencePanelProps) {
-  const { company, domain, evidence } = selection;
+  const { company, code, mitigations } = selection;
+  const evidence = cellQuotes(mitigations, quotes);
+  const mitigationNames = new Map(
+    mitigations.map((mitigation) => [mitigation.record_id, mitigation.name]),
+  );
   const toggleSupporting = (key: string) => {
     const supportingQuotes = new Set(decision.supportingQuotes);
     if (supportingQuotes.has(key)) {
@@ -71,12 +73,14 @@ export function EvidencePanel({
           <Group justify="space-between" align="flex-start" wrap="nowrap">
             <div>
               <Title order={3}>{company.name}</Title>
-              <Text fw={600}>{`${domain.code} ${domain.name}`}</Text>
+              <Text fw={600}>{fullLabel(code)}</Text>
             </div>
             <CloseButton aria-label="Close evidence" onClick={onClose} />
           </Group>
-          <Text>{domain.definition}</Text>
-          <Text fw={600}>{formatQuoteCount(evidence.length)}</Text>
+          <Text>{code.definition}</Text>
+          <Text fw={600}>
+            {`${formatMitigationCount(mitigations.length)}, ${formatQuoteCount(evidence.length)}`}
+          </Text>
         </Stack>
       </AppShell.Section>
       <AppShell.Section grow component={ScrollArea} mt="md">
@@ -85,6 +89,7 @@ export function EvidencePanel({
             <DocumentQuotes
               key={group.documentId}
               group={group}
+              mitigationNames={mitigationNames}
               documents={documents}
               excerpts={excerpts}
               supportingQuotes={decision.supportingQuotes}
@@ -106,6 +111,7 @@ export function EvidencePanel({
 
 interface DocumentQuotesProps {
   group: DocumentGroup;
+  mitigationNames: Map<string, string>;
   documents: Map<string, CompanyDocument>;
   excerpts: Map<string, Excerpt>;
   supportingQuotes: ReadonlySet<string>;
@@ -114,6 +120,7 @@ interface DocumentQuotesProps {
 
 function DocumentQuotes({
   group,
+  mitigationNames,
   documents,
   excerpts,
   supportingQuotes,
@@ -158,11 +165,12 @@ function DocumentQuotes({
         <Stack gap="xs">
           {group.evidence.map((item) => (
             <QuoteCard
-              key={quoteKey(item)}
+              key={item.evidence_id}
               item={item}
+              mitigationName={mitigationName(mitigationNames, item)}
               excerpts={excerpts}
-              isSupporting={supportingQuotes.has(quoteKey(item))}
-              onToggleSupporting={() => onToggleSupporting(quoteKey(item))}
+              isSupporting={supportingQuotes.has(item.evidence_id)}
+              onToggleSupporting={() => onToggleSupporting(item.evidence_id)}
             />
           ))}
         </Stack>
@@ -172,7 +180,8 @@ function DocumentQuotes({
 }
 
 interface QuoteCardProps {
-  item: LocatedEvidence;
+  item: Quote;
+  mitigationName: string;
   excerpts: Map<string, Excerpt>;
   isSupporting: boolean;
   onToggleSupporting: () => void;
@@ -180,6 +189,7 @@ interface QuoteCardProps {
 
 function QuoteCard({
   item,
+  mitigationName,
   excerpts,
   isSupporting,
   onToggleSupporting,
@@ -193,7 +203,7 @@ function QuoteCard({
     <Paper withBorder p="sm">
       <Stack gap="xs">
         <Group justify="space-between" align="flex-start" wrap="nowrap">
-          <Text fw={600}>{item.mitigation_name}</Text>
+          <Text fw={600}>{mitigationName}</Text>
           <Text
             px="xs"
             style={{ ...STRENGTH_COLORS[item.strength], borderRadius: 4 }}
@@ -267,6 +277,18 @@ function ExcerptContext({ excerpt, location }: ExcerptContextProps) {
 function PassageIds({ excerpt }: { excerpt: Excerpt }) {
   const label = excerpt.passage_ids.length === 1 ? "Passage" : "Passages";
   return <Text>{`${label}: ${excerpt.passage_ids.join(", ")}`}</Text>;
+}
+
+function mitigationName(names: Map<string, string>, quote: Quote): string {
+  const name = names.get(quote.mitigation_record_id);
+  if (name === undefined) {
+    throw new Error(`Quote ${quote.evidence_id} has no mitigation in the cell`);
+  }
+  return name;
+}
+
+function formatMitigationCount(count: number): string {
+  return count === 1 ? "1 mitigation" : `${count} mitigations`;
 }
 
 function formatQuoteCount(count: number): string {

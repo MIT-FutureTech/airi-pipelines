@@ -1,12 +1,12 @@
 import { STRENGTHS, sortByStrength, strongest } from "@/lib/strength";
-import type { LocatedEvidence, Strength } from "@/lib/types";
+import type { Quote, Strength } from "@/lib/types";
 
 export interface DocumentGroup {
   documentId: string;
-  evidence: LocatedEvidence[];
+  evidence: Quote[];
 }
 
-export function groupByDocument(evidence: LocatedEvidence[]): DocumentGroup[] {
+export function groupByDocument(evidence: Quote[]): DocumentGroup[] {
   const groups = [...Map.groupBy(evidence, (item) => item.document_id)].map(
     ([documentId, items]) => ({ documentId, evidence: sortByStrength(items) }),
   );
