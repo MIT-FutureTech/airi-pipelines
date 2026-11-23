@@ -17,7 +17,9 @@ import { getBundle, getJudgements } from "@/lib/api";
 import {
   type CellSelection,
   cellKey,
+  type Direction,
   mitigationsByCell,
+  nextCodeWithMitigations,
   quotesByMitigation,
 } from "@/lib/cells";
 import {
@@ -27,7 +29,7 @@ import {
   TAXONOMY_LABELS,
 } from "@/lib/codes";
 import { emptyJudgement } from "@/lib/judgements";
-import type { Taxonomy } from "@/lib/types";
+import type { Code, Taxonomy } from "@/lib/types";
 import { useJudgements } from "@/lib/useJudgements";
 
 export function App() {
@@ -60,6 +62,31 @@ function Reviewer() {
     saved.judgements,
   );
   useHotkeys([["Escape", () => setSelection(null)]]);
+
+  const codes = groups.flatMap((group) => group.codes);
+  const neighbour = (direction: Direction) =>
+    selection &&
+    nextCodeWithMitigations(
+      codes,
+      cells,
+      selection.company.company_id,
+      selection.code.record_id,
+      direction,
+    );
+  const selectCode = (code: Code) => {
+    if (selection === null) {
+      return;
+    }
+    const mitigations = cells.get(
+      cellKey(selection.company.company_id, code.record_id),
+    );
+    if (mitigations === undefined) {
+      throw new Error(
+        `${selection.company.name} has no ${code.key} mitigations`,
+      );
+    }
+    setSelection({ company: selection.company, code, mitigations });
+  };
 
   const selectedKey =
     selection &&
@@ -118,6 +145,9 @@ function Reviewer() {
               )
             }
             saveStatus={saveStatuses.get(selectedKey) ?? null}
+            previousCode={neighbour("previous")}
+            nextCode={neighbour("next")}
+            onSelectCode={selectCode}
             onJudgementChange={change}
             onJudgementSave={(judgement) =>
               save(judgement, selection.company.name, selection.code.key)

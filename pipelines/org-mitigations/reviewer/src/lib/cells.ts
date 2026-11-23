@@ -56,3 +56,25 @@ function codeRecordIds(mitigation: Mitigation, taxonomy: Taxonomy): string[] {
       return mitigation.practice_record_ids;
   }
 }
+
+export type Direction = "previous" | "next";
+
+export function nextCodeWithMitigations(
+  codes: Code[],
+  cells: Map<string, Mitigation[]>,
+  companyId: string,
+  codeRecordId: string,
+  direction: Direction,
+): Code | null {
+  const index = codes.findIndex((code) => code.record_id === codeRecordId);
+  if (index === -1) {
+    throw new Error(`Code ${codeRecordId} isn't in this taxonomy`);
+  }
+  const step = direction === "next" ? 1 : -1;
+  for (let at = index + step; at >= 0 && at < codes.length; at += step) {
+    if (cells.has(cellKey(companyId, codes[at].record_id))) {
+      return codes[at];
+    }
+  }
+  return null;
+}

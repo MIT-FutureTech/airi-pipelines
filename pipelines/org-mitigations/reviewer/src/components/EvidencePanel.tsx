@@ -1,6 +1,7 @@
 import {
   Anchor,
   AppShell,
+  Button,
   Checkbox,
   CloseButton,
   Group,
@@ -15,7 +16,7 @@ import { useDisclosure } from "@mantine/hooks";
 import type { Judgement } from "@shared/judgements";
 import { DecisionControls } from "@/components/DecisionControls";
 import { type CellSelection, cellQuotes } from "@/lib/cells";
-import { fullLabel } from "@/lib/codes";
+import { fullLabel, shortLabel } from "@/lib/codes";
 import { formatDate } from "@/lib/dates";
 import { highlightWindow } from "@/lib/highlight";
 import type { SaveStatus } from "@/lib/saving";
@@ -26,6 +27,7 @@ import {
   sortByStrongestQuote,
 } from "@/lib/strength";
 import type {
+  Code,
   CompanyDocument,
   Excerpt,
   Mitigation,
@@ -51,6 +53,9 @@ interface EvidencePanelProps {
   excerpts: Map<string, Excerpt>;
   judgement: Judgement;
   saveStatus: SaveStatus | null;
+  previousCode: Code | null;
+  nextCode: Code | null;
+  onSelectCode: (code: Code) => void;
   onJudgementChange: (judgement: Judgement) => void;
   onJudgementSave: (judgement: Judgement) => void;
   onClose: () => void;
@@ -63,6 +68,9 @@ export function EvidencePanel({
   excerpts,
   judgement,
   saveStatus,
+  previousCode,
+  nextCode,
+  onSelectCode,
   onJudgementChange,
   onJudgementSave,
   onClose,
@@ -93,6 +101,14 @@ export function EvidencePanel({
           <Text fw={600}>
             {`${formatMitigationCount(mitigations.length)}, ${formatQuoteCount(quoteCount)}`}
           </Text>
+          <Group justify="space-between" wrap="nowrap">
+            <StepButton
+              label="Previous"
+              code={previousCode}
+              onSelect={onSelectCode}
+            />
+            <StepButton label="Next" code={nextCode} onSelect={onSelectCode} />
+          </Group>
         </Stack>
       </AppShell.Section>
       <AppShell.Section grow component={ScrollArea} mt="md">
@@ -120,6 +136,31 @@ export function EvidencePanel({
         {saveStatus !== null && <SaveStatusText status={saveStatus} />}
       </AppShell.Section>
     </>
+  );
+}
+
+interface StepButtonProps {
+  label: string;
+  code: Code | null;
+  onSelect: (code: Code) => void;
+}
+
+function StepButton({ label, code, onSelect }: StepButtonProps) {
+  return (
+    <Button
+      variant="default"
+      h="auto"
+      py={6}
+      disabled={code === null}
+      styles={{ label: { whiteSpace: "normal" } }}
+      onClick={() => {
+        if (code !== null) {
+          onSelect(code);
+        }
+      }}
+    >
+      {code === null ? label : `${label}: ${shortLabel(code)}`}
+    </Button>
   );
 }
 

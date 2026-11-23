@@ -3,9 +3,10 @@ import {
   cellKey,
   cellQuotes,
   mitigationsByCell,
+  nextCodeWithMitigations,
   quotesByMitigation,
 } from "@/lib/cells";
-import type { Mitigation, Quote } from "@/lib/types";
+import type { Code, Mitigation, Quote } from "@/lib/types";
 
 function mitigation(
   recordId: string,
@@ -89,5 +90,53 @@ describe("cellQuotes", () => {
     expect(() => cellQuotes([BANK_FIRST], new Map())).toThrow(
       "Mitigation recBank__2.2__1 has no quotes",
     );
+  });
+});
+
+describe("nextCodeWithMitigations", () => {
+  function code(recordId: string): Code {
+    return {
+      record_id: recordId,
+      key: `Domain ${recordId}`,
+      taxonomy: "Domain",
+      code: recordId,
+      name: `Domain ${recordId}`,
+      short_name: null,
+      group: null,
+      order: 1,
+      definition: "...",
+      details: null,
+    };
+  }
+
+  const codes = [code("recA"), code("recB"), code("recC"), code("recD")];
+  const cells = new Map([
+    [cellKey("recBank", "recA"), [BANK_FIRST]],
+    [cellKey("recBank", "recC"), [BANK_FIRST]],
+    [cellKey("recRetail", "recB"), [RETAIL]],
+  ]);
+
+  it("skips codes the company has no mitigations for", () => {
+    expect(
+      nextCodeWithMitigations(codes, cells, "recBank", "recA", "next"),
+    ).toBe(codes[2]);
+    expect(
+      nextCodeWithMitigations(codes, cells, "recBank", "recC", "previous"),
+    ).toBe(codes[0]);
+  });
+
+  it("finds nothing past the company's last code", () => {
+    expect(
+      nextCodeWithMitigations(codes, cells, "recBank", "recC", "next"),
+    ).toBeNull();
+    expect(
+      nextCodeWithMitigations(codes, cells, "recBank", "recA", "previous"),
+    ).toBeNull();
+  });
+
+  it("rejects a code from another taxonomy", () => {
+    expect(() =>
+      nextCodeWithMitigations(codes, cells, "recBank", "recZ", "next"),
+    ).toThrow("Code recZ isn't in this taxonomy");
   });
 });
