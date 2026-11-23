@@ -1,11 +1,8 @@
 import {
-  AccordionChevron,
-  ActionIcon,
   Anchor,
   AppShell,
   Checkbox,
   CloseButton,
-  Collapse,
   Group,
   Mark,
   Paper,
@@ -20,14 +17,27 @@ import { type CellSelection, cellQuotes } from "@/lib/cells";
 import { fullLabel } from "@/lib/codes";
 import { formatDate } from "@/lib/dates";
 import type { Decision } from "@/lib/decisions";
-import { type DocumentGroup, groupByDocument } from "@/lib/grouping";
 import { highlightWindow } from "@/lib/highlight";
-import { STRENGTH_COLORS, STRENGTH_LABELS } from "@/lib/strength";
-import type { CompanyDocument, Excerpt, Quote, Span } from "@/lib/types";
+import {
+  STRENGTH_COLORS,
+  STRENGTH_LABELS,
+  sortByStrength,
+  sortByStrongestQuote,
+} from "@/lib/strength";
+import type {
+  CompanyDocument,
+  Excerpt,
+  Mitigation,
+  Quote,
+  Span,
+} from "@/lib/types";
 
 const CONTEXT_CHARACTERS = 300;
 const CONTEXT_BORDER = {
   borderLeft: "3px solid var(--mantine-color-default-border)",
+};
+const QUOTE_BORDER = {
+  borderTop: "1px solid var(--mantine-color-default-border)",
 };
 const FOOTER_BORDER = {
   borderTop: "1px solid var(--mantine-color-default-border)",
@@ -53,18 +63,15 @@ export function EvidencePanel({
   onClose,
 }: EvidencePanelProps) {
   const { company, code, mitigations } = selection;
-  const evidence = cellQuotes(mitigations, quotes);
-  const mitigationNames = new Map(
-    mitigations.map((mitigation) => [mitigation.record_id, mitigation.name]),
-  );
-  const toggleSupporting = (key: string) => {
-    const supportingQuotes = new Set(decision.supportingQuotes);
-    if (supportingQuotes.has(key)) {
-      supportingQuotes.delete(key);
+  const quoteCount = cellQuotes(mitigations, quotes).length;
+  const toggleSupporting = (recordId: string) => {
+    const supportingMitigations = new Set(decision.supportingMitigations);
+    if (supportingMitigations.has(recordId)) {
+      supportingMitigations.delete(recordId);
     } else {
-      supportingQuotes.add(key);
+      supportingMitigations.add(recordId);
     }
-    onDecisionChange({ ...decision, supportingQuotes });
+    onDecisionChange({ ...decision, supportingMitigations });
   };
   return (
     <>
@@ -79,21 +86,23 @@ export function EvidencePanel({
           </Group>
           <Text>{code.definition}</Text>
           <Text fw={600}>
-            {`${formatMitigationCount(mitigations.length)}, ${formatQuoteCount(evidence.length)}`}
+            {`${formatMitigationCount(mitigations.length)}, ${formatQuoteCount(quoteCount)}`}
           </Text>
         </Stack>
       </AppShell.Section>
       <AppShell.Section grow component={ScrollArea} mt="md">
-        <Stack gap="lg">
-          {groupByDocument(evidence).map((group) => (
-            <DocumentQuotes
-              key={group.documentId}
-              group={group}
-              mitigationNames={mitigationNames}
+        <Stack gap="md">
+          {sortByStrongestQuote(mitigations, quotes).map((mitigation) => (
+            <MitigationCard
+              key={mitigation.record_id}
+              mitigation={mitigation}
+              quotes={cellQuotes([mitigation], quotes)}
               documents={documents}
               excerpts={excerpts}
-              supportingQuotes={decision.supportingQuotes}
-              onToggleSupporting={toggleSupporting}
+              isSupporting={decision.supportingMitigations.has(
+                mitigation.record_id,
+              )}
+              onToggleSupporting={() => toggleSupporting(mitigation.record_id)}
             />
           ))}
         </Stack>
@@ -109,46 +118,67 @@ export function EvidencePanel({
   );
 }
 
-interface DocumentQuotesProps {
-  group: DocumentGroup;
-  mitigationNames: Map<string, string>;
+interface MitigationCardProps {
+  mitigation: Mitigation;
+  quotes: Quote[];
   documents: Map<string, CompanyDocument>;
   excerpts: Map<string, Excerpt>;
-  supportingQuotes: ReadonlySet<string>;
-  onToggleSupporting: (key: string) => void;
+  isSupporting: boolean;
+  onToggleSupporting: () => void;
 }
 
-function DocumentQuotes({
-  group,
-  mitigationNames,
+function MitigationCard({
+  mitigation,
+  quotes,
   documents,
   excerpts,
-  supportingQuotes,
+  isSupporting,
   onToggleSupporting,
-}: DocumentQuotesProps) {
-  const [isOpen, { toggle }] = useDisclosure(true);
-  const source = documents.get(group.documentId);
+}: MitigationCardProps) {
+  return (
+    <Paper withBorder p="sm">
+      <Stack gap="sm">
+        <Group justify="space-between" align="flex-start" wrap="nowrap">
+          <Text fw={600}>{mitigation.name}</Text>
+          <Checkbox
+            label="Supports the decision"
+            checked={isSupporting}
+            onChange={onToggleSupporting}
+          />
+        </Group>
+        {sortByStrength(quotes).map((quote) => (
+          <QuoteBlock
+            key={quote.evidence_id}
+            quote={quote}
+            documents={documents}
+            excerpts={excerpts}
+          />
+        ))}
+      </Stack>
+    </Paper>
+  );
+}
+
+interface QuoteBlockProps {
+  quote: Quote;
+  documents: Map<string, CompanyDocument>;
+  excerpts: Map<string, Excerpt>;
+}
+
+function QuoteBlock({ quote, documents, excerpts }: QuoteBlockProps) {
+  const [isExpanded, { toggle }] = useDisclosure(false);
+  const source = documents.get(quote.document_id);
   if (source === undefined) {
-    throw new Error(`Evidence refers to unknown document ${group.documentId}`);
+    throw new Error(`Quote refers to unknown document ${quote.document_id}`);
+  }
+  const excerpt = excerpts.get(quote.excerpt_id);
+  if (excerpt === undefined) {
+    throw new Error(`Quote refers to unknown excerpt ${quote.excerpt_id}`);
   }
   return (
-    <Stack gap="xs">
-      <Group gap="xs" wrap="nowrap" align="flex-start">
-        <ActionIcon
-          variant="subtle"
-          color="gray"
-          aria-expanded={isOpen}
-          aria-label={isOpen ? "Hide quotes" : "Show quotes"}
-          onClick={toggle}
-        >
-          <AccordionChevron
-            style={{
-              transform: isOpen ? undefined : "rotate(-90deg)",
-              transition: "transform 150ms",
-            }}
-          />
-        </ActionIcon>
-        <Text fw={600}>
+    <Stack gap="xs" pt="sm" style={QUOTE_BORDER}>
+      <Group justify="space-between" align="flex-start" wrap="nowrap">
+        <Text>
           <Anchor
             href={source.link}
             target="_blank"
@@ -158,75 +188,22 @@ function DocumentQuotes({
             {source.title}
           </Anchor>
           {`, ${source.doc_type}, ${formatDate(source.date, source.date_precision)}`}
-          {` · ${formatQuoteCount(group.evidence.length)}`}
+        </Text>
+        <Text
+          px="xs"
+          style={{ ...STRENGTH_COLORS[quote.strength], borderRadius: 4 }}
+        >
+          {STRENGTH_LABELS[quote.strength]}
         </Text>
       </Group>
-      <Collapse in={isOpen}>
-        <Stack gap="xs">
-          {group.evidence.map((item) => (
-            <QuoteCard
-              key={item.evidence_id}
-              item={item}
-              mitigationName={mitigationName(mitigationNames, item)}
-              excerpts={excerpts}
-              isSupporting={supportingQuotes.has(item.evidence_id)}
-              onToggleSupporting={() => onToggleSupporting(item.evidence_id)}
-            />
-          ))}
-        </Stack>
-      </Collapse>
+      <Text>{`“${quote.quote}”`}</Text>
+      <Anchor component="button" type="button" ta="left" onClick={toggle}>
+        {isExpanded ? "Hide context" : "Show context"}
+      </Anchor>
+      {isExpanded && (
+        <ExcerptContext excerpt={excerpt} location={quote.location} />
+      )}
     </Stack>
-  );
-}
-
-interface QuoteCardProps {
-  item: Quote;
-  mitigationName: string;
-  excerpts: Map<string, Excerpt>;
-  isSupporting: boolean;
-  onToggleSupporting: () => void;
-}
-
-function QuoteCard({
-  item,
-  mitigationName,
-  excerpts,
-  isSupporting,
-  onToggleSupporting,
-}: QuoteCardProps) {
-  const [isExpanded, { toggle }] = useDisclosure(false);
-  const excerpt = excerpts.get(item.excerpt_id);
-  if (excerpt === undefined) {
-    throw new Error(`Evidence refers to unknown excerpt ${item.excerpt_id}`);
-  }
-  return (
-    <Paper withBorder p="sm">
-      <Stack gap="xs">
-        <Group justify="space-between" align="flex-start" wrap="nowrap">
-          <Text fw={600}>{mitigationName}</Text>
-          <Text
-            px="xs"
-            style={{ ...STRENGTH_COLORS[item.strength], borderRadius: 4 }}
-          >
-            {STRENGTH_LABELS[item.strength]}
-          </Text>
-        </Group>
-        <Text>{`“${item.quote}”`}</Text>
-        <Group justify="space-between" wrap="nowrap">
-          <Anchor component="button" type="button" onClick={toggle}>
-            {isExpanded ? "Hide context" : "Show context"}
-          </Anchor>
-          <Checkbox
-            label="Supports the decision"
-            checked={isSupporting}
-            onChange={onToggleSupporting}
-          />
-        </Group>
-        {isExpanded && (
-          <ExcerptContext excerpt={excerpt} location={item.location} />
-        )}
-      </Stack>
-    </Paper>
   );
 }
 
@@ -277,14 +254,6 @@ function ExcerptContext({ excerpt, location }: ExcerptContextProps) {
 function PassageIds({ excerpt }: { excerpt: Excerpt }) {
   const label = excerpt.passage_ids.length === 1 ? "Passage" : "Passages";
   return <Text>{`${label}: ${excerpt.passage_ids.join(", ")}`}</Text>;
-}
-
-function mitigationName(names: Map<string, string>, quote: Quote): string {
-  const name = names.get(quote.mitigation_record_id);
-  if (name === undefined) {
-    throw new Error(`Quote ${quote.evidence_id} has no mitigation in the cell`);
-  }
-  return name;
 }
 
 function formatMitigationCount(count: number): string {

@@ -17,13 +17,13 @@ export const DISCLOSURE_MARKS: Record<Disclosure, string> = {
 export interface Decision {
   disclosure: Disclosure | null;
   comment: string;
-  supportingQuotes: ReadonlySet<string>;
+  supportingMitigations: ReadonlySet<string>;
 }
 
 export const NO_DECISION: Decision = {
   disclosure: null,
   comment: "",
-  supportingQuotes: new Set(),
+  supportingMitigations: new Set(),
 };
 
 export function parseDisclosure(value: string): Disclosure {

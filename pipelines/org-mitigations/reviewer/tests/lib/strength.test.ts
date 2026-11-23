@@ -1,7 +1,11 @@
 // biome-ignore-all lint/style/useNamingConvention: these fixtures mirror what Python outputs
 import { describe, expect, it } from "vitest";
-import { sortByStrength, strongest } from "@/lib/strength";
-import type { Quote, Strength } from "@/lib/types";
+import {
+  sortByStrength,
+  sortByStrongestQuote,
+  strongest,
+} from "@/lib/strength";
+import type { Mitigation, Quote, Strength } from "@/lib/types";
 
 function evidence(strength: Strength): Quote {
   return {
@@ -57,5 +61,38 @@ describe("sortByStrength", () => {
       firstReference,
       secondReference,
     ]);
+  });
+});
+
+describe("sortByStrongestQuote", () => {
+  function mitigation(recordId: string): Mitigation {
+    return {
+      record_id: recordId,
+      mitigation_id: `Bank__2.2__${recordId}`,
+      company_id: "recBank",
+      domain_record_id: "recDomain22",
+      instrument_record_id: "recInstrument23",
+      practice_record_ids: [],
+      name: "Board oversight of AI",
+      search_reasoning: "The board oversees AI.",
+      instrument_reasoning: "An internal policy.",
+      practice_tags: null,
+      pipeline_run: "2026-11-15T22-05-15+0000",
+    };
+  }
+
+  it("puts mitigations with stronger quotes first", () => {
+    const onlyReferenced = mitigation("recReferenced");
+    const described = mitigation("recDescribed");
+    const stated = mitigation("recStated");
+    const quotes = new Map([
+      ["recReferenced", [evidence("reference")]],
+      ["recDescribed", [evidence("reference"), evidence("described")]],
+      ["recStated", [evidence("stated")]],
+    ]);
+
+    expect(
+      sortByStrongestQuote([onlyReferenced, described, stated], quotes),
+    ).toEqual([described, stated, onlyReferenced]);
   });
 });
