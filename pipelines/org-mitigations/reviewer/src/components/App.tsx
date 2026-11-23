@@ -7,14 +7,13 @@ import {
   Title,
 } from "@mantine/core";
 import { useHotkeys } from "@mantine/hooks";
-import type { Judgement } from "@shared/judgements";
 import { Suspense, use, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { EvidenceGrid } from "@/components/EvidenceGrid";
 import { EvidencePanel } from "@/components/EvidencePanel";
 import { MockupNotice } from "@/components/MockupNotice";
 import { StrengthLegend } from "@/components/StrengthLegend";
-import { getBundle } from "@/lib/api";
+import { getBundle, getJudgements } from "@/lib/api";
 import {
   type CellSelection,
   cellKey,
@@ -27,7 +26,7 @@ import {
   TAXONOMIES,
   TAXONOMY_LABELS,
 } from "@/lib/codes";
-import { emptyJudgement } from "@/lib/judgements";
+import { emptyJudgement, judgementsByCell } from "@/lib/judgements";
 import type { Taxonomy } from "@/lib/types";
 
 export function App() {
@@ -41,7 +40,10 @@ export function App() {
 }
 
 function Reviewer() {
-  const bundle = use(getBundle());
+  const bundleRequest = getBundle();
+  const judgementsRequest = getJudgements();
+  const bundle = use(bundleRequest);
+  const saved = use(judgementsRequest);
   const [taxonomy, setTaxonomy] = useState<Taxonomy>("Domain");
   const cells = mitigationsByCell(bundle.mitigations, taxonomy);
   const quotes = quotesByMitigation(bundle.quotes);
@@ -53,8 +55,8 @@ function Reviewer() {
     bundle.excerpts.map((excerpt) => [excerpt.excerpt_id, excerpt]),
   );
   const [selection, setSelection] = useState<CellSelection | null>(null);
-  const [judgements, setJudgements] = useState(
-    () => new Map<string, Judgement>(),
+  const [judgements, setJudgements] = useState(() =>
+    judgementsByCell(saved.judgements),
   );
   useHotkeys([["Escape", () => setSelection(null)]]);
 

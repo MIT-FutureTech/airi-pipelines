@@ -1,4 +1,5 @@
 import { DECISIONS, type Decision, type Judgement } from "@shared/judgements";
+import { cellKey } from "@/lib/cells";
 
 export const DECISION_LABELS: Record<Decision, string> = {
   yes: "Yes",
@@ -31,4 +32,15 @@ export function emptyJudgement(
     comment: "",
     supportingMitigationRecordIds: [],
   };
+}
+
+export function judgementsByCell(
+  judgements: Judgement[],
+): Map<string, Judgement> {
+  return new Map(
+    judgements.map((judgement) => [
+      cellKey(judgement.companyId, judgement.codeRecordId),
+      judgement,
+    ]),
+  );
 }
