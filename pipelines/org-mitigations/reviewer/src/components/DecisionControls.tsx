@@ -1,11 +1,13 @@
 import { Group, Radio, Stack, Textarea } from "@mantine/core";
+import { getHotkeyHandler } from "@mantine/hooks";
 import { DECISIONS, type Judgement } from "@shared/judgements";
-import { useRef } from "react";
+import { type RefObject, useRef } from "react";
 import { DECISION_LABELS, parseDecision } from "@/lib/judgements";
 
 interface DecisionControlsProps {
   companyName: string;
   judgement: Judgement;
+  commentRef: RefObject<HTMLTextAreaElement | null>;
   onChange: (judgement: Judgement) => void;
   onSave: (judgement: Judgement) => void;
 }
@@ -13,6 +15,7 @@ interface DecisionControlsProps {
 export function DecisionControls({
   companyName,
   judgement,
+  commentRef,
   onChange,
   onSave,
 }: DecisionControlsProps) {
@@ -37,6 +40,7 @@ export function DecisionControls({
         </Group>
       </Radio.Group>
       <Textarea
+        ref={commentRef}
         label="Comment"
         autosize
         minRows={2}
@@ -45,6 +49,9 @@ export function DecisionControls({
         onChange={(event) =>
           onChange({ ...judgement, comment: event.currentTarget.value })
         }
+        onKeyDown={getHotkeyHandler([
+          ["Escape", () => commentRef.current?.blur()],
+        ])}
         onFocus={() => {
           commentWhenFocused.current = judgement.comment;
         }}

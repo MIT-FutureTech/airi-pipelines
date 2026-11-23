@@ -5,6 +5,7 @@ import {
   Checkbox,
   CloseButton,
   Group,
+  Kbd,
   Mark,
   Paper,
   ScrollArea,
@@ -12,8 +13,9 @@ import {
   Text,
   Title,
 } from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
-import type { Judgement } from "@shared/judgements";
+import { type HotkeyItem, useDisclosure, useHotkeys } from "@mantine/hooks";
+import type { Decision, Judgement } from "@shared/judgements";
+import { useRef } from "react";
 import { DecisionControls } from "@/components/DecisionControls";
 import { type CellSelection, cellQuotes } from "@/lib/cells";
 import { fullLabel, shortLabel } from "@/lib/codes";
@@ -36,6 +38,7 @@ import type {
 } from "@/lib/types";
 
 const CONTEXT_CHARACTERS = 300;
+const MITIGATION_SHORTCUTS = 9;
 const CONTEXT_BORDER = {
   borderLeft: "3px solid var(--mantine-color-default-border)",
 };
@@ -77,6 +80,8 @@ export function EvidencePanel({
 }: EvidencePanelProps) {
   const { company, code, mitigations } = selection;
   const quoteCount = cellQuotes(mitigations, quotes).length;
+  const ordered = sortByStrongestQuote(mitigations, quotes);
+  const commentRef = useRef<HTMLTextAreaElement>(null);
   const supporting = judgement.supportingMitigationRecordIds;
   const toggleSupporting = (recordId: string) => {
     onJudgementSave({
@@ -86,6 +91,38 @@ export function EvidencePanel({
         : [...supporting, recordId],
     });
   };
+  const decide = (decision: Decision) => {
+    onJudgementSave({ ...judgement, decision });
+  };
+  const step = (code: Code | null) => {
+    if (code !== null) {
+      onSelectCode(code);
+    }
+  };
+  const supportShortcuts = ordered
+    .slice(0, MITIGATION_SHORTCUTS)
+    .map(
+      (mitigation, index): HotkeyItem => [
+        String(index + 1),
+        () => toggleSupporting(mitigation.record_id),
+      ],
+    );
+  useHotkeys(
+    [
+      ["y", () => decide("yes")],
+      ["n", () => decide("no")],
+      ["u", () => decide("unsure")],
+      ["j", () => step(nextCode)],
+      ["k", () => step(previousCode)],
+      ["c", () => commentRef.current?.focus()],
+      ...supportShortcuts,
+    ],
+    ["TEXTAREA"],
+  );
+  useHotkeys([
+    ["ArrowRight", () => step(nextCode)],
+    ["ArrowLeft", () => step(previousCode)],
+  ]);
   return (
     <>
       <AppShell.Section>
@@ -113,10 +150,11 @@ export function EvidencePanel({
       </AppShell.Section>
       <AppShell.Section grow component={ScrollArea} mt="md">
         <Stack gap="md">
-          {sortByStrongestQuote(mitigations, quotes).map((mitigation) => (
+          {ordered.map((mitigation, index) => (
             <MitigationCard
               key={mitigation.record_id}
               mitigation={mitigation}
+              shortcut={index < MITIGATION_SHORTCUTS ? String(index + 1) : null}
               quotes={cellQuotes([mitigation], quotes)}
               documents={documents}
               excerpts={excerpts}
@@ -130,6 +168,7 @@ export function EvidencePanel({
         <DecisionControls
           companyName={company.name}
           judgement={judgement}
+          commentRef={commentRef}
           onChange={onJudgementChange}
           onSave={onJudgementSave}
         />
@@ -180,6 +219,7 @@ function SaveStatusText({ status }: { status: SaveStatus }) {
 
 interface MitigationCardProps {
   mitigation: Mitigation;
+  shortcut: string | null;
   quotes: Quote[];
   documents: Map<string, CompanyDocument>;
   excerpts: Map<string, Excerpt>;
@@ -189,6 +229,7 @@ interface MitigationCardProps {
 
 function MitigationCard({
   mitigation,
+  shortcut,
   quotes,
   documents,
   excerpts,
@@ -200,11 +241,14 @@ function MitigationCard({
       <Stack gap="sm">
         <Group justify="space-between" align="flex-start" wrap="nowrap">
           <Text fw={600}>{mitigation.name}</Text>
-          <Checkbox
-            label="Supports the decision"
-            checked={isSupporting}
-            onChange={onToggleSupporting}
-          />
+          <Group gap="xs" wrap="nowrap">
+            {shortcut !== null && <Kbd>{shortcut}</Kbd>}
+            <Checkbox
+              label="Supports the decision"
+              checked={isSupporting}
+              onChange={onToggleSupporting}
+            />
+          </Group>
         </Group>
         {sortByStrength(quotes).map((quote) => (
           <QuoteBlock

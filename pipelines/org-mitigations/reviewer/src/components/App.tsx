@@ -61,7 +61,7 @@ function Reviewer() {
   const { judgements, saveStatuses, change, save } = useJudgements(
     saved.judgements,
   );
-  useHotkeys([["Escape", () => setSelection(null)]]);
+  useHotkeys([["Escape", () => setSelection(null)]], ["TEXTAREA"]);
 
   const codes = groups.flatMap((group) => group.codes);
   const neighbour = (direction: Direction) =>
