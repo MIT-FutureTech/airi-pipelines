@@ -2,7 +2,7 @@
 
 # Prevent commits to main
 branch_name="$(git rev-parse --abbrev-ref HEAD)"
-if [ "${branch_name}" == "main" ]
+if [ "${branch_name}" = "main" ]
 then
     echo "Commits to main are not allowed. Please see the Workflow section of the README."
     exit 1
