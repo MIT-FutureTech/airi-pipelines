@@ -72,7 +72,12 @@ Then, from this folder, upload it:
 npm run upload-data
 ```
 
-The app shows the new data after its next deploy.
+The app shows the new data after its next deploy. To deploy without a code
+change, run the CI workflow on main:
+
+```bash
+gh workflow run reviewer-ci.yml --ref main
+```
 
 ## Deployment
 
@@ -88,9 +93,15 @@ npx wrangler r2 bucket create org-mitigations-reviewer-data
 npx wrangler secret put AIRTABLE_PAT
 ```
 
-Then download the latest data bundle, and deploy:
+After that, the CI workflow deploys the app whenever a change to it reaches
+main.
+
+To try a branch before merging it, upload a preview version from it, with an
+optional alias for its URL:
 
 ```bash
-npm run download-data
-npm run deploy
+gh workflow run reviewer-preview.yml --ref my-branch -f alias=my-alias
 ```
+
+The run's summary lists the preview URLs. Previews save judgements to the same
+Airtable table as the deployed app.
