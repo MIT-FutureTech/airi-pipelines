@@ -1,0 +1,10 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "org-mitigations-reviewer",
+  "account_id": "dee3a047356fdb8bb892c9cf407d4554",
+  "compatibility_date": "2026-10-18",
+  "preview_urls": true,
+  "assets": {
+    "directory": "./dist"
+  }
+}

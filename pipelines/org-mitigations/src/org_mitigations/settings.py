@@ -26,7 +26,7 @@ class BundleSettings(
         --temperature 1 \
         --reasoning-effort medium \
         --company-names Amazon --company-names Apple \
-        --output-path pipelines/org-mitigations/output/bundle.json
+        --output-path pipelines/org-mitigations/reviewer/public/data/bundle.json
     """
 
     taxonomy_file: Path = Field(
