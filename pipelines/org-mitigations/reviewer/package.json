@@ -7,6 +7,8 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "deploy": "npm run build && wrangler deploy",
+    "download-data": "mkdir -p public/data && wrangler r2 object get org-mitigations-reviewer-data/bundle.json --remote --file public/data/bundle.json",
+    "upload-data": "wrangler r2 object put org-mitigations-reviewer-data/bundle.json --remote --file public/data/bundle.json --content-type application/json",
     "preview": "vite preview",
     "lint": "biome lint --write",
     "format": "biome format --write",
