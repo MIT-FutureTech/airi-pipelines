@@ -11,6 +11,7 @@ on:
     paths:
       - "pipelines/org-mitigations/reviewer/**"
       - ".github/workflows/reviewer-ci.yml"
+  workflow_dispatch:
 
 defaults:
   run:
@@ -41,3 +42,37 @@ jobs:
 
       - name: Test
         run: npm run test
+
+  deploy:
+    needs: check
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: pipelines/org-mitigations/reviewer/package-lock.json
+
+      - run: npm ci
+
+      - name: Download data
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: npm run download-data
+
+      - name: Build
+        run: npm run build
+
+      - name: Deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          ACTOR: ${{ github.actor }}
+        run: |
+          npx wrangler deploy \
+            --tag "${GITHUB_SHA::7}" \
+            --message "$(git log -1 --pretty=%s) (deployed by $ACTOR)"
