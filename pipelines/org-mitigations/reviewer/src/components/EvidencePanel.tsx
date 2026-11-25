@@ -54,7 +54,7 @@ export function EvidencePanel({
   onDecisionChange,
   onClose,
 }: EvidencePanelProps) {
-  const { company, code, evidence } = selection;
+  const { company, domain, evidence } = selection;
   const toggleSupporting = (key: string) => {
     const supportingQuotes = new Set(decision.supportingQuotes);
     if (supportingQuotes.has(key)) {
@@ -71,11 +71,11 @@ export function EvidencePanel({
           <Group justify="space-between" align="flex-start" wrap="nowrap">
             <div>
               <Title order={3}>{company.name}</Title>
-              <Text fw={600}>{`${code.code} ${code.name}`}</Text>
+              <Text fw={600}>{`${domain.code} ${domain.name}`}</Text>
             </div>
             <CloseButton aria-label="Close evidence" onClick={onClose} />
           </Group>
-          <Text>{code.definition}</Text>
+          <Text>{domain.definition}</Text>
           <Text fw={600}>{formatQuoteCount(evidence.length)}</Text>
         </Stack>
       </AppShell.Section>
@@ -193,7 +193,7 @@ function QuoteCard({
     <Paper withBorder p="sm">
       <Stack gap="xs">
         <Group justify="space-between" align="flex-start" wrap="nowrap">
-          <Text fw={600}>{item.mitigation}</Text>
+          <Text fw={600}>{item.mitigation_name}</Text>
           <Text
             px="xs"
             style={{ ...STRENGTH_COLORS[item.strength], borderRadius: 4 }}

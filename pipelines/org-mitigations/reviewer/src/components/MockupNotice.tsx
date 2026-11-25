@@ -1,8 +1,8 @@
 import { Alert, List, Text } from "@mantine/core";
-import type { Run } from "@/lib/types";
+import type { RunSettings } from "@/lib/types";
 
 interface MockupNoticeProps {
-  run: Run;
+  run: RunSettings;
   companyCount: number;
   codeCount: number;
 }

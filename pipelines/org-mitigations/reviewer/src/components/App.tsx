@@ -34,7 +34,7 @@ function Reviewer() {
   useHotkeys([["Escape", () => setSelection(null)]]);
 
   const selectedKey =
-    selection && cellKey(selection.company.company_id, selection.code.code);
+    selection && cellKey(selection.company.company_id, selection.domain.code);
   const isPanelClosed = selection === null;
   return (
     <AppShell
@@ -51,7 +51,7 @@ function Reviewer() {
           <MockupNotice
             run={bundle.run}
             companyCount={bundle.companies.length}
-            codeCount={bundle.taxonomy.flatMap((locus) => locus.codes).length}
+            codeCount={bundle.taxonomy.flatMap((locus) => locus.domains).length}
           />
           <StrengthLegend />
           <EvidenceGrid

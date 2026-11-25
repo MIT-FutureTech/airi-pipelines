@@ -6,17 +6,18 @@ import pytest
 
 from org_mitigations.companies import Company
 from org_mitigations.documents import DatePrecision, Document
-from org_mitigations.evidence import Evidence, Strength
+from org_mitigations.domain_taxonomy import Domain, Locus
+from org_mitigations.evidence import Evidence
 from org_mitigations.excerpts import Excerpt
+from org_mitigations.search.answer import Strength
 from org_mitigations.sheets.tabs import (
     EvidenceRow,
     ExcerptRow,
     evidence_rows,
     excerpt_rows,
-    format_date,
+    format_document_date,
     write_tab,
 )
-from org_mitigations.taxonomy import Code, Locus
 
 BANK = Company(company_id="recA", name="Example Bank", sector="Finance")
 RETAIL = Company(company_id="recB", name="Example Retail", sector="Trade")
@@ -27,8 +28,8 @@ TAXONOMY = [
         name="Technical & Model",
         short_name="Technical",
         definition="Mitigations to the model itself.",
-        codes=[
-            Code(
+        domains=[
+            Domain(
                 code="1.1",
                 name="Interpretability & Transparency",
                 short_name="Interpretability",
@@ -42,8 +43,8 @@ TAXONOMY = [
         name="Human & Organization",
         short_name="Organization",
         definition="Mitigations at the organizational level.",
-        codes=[
-            Code(
+        domains=[
+            Domain(
                 code="2.2",
                 name="Accountability & Responsibility",
                 short_name="Accountability",
@@ -88,8 +89,8 @@ def evidence(evidence_id: str, excerpt_id: str, quote: str) -> Evidence:
         evidence_id=evidence_id,
         mitigation_id=mitigation_id,
         document_id=document_id,
-        code=code,
-        mitigation="Board oversight of AI",
+        domain_code=code,
+        mitigation_name="Board oversight of AI",
         reasoning="Board-level accountability for AI.",
         quote=quote,
         strength=Strength.STATED,
@@ -97,7 +98,7 @@ def evidence(evidence_id: str, excerpt_id: str, quote: str) -> Evidence:
     )
 
 
-class TestFormatDate:
+class TestFormatDocumentDate:
     @pytest.mark.parametrize(
         ("precision", "expected"),
         [
@@ -111,10 +112,10 @@ class TestFormatDate:
     ) -> None:
         dated = document("Bank_001", "recA", datetime.date(2025, 4, 29), precision)
 
-        assert format_date(dated) == expected
+        assert format_document_date(dated) == expected
 
     def test_leaves_an_undated_document_blank(self) -> None:
-        assert format_date(document("Bank_001", "recA")) == ""
+        assert format_document_date(document("Bank_001", "recA")) == ""
 
 
 class TestExcerptRows:
@@ -230,9 +231,9 @@ class TestEvidenceRows:
             company="Example Retail",
             document_id="Retail_001",
             excerpt_id="Retail_001_excerpt1",
-            code="2.2",
-            code_name="Accountability & Responsibility",
-            mitigation="Board oversight of AI",
+            domain_code="2.2",
+            domain_name="Accountability & Responsibility",
+            mitigation_name="Board oversight of AI",
             strength=Strength.STATED,
             quote="text",
             quote_start=20,

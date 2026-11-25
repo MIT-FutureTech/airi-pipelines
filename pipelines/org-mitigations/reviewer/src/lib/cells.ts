@@ -1,22 +1,22 @@
 import type {
-  Code,
   Company,
   CompanyDocument,
+  Domain,
   LocatedEvidence,
 } from "@/lib/types";
 
 export interface CellSelection {
   company: Company;
-  code: Code;
+  domain: Domain;
   evidence: LocatedEvidence[];
 }
 
 export function quoteKey(item: LocatedEvidence): string {
-  return `${item.excerpt_id} ${item.mitigation} ${item.quote}`;
+  return `${item.excerpt_id} ${item.mitigation_name} ${item.quote}`;
 }
 
-export function cellKey(companyId: string, code: string): string {
-  return `${companyId} ${code}`;
+export function cellKey(companyId: string, domainCode: string): string {
+  return `${companyId} ${domainCode}`;
 }
 
 export function evidenceByCell(
@@ -34,7 +34,7 @@ export function evidenceByCell(
         `Evidence refers to unknown document ${item.document_id}`,
       );
     }
-    const key = cellKey(companyId, item.code);
+    const key = cellKey(companyId, item.domain_code);
     const cell = cells.get(key);
     if (cell === undefined) {
       cells.set(key, [item]);

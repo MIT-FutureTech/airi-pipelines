@@ -1,12 +1,12 @@
 // biome-ignore-all lint/style/useNamingConvention: these fields must match what Python outputs
-export interface Run {
+export interface RunSettings {
   prompt_file: string;
   model: string;
   temperature: number;
   reasoning_effort: string;
 }
 
-export interface Code {
+export interface Domain {
   code: string;
   name: string;
   short_name: string;
@@ -19,7 +19,7 @@ export interface Locus {
   name: string;
   short_name: string;
   definition: string;
-  codes: Code[];
+  domains: Domain[];
 }
 
 export interface Company {
@@ -56,8 +56,8 @@ export interface Span {
 
 export interface LocatedEvidence {
   document_id: string;
-  code: string;
-  mitigation: string;
+  domain_code: string;
+  mitigation_name: string;
   quote: string;
   strength: Strength;
   excerpt_id: string;
@@ -65,7 +65,7 @@ export interface LocatedEvidence {
 }
 
 export interface Bundle {
-  run: Run;
+  run: RunSettings;
   taxonomy: Locus[];
   companies: Company[];
   documents: CompanyDocument[];

@@ -6,10 +6,11 @@ from pydantic import BaseModel, Field
 
 from org_mitigations.companies import Company
 from org_mitigations.documents import DatePrecision, Document
-from org_mitigations.evidence import Evidence, Strength
+from org_mitigations.domain_taxonomy import Locus
+from org_mitigations.evidence import Evidence
 from org_mitigations.excerpts import Excerpt
 from org_mitigations.locate import locate_quote
-from org_mitigations.taxonomy import Locus
+from org_mitigations.search.answer import Strength
 
 
 class ExcerptRow(BaseModel):
@@ -31,9 +32,9 @@ class EvidenceRow(BaseModel):
     company: str = Field(serialization_alias="Company")
     document_id: str = Field(serialization_alias="Document ID")
     excerpt_id: str = Field(serialization_alias="Excerpt ID")
-    code: str = Field(serialization_alias="Code")
-    code_name: str = Field(serialization_alias="Code name")
-    mitigation: str = Field(serialization_alias="Mitigation")
+    domain_code: str = Field(serialization_alias="Domain code")
+    domain_name: str = Field(serialization_alias="Domain name")
+    mitigation_name: str = Field(serialization_alias="Mitigation")
     strength: Strength = Field(serialization_alias="Strength")
     quote: str = Field(serialization_alias="Quote")
     quote_start: int | None = Field(serialization_alias="Quote start")
@@ -41,7 +42,7 @@ class EvidenceRow(BaseModel):
     reasoning: str = Field(serialization_alias="LLM reasoning")
 
 
-def format_date(document: Document) -> str:
+def format_document_date(document: Document) -> str:
     if document.date is None or document.date_precision is None:
         return ""
     match document.date_precision:
@@ -87,7 +88,7 @@ def excerpt_rows(
                         document_id=document.document_id,
                         document_title=document.title,
                         document_type=document.doc_type,
-                        document_date=format_date(document),
+                        document_date=format_document_date(document),
                         document_link=document.link,
                         order_in_document=order,
                         passage_ids=";".join(excerpt.passage_ids),
@@ -115,9 +116,9 @@ def evidence_rows(
     company_ids_by_document = {
         document.document_id: document.company_id for document in documents
     }
-    codes = [code for locus in taxonomy for code in locus.codes]
-    code_order = {code.code: order for order, code in enumerate(codes)}
-    code_names = {code.code: code.name for code in codes}
+    domains = [domain for locus in taxonomy for domain in locus.domains]
+    domain_order = {domain.code: order for order, domain in enumerate(domains)}
+    domain_names = {domain.code: domain.name for domain in domains}
     excerpts_by_id = {excerpt.excerpt_id: excerpt for excerpt in excerpts}
 
     selected = sorted(
@@ -128,7 +129,7 @@ def evidence_rows(
         ),
         key=lambda item: (
             company_order[company_ids_by_document[item.document_id]],
-            code_order[item.code],
+            domain_order[item.domain_code],
             item.document_id,
         ),
     )
@@ -142,9 +143,9 @@ def evidence_rows(
                 company=company_names_by_id[company_ids_by_document[item.document_id]],
                 document_id=item.document_id,
                 excerpt_id=item.excerpt_id,
-                code=item.code,
-                code_name=code_names[item.code],
-                mitigation=item.mitigation,
+                domain_code=item.domain_code,
+                domain_name=domain_names[item.domain_code],
+                mitigation_name=item.mitigation_name,
                 strength=item.strength,
                 quote=item.quote,
                 quote_start=location.start if location else None,

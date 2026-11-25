@@ -2,13 +2,13 @@ import logging
 
 from pydantic import BaseModel
 
+from org_mitigations.bundle.run_settings import RunSettings
 from org_mitigations.companies import Company
 from org_mitigations.documents import Document
+from org_mitigations.domain_taxonomy import Locus
 from org_mitigations.evidence import Evidence
 from org_mitigations.excerpts import Excerpt
 from org_mitigations.locate import Span, locate_quote
-from org_mitigations.run import Run
-from org_mitigations.taxonomy import Locus
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +18,7 @@ class LocatedEvidence(Evidence):
 
 
 class Bundle(BaseModel):
-    run: Run
+    run: RunSettings
     taxonomy: list[Locus]
     companies: list[Company]
     documents: list[Document]
@@ -29,7 +29,7 @@ class Bundle(BaseModel):
 def assemble_bundle(
     *,
     company_names: list[str],
-    run: Run,
+    run: RunSettings,
     taxonomy: list[Locus],
     companies: list[Company],
     documents: list[Document],

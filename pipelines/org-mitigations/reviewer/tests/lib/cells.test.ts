@@ -18,11 +18,11 @@ function companyDocument(
   };
 }
 
-function evidence(documentId: string, code: string): LocatedEvidence {
+function evidence(documentId: string, domainCode: string): LocatedEvidence {
   return {
     document_id: documentId,
-    code,
-    mitigation: "Board oversight of AI",
+    domain_code: domainCode,
+    mitigation_name: "Board oversight of AI",
     quote: "Our board oversees AI.",
     strength: "stated",
     excerpt_id: `${documentId}_excerpt1`,

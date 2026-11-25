@@ -3,61 +3,85 @@ from pathlib import Path
 from pydantic import Field
 from pydantic_settings import BaseSettings
 
+from toolbox.llm import ReasoningEffort
 
-class BundleSettings(
+_PIPELINE_DIR = Path(__file__).parent.parent.parent
+DEFAULT_MAX_CHARS = 75_000
+
+
+class PipelineSettings(
     BaseSettings,
     cli_parse_args=True,
     cli_enforce_required=True,
     cli_kebab_case=True,
+    cli_implicit_flags=True,
     cli_hide_none_type=True,
     cli_prog_name="org_mitigations",
 ):
     r"""
-    Bundle an LLM run's evidence for the reviewer app.
+    Ask an LLM which mitigations each company's documents describe, with quotes
+    as evidence.
 
     Example usage:
 
-      uv run python -m org_mitigations \
-        --taxonomy-file /path/to/taxonomy.json \
+      uv run --env-file=.env python -m org_mitigations \
         --export-dir /path/to/exports/ \
-        --excerpt-files /path/to/documents-excerpts.csv \
-        --excerpt-files /path/to/companies-excerpts.csv \
-        --llm-output-dir /path/to/classifications \
-        --temperature 1 \
-        --reasoning-effort medium \
-        --company-names Amazon --company-names Apple \
-        --output-path pipelines/org-mitigations/reviewer/public/data/bundle.json
+        --output-dir /path/to/output/ \
+        --company-names "Example Bank" --company-names "Example Retail"
     """
 
-    taxonomy_file: Path = Field(
-        default=...,
-        description="The mitigation taxonomy file in JSON format",
-    )
     export_dir: Path = Field(
         default=...,
-        description="A folder with companies.csv and documents.csv exports",
+        description="A folder with companies.csv, documents.csv and passages.csv",
     )
-    excerpt_files: list[Path] = Field(
+    output_dir: Path = Field(
         default=...,
-        description="The excerpt files the LLM read",
+        description="Where to write each call's result and log.txt",
     )
-    llm_output_dir: Path = Field(
-        default=...,
-        description="The LLM run's output folder containing JSON files",
+    company_names: list[str] | None = Field(
+        default=None,
+        description="The companies to include. Default: every company",
+    )
+    prompt_path: Path = Field(
+        default=_PIPELINE_DIR / "prompts" / "search_v1.0.md",
+        description="The prompt template",
+    )
+    model: str = Field(
+        default="google/gemini-3.5-flash",
+        description="The LLM to call",
     )
     temperature: float = Field(
-        default=...,
-        description="The temperature the LLM run used",
+        default=1.0,
+        description="Sampling temperature",
     )
-    reasoning_effort: str = Field(
-        default=...,
-        description="The reasoning effort the LLM run used",
+    reasoning_effort: ReasoningEffort = Field(
+        default="medium",
+        description="How much the LLM reasons before answering",
     )
-    company_names: list[str] = Field(
-        default=...,
-        description="The companies to include",
+    max_chars: int = Field(
+        default=DEFAULT_MAX_CHARS,
+        description="""
+            Most characters of excerpts in one call. A company's documents are
+            split into groups that fit.
+        """,
     )
-    output_path: Path = Field(
-        default=...,
-        description="Where to write the bundle",
+    output_token_limit: int = Field(
+        default=8_000,
+        description="Most tokens in one answer",
+    )
+    concurrency: int = Field(
+        default=5,
+        description="Maximum number of calls at once",
+    )
+    llm_rate_limit_rps: float = Field(
+        default=5.0,
+        description="LLM API rate limit in requests per second",
+    )
+    llm_timeout: float = Field(
+        default=120.0,
+        description="LLM API timeout in seconds",
+    )
+    dry_run: bool = Field(
+        default=False,
+        description="Print the prompts and count the calls without calling the LLM",
     )

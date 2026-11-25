@@ -3,6 +3,8 @@ from pathlib import Path
 from pydantic import Field
 from pydantic_settings import BaseSettings
 
+from org_mitigations.settings import DEFAULT_MAX_CHARS
+
 
 class SheetsSettings(
     BaseSettings,
@@ -19,30 +21,23 @@ class SheetsSettings(
     Example usage:
 
       uv run python -m org_mitigations.sheets \
-        --taxonomy-file /path/to/taxonomy.json \
         --export-dir /path/to/exports/ \
-        --excerpt-files /path/to/documents-excerpts.csv \
-        --excerpt-files /path/to/companies-excerpts.csv \
-        --llm-output-dir /path/to/classifications \
+        --run-dir /path/to/output/ \
         --company-names "Example Bank" --company-names "Example Retail" \
         --output-dir /path/to/sheets/
     """
 
-    taxonomy_file: Path = Field(
-        default=...,
-        description="The mitigation taxonomy file in JSON format",
-    )
     export_dir: Path = Field(
         default=...,
-        description="A folder with companies.csv and documents.csv exports",
+        description="A folder with companies.csv, documents.csv and passages.csv",
     )
-    excerpt_files: list[Path] = Field(
+    run_dir: Path = Field(
         default=...,
-        description="The excerpt files the LLM read",
+        description="The run's output folder, which the pipeline's --output-dir named",
     )
-    llm_output_dir: Path = Field(
-        default=...,
-        description="The LLM run's output folder containing JSON files",
+    max_chars: int = Field(
+        default=DEFAULT_MAX_CHARS,
+        description="The --max-chars the run used",
     )
     company_names: list[str] = Field(
         default=...,
