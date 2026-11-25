@@ -12,6 +12,11 @@ INSTRUMENT_TAXONOMY_PATH = (
 class Instrument(BaseModel):
     code: str
     name: str
+    short_name: str
+    definition: str
+    scope: str | None
+    examples: list[str]
+    exclusions: str | None
 
 
 class Modality(BaseModel):
@@ -23,6 +28,7 @@ class Modality(BaseModel):
 class _Category(BaseModel):
     code: str
     name: str
+    short_name: str
     parent: str | None
     definition: str
     scope: str
@@ -44,7 +50,19 @@ def load_instrument_taxonomy(path: Path) -> list[Modality]:
             )
         else:
             modalities[category.parent].instruments.append(
-                Instrument(code=category.code, name=category.name)
+                Instrument(
+                    code=category.code,
+                    name=category.name,
+                    short_name=category.short_name,
+                    definition=category.definition,
+                    scope=category.scope or None,
+                    examples=(
+                        category.key_examples.split("; ")
+                        if category.key_examples
+                        else []
+                    ),
+                    exclusions=category.exclusions or None,
+                )
             )
     return list(modalities.values())
 

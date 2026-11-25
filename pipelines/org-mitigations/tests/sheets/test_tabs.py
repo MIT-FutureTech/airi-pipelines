@@ -52,7 +52,9 @@ DOMAIN_TAXONOMY = [
                 name="Interpretability & Transparency",
                 short_name="Interpretability",
                 definition="Mitigations that explain a model.",
+                boundary_question="Does it fit?",
                 examples=["Explainability tools"],
+                exclusions=None,
             ),
         ],
     ),
@@ -67,22 +69,37 @@ DOMAIN_TAXONOMY = [
                 name="Accountability & Responsibility",
                 short_name="Accountability",
                 definition="Mitigations that hold an organization to account.",
+                boundary_question="Does it fit?",
                 examples=["Board oversight"],
+                exclusions=None,
             ),
         ],
     ),
 ]
 
+
+def _instrument(code: str, name: str) -> Instrument:
+    return Instrument(
+        code=code,
+        name=name,
+        short_name=name,
+        definition=f"Mitigations that work through {name}.",
+        scope=None,
+        examples=[],
+        exclusions=None,
+    )
+
+
 INSTRUMENT_TAXONOMY = [
     Modality(
         code="2",
         name="Govern",
-        instruments=[Instrument(code="2.3", name="Internal Policies")],
+        instruments=[_instrument("2.3", "Internal Policies")],
     ),
     Modality(
         code="3",
         name="Implement",
-        instruments=[Instrument(code="3.2", name="Practices & Processes")],
+        instruments=[_instrument("3.2", "Practices & Processes")],
     ),
 ]
 

@@ -1,7 +1,12 @@
 import datetime
 from pathlib import Path
 
-from org_mitigations.documents import DatePrecision, Document, load_documents
+from org_mitigations.documents import (
+    DatePrecision,
+    Document,
+    load_document_record_ids,
+    load_documents,
+)
 
 DOCUMENTS_CSV = """\
 document_record_id,document_id,company_id,status,doc_type,title,date,date_precision,link
@@ -34,3 +39,13 @@ class TestLoadDocuments:
                 link="https://example.com/ai",
             ),
         ]
+
+
+class TestLoadDocumentRecordIds:
+    def test_maps_each_document_to_its_record(self, tmp_path: Path) -> None:
+        (tmp_path / "documents.csv").write_text(DOCUMENTS_CSV)
+
+        assert load_document_record_ids(tmp_path) == {
+            "Example_Bank_001": "recD1",
+            "Example_Bank_002": "recD2",
+        }

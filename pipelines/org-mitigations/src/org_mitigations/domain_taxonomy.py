@@ -12,7 +12,9 @@ class Domain(BaseModel):
     name: str
     short_name: str
     definition: str
+    boundary_question: str
     examples: list[str]
+    exclusions: str | None
 
 
 class Locus(BaseModel):
@@ -57,6 +59,8 @@ def load_domain_taxonomy(path: Path) -> list[Locus]:
             continue
         if category.code.endswith(_OTHER_CODE_SUFFIXES):
             continue
+        if not category.boundary_question:
+            raise ValueError(f"Domain {category.code} has no boundary question")
         if not category.key_examples:
             raise ValueError(f"Domain {category.code} has no examples")
         loci[category.parent].domains.append(
@@ -65,7 +69,9 @@ def load_domain_taxonomy(path: Path) -> list[Locus]:
                 name=category.name,
                 short_name=category.short_name,
                 definition=category.definition,
+                boundary_question=category.boundary_question,
                 examples=category.key_examples.split("; "),
+                exclusions=category.exclusions or None,
             )
         )
     return list(loci.values())
