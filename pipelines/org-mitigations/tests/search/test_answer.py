@@ -10,12 +10,12 @@ class TestAnswer:
             "match_id": "Example_Bank__2.1",
             "has_mitigation": true,
             "reason": null,
-            "classifications": [
+            "mitigations": [
                 {
-                    "mitigation": "Responsible AI training for staff",
-                    "evidence": [
+                    "name": "Responsible AI training for staff",
+                    "quotes": [
                         {
-                            "excerpt": 1,
+                            "excerpt_number": 1,
                             "quote": "We require all employees to complete training",
                             "strength": "described"
                         }
@@ -29,12 +29,12 @@ class TestAnswer:
             match_id="Example_Bank__2.1",
             has_mitigation=True,
             reason=None,
-            classifications=[
+            mitigations=[
                 Mitigation(
-                    mitigation="Responsible AI training for staff",
-                    evidence=[
+                    name="Responsible AI training for staff",
+                    quotes=[
                         Quote(
-                            excerpt=1,
+                            excerpt_number=1,
                             quote="We require all employees to complete training",
                             strength=Strength.DESCRIBED,
                         )
@@ -49,14 +49,14 @@ class TestAnswer:
             "match_id": "Example_Bank__1.3",
             "has_mitigation": false,
             "reason": "Policy and training; nothing bounds model capabilities",
-            "classifications": []
+            "mitigations": []
         }""")
 
         assert answer.reason == "Policy and training; nothing bounds model capabilities"
-        assert answer.classifications == []
+        assert answer.mitigations == []
 
     def test_rejects_an_unknown_strength(self) -> None:
         with pytest.raises(ValidationError, match="strength"):
             Quote.model_validate(
-                {"excerpt": 1, "quote": "We test models", "strength": "strong"}
+                {"excerpt_number": 1, "quote": "We test models", "strength": "strong"}
             )

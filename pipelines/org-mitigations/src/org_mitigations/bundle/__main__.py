@@ -9,6 +9,7 @@ from org_mitigations.evidence import evidence_from_mitigations
 from org_mitigations.search.calls import SearchResult
 from org_mitigations.search.context import build_contexts
 from org_mitigations.search.mitigations import mitigations_from_results
+from org_mitigations.settings import PipelineStage
 from toolbox.log import configure_logging
 from toolbox.results import ResultStore
 
@@ -23,7 +24,10 @@ def main() -> None:
     contexts = build_contexts(
         corpus.excerpts, corpus.documents, max_chars=settings.max_chars
     )
-    results = ResultStore(settings.run_dir / "search", SearchResult).load_all()
+    results = ResultStore(
+        settings.run_dir / PipelineStage.SEARCH,
+        SearchResult,
+    ).load_all()
     mitigations = mitigations_from_results(results, contexts)
 
     bundle = assemble_bundle(

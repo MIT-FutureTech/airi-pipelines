@@ -15,8 +15,9 @@ class SheetsSettings(
     cli_prog_name="org_mitigations.sheets",
 ):
     r"""
-    Write companies' excerpts and the LLM's evidence as CSV files, one per
-    spreadsheet tab.
+    Write companies' excerpts, the LLM's evidence, the mitigations it found
+    with their practices and instruments, and the bodies and commitments the
+    mitigations name, as CSV files, one per spreadsheet tab.
 
     Example usage:
 
@@ -39,9 +40,10 @@ class SheetsSettings(
         default=DEFAULT_MAX_CHARS,
         description="The --max-chars the run used",
     )
-    company_names: list[str] = Field(
-        default=...,
-        description="The companies to include, in the order to list them",
+    company_names: list[str] | None = Field(
+        default=None,
+        description="The companies to include, in the order to list them."
+        + " Default: every company, by name",
     )
     output_dir: Path = Field(
         default=...,

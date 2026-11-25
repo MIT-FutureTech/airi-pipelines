@@ -18,6 +18,7 @@ class TestEvidenceFromMitigations:
         mitigations = [
             FoundMitigation(
                 mitigation_id="Example_Bank__2.2__1",
+                context_id="Example_Bank",
                 company_id="recA",
                 domain_code="2.2",
                 name="Board oversight of AI",

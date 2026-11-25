@@ -1,0 +1,513 @@
+{
+  "practices": [
+    {
+      "name": "Model cards",
+      "definition": "Model cards are a disclosure practice in which a company publishes a standard document for each AI model or system that records its intended uses, limitations, risks and evaluation results, at deployment and updated afterwards.",
+      "counts": [
+        "Model cards, system cards, service cards, factsheets and transparency notes, as long as they are published."
+      ],
+      "does_not_count": [
+        "Cards kept internal or given only to regulators.",
+        "Dataset documentation (datasheets).",
+        "Company-wide transparency reports.",
+        "General descriptions of AI products.",
+        "Warnings and limitation notices shown to users at the point of use (AI use policies and downstream guidance)."
+      ],
+      "subtypes": []
+    },
+    {
+      "name": "Pre-deployment testing and evaluation",
+      "definition": "Pre-deployment testing and evaluation is a testing method in which a company tests an AI system against performance, reliability, safety, fairness and capability requirements and weighs the results against deployment criteria, before deployment and after major updates.",
+      "counts": [
+        "Bias and fairness testing across groups of people.",
+        "Dangerous-capability evaluations, including those run under a safety framework.",
+        "Safety and robustness benchmarks.",
+        "Security and penetration testing of the AI system.",
+        "Acceptance testing before launch."
+      ],
+      "does_not_count": [
+        "Fairness or safety principles with no testing.",
+        "Frameworks, methods or plans for testing, with no testing described.",
+        "Adversarial testing in which people or automated tools try to break the system (Red teaming).",
+        "Checks after deployment (Monitoring AI in production).",
+        "Assessing risks on paper without testing (Pre-deployment risk and impact assessment)."
+      ],
+      "subtypes": [
+        "Bias and fairness testing",
+        "Dangerous-capability evaluation",
+        "Security and penetration testing"
+      ]
+    },
+    {
+      "name": "Safety framework for advanced AI",
+      "definition": "A safety framework for advanced AI is an organisational policy in which a company sets out how it will assess severe risks from highly capable AI and put safeguards in place before its AI reaches each capability or risk threshold.",
+      "counts": [
+        "Frontier safety frameworks, responsible scaling policies and preparedness frameworks.",
+        "Safety and security frameworks under the EU AI Act Code of Practice for general-purpose AI with systemic risk.",
+        "Equivalent frameworks for agentic or other systems with frontier-like risks, as long as they tie required safeguards to capability or risk thresholds.",
+        "Examples of such systems are fleets of agents acting at scale, heavily delegated decision-making, and AI that runs biomedical research and synthesis."
+      ],
+      "does_not_count": [
+        "General responsible AI policies or principles (Published AI policy).",
+        "A management system modelled on a standard such as ISO/IEC 42001 (AI risk management to a recognised standard).",
+        "Frameworks that don't tie safeguards to capability or risk thresholds.",
+        "Evaluations run under the framework, which get their own tag (Pre-deployment testing and evaluation)."
+      ],
+      "subtypes": [
+        "Frontier model developer framework",
+        "Framework for general-purpose AI with systemic risk",
+        "Framework for agentic systems"
+      ]
+    },
+    {
+      "name": "Red teaming",
+      "definition": "Red teaming is a testing method in which people the company engages, or automated attack tools it runs, act as adversaries and try to make an AI system fail, produce harmful output or be misused, mostly before deployment.",
+      "counts": [
+        "Internal and external red teams.",
+        "Expert and crowdworker red teaming.",
+        "Recurring red-team exercises before or after release.",
+        "Automated red teaming that the company runs."
+      ],
+      "does_not_count": [
+        "Ordinary quality testing or benchmarks (Pre-deployment testing and evaluation).",
+        "Penetration testing of IT systems that doesn't target the AI system (no tag).",
+        "Open invitations to the public to find flaws (Bug bounties and AI vulnerability reporting).",
+        "The word 'red teaming' with no description of adversarial testing being done."
+      ],
+      "subtypes": [
+        "External red teaming",
+        "Automated red teaming"
+      ]
+    },
+    {
+      "name": "Guardrails and content filters",
+      "definition": "Guardrails and content filters are a technical safeguard in which a company automatically screens the prompts sent to a deployed AI system and its responses against a content policy, blocking, flagging or redirecting those that break it in real time.",
+      "counts": [
+        "Input and output filters.",
+        "Moderation services.",
+        "Guard models and safety classifiers, such as Llama Guard.",
+        "Guardrail toolkits.",
+        "Refusals triggered when harmful content is detected.",
+        "Jailbreak and prompt-injection detection."
+      ],
+      "does_not_count": [
+        "Filtering training data.",
+        "Instructions in a system prompt on their own.",
+        "Tracking misuse across accounts (Monitoring AI in production).",
+        "Guardrail services the company sells to others, unless it says it uses them on its own systems (Safety tools offered to others)."
+      ],
+      "subtypes": [
+        "Safety classifiers and guard models",
+        "Jailbreak and prompt-injection defences"
+      ]
+    },
+    {
+      "name": "No training on customer data",
+      "definition": "No training on customer data is an organisational policy in which a company states that it does not train its AI models on customers' or users' data, such as prompts, outputs or business data, or lets them opt out.",
+      "counts": [
+        "Default commitments not to train on customer data.",
+        "Opt-out or opt-in controls for training use."
+      ],
+      "does_not_count": [
+        "General privacy statements, such as 'we protect your data'.",
+        "Limits on how long data is kept, stated on their own."
+      ],
+      "subtypes": []
+    },
+    {
+      "name": "Bug bounties and AI vulnerability reporting",
+      "definition": "Bug bounties and AI vulnerability reporting are a reporting channel in which a company invites outside researchers to find and report vulnerabilities, flaws, bias or dangerous capabilities in its AI systems, often for a reward, mostly after deployment.",
+      "counts": [
+        "Rewarded bounties for security bugs, model flaws, bias or dangerous capabilities.",
+        "AI-specific vulnerability disclosure channels without a reward.",
+        "Safe harbour for good-faith testers."
+      ],
+      "does_not_count": [
+        "Red teaming the company commissions and directs (Red teaming).",
+        "Ordinary customer feedback on product problems.",
+        "Bug bounties for IT systems that don't cover AI."
+      ],
+      "subtypes": [
+        "Rewarded bug bounty",
+        "Unrewarded vulnerability reporting channel"
+      ]
+    },
+    {
+      "name": "AI disclosure and content marking",
+      "definition": "AI disclosure and content marking is a disclosure practice in which a company tells people that they are dealing with an AI system or with content AI made, through visible labels, notices, watermarks or provenance metadata, mostly at deployment.",
+      "counts": [
+        "Labels on AI-generated images, audio, video and text.",
+        "Chatbots and agents stating they are AI.",
+        "Telling people AI was used in a decision about them.",
+        "Watermarks such as SynthID.",
+        "C2PA content credentials."
+      ],
+      "does_not_count": [
+        "General notices that AI may make mistakes (AI use policies and downstream guidance).",
+        "Watermarks in model weights to prove ownership.",
+        "Detection or provenance tools the company sells to others (Safety tools offered to others)."
+      ],
+      "subtypes": [
+        "Visible label or AI-interaction notice",
+        "Watermarking",
+        "Content credentials (C2PA)"
+      ]
+    },
+    {
+      "name": "Human approval for consequential AI actions",
+      "definition": "Human approval for consequential AI actions is an operating procedure in which a company requires a person to approve an AI system's action before it takes effect, when the action is hard to undo or is a decision against someone.",
+      "counts": [
+        "AI agents that ask the user to confirm before purchases, sending messages, deleting data or changing permissions.",
+        "Rules that a qualified person makes or reviews adverse decisions about individuals, such as credit, hiring, insurance or medical denials, before they take effect.",
+        "Human review of cases that automated systems flag, before action is taken against a person."
+      ],
+      "does_not_count": [
+        "General statements that people stay responsible or that AI supports human decisions.",
+        "Rules telling staff to check AI outputs (AI use policies and downstream guidance).",
+        "Review after the fact.",
+        "Review the affected person asks for (Appeal and human review for affected people)."
+      ],
+      "subtypes": [
+        "Agent action confirmation",
+        "Human decision on adverse outcomes"
+      ]
+    },
+    {
+      "name": "Employee AI training",
+      "definition": "Employee AI training is a training programme in which a company gives its own staff training on AI limitations, AI risks, responsible use or AI ethics.",
+      "counts": [
+        "AI literacy programmes.",
+        "Responsible AI and AI ethics courses.",
+        "AI security awareness training.",
+        "AI training for board directors."
+      ],
+      "does_not_count": [
+        "Training only in how to use AI tools.",
+        "Education programmes for the public or customers."
+      ],
+      "subtypes": [
+        "AI ethics training",
+        "AI security awareness training",
+        "Board director AI training"
+      ]
+    },
+    {
+      "name": "Named accountability for AI risk",
+      "definition": "Named accountability for AI risk is a governance arrangement in which a company's board, a board or management committee, or a named executive or team holds ongoing responsibility for AI risks and reviews or approves decisions about AI.",
+      "counts": [
+        "Board or board-committee oversight of AI risk.",
+        "AI ethics, risk or governance committees and councils, such as an AI risk committee that meets monthly.",
+        "A Chief AI Officer, Office of Responsible AI or named responsible AI team."
+      ],
+      "does_not_count": [
+        "A body that oversees privacy, data, fairness, risk or technology in general without naming AI.",
+        "One-off briefings.",
+        "Requirements that board members have AI expertise.",
+        "Outside advisory boards with no decision role."
+      ],
+      "subtypes": [
+        "Board of directors oversight",
+        "AI ethics or governance committee",
+        "Named AI owner or responsible AI team"
+      ]
+    },
+    {
+      "name": "Independent external evaluation and audit",
+      "definition": "Independent external evaluation and audit is an external scrutiny arrangement in which a company lets independent auditors, assessors, researchers or government evaluators examine its AI systems or AI governance, sometimes with more access than ordinary users have, often before deployment.",
+      "counts": [
+        "Third-party audits of models, data or governance.",
+        "Pre-release testing by government AI safety institutes or independent evaluators.",
+        "Outside validation of internal test results."
+      ],
+      "does_not_count": [
+        "Certification against a standard such as ISO/IEC 42001 (AI risk management to a recognised standard).",
+        "Red teaming the company commissions and directs (Red teaming).",
+        "Open invitations to anyone to find and report flaws (Bug bounties and AI vulnerability reporting).",
+        "Tools or access the company offers so that anyone can inspect a system, with no named independent evaluator reporting on it.",
+        "Regulator inspections with enforcement powers."
+      ],
+      "subtypes": [
+        "Third-party audit",
+        "Pre-release testing by outside evaluators"
+      ]
+    },
+    {
+      "name": "AI risk management to a recognised standard",
+      "definition": "AI risk management to a recognised standard is a governance arrangement in which a company builds a recognised framework, such as ISO/IEC 42001 or the NIST AI RMF, into an organisation-wide system for assessing, monitoring and responding to AI risks.",
+      "counts": [
+        "Certification to ISO/IEC 42001 or a similar standard, which is the strongest evidence.",
+        "Described alignment with the NIST AI RMF or ISO/IEC 23894.",
+        "AI risk registers, inventories of the company's AI systems, or AI included in enterprise risk management, where the evidence ties them to a recognised standard.",
+        "Model risk management in banks, which regulators require, where the evidence names AI."
+      ],
+      "does_not_count": [
+        "Published principles or policies with no described system (Published AI policy).",
+        "A bare statement that the company aligns with a framework, with no described process.",
+        "An in-house risk framework, committee, process or self-assessment that is not tied to a recognised standard or to regulators' model risk rules.",
+        "Plans to certify.",
+        "Model risk management that doesn't name AI.",
+        "Assessing a single system (Pre-deployment risk and impact assessment)."
+      ],
+      "subtypes": [
+        "ISO/IEC 42001 certification",
+        "AI system inventory",
+        "AI risk register",
+        "Model risk management"
+      ]
+    },
+    {
+      "name": "AI use policies and downstream guidance",
+      "definition": "AI use policies and downstream guidance are an organisational policy in which a company limits how customers and its own staff may use AI, and tells customers and downstream developers about a system's risks, limitations and safe use.",
+      "counts": [
+        "Acceptable and prohibited use policies.",
+        "Terms of service with use restrictions.",
+        "Responsible use guides and user guides for models.",
+        "Documentation of known risks and limitations for deployers.",
+        "Customer risk disclosures.",
+        "Internal rules on staff use of AI tools."
+      ],
+      "does_not_count": [
+        "Disclaimers that only limit liability, with no use restriction or risk information.",
+        "Labels telling people content is AI-made (AI disclosure and content marking).",
+        "Model, system or service cards, factsheets and transparency notes (Model cards), even when they list out-of-scope uses."
+      ],
+      "subtypes": [
+        "Acceptable use policy for customers",
+        "Responsible use guidance for deployers",
+        "Staff AI use rules"
+      ]
+    },
+    {
+      "name": "Published AI policy",
+      "definition": "A published AI policy is an organisational policy in which a company publishes AI principles, a code of ethics or an AI governance framework covering how it develops, deploys or uses AI.",
+      "counts": [
+        "A named, published document of responsible AI principles, an AI policy, a code of ethics for AI or an AI governance framework."
+      ],
+      "does_not_count": [
+        "Passing statements of values that don't point to a published document, such as 'we take AI safety seriously'.",
+        "Policies or frameworks the company says it is developing or plans to publish, with none yet published.",
+        "A safety framework for advanced AI (Safety framework for advanced AI).",
+        "A described organisation-wide system for assessing, monitoring and responding to AI risks that is built on a recognised standard (AI risk management to a recognised standard)."
+      ],
+      "subtypes": []
+    },
+    {
+      "name": "Pre-deployment risk and impact assessment",
+      "definition": "Pre-deployment risk and impact assessment is a risk assessment in which a company documents an AI system's foreseeable risks and impacts, including those arising only in use, and decides whether to deploy, restrict or stop it, before deployment.",
+      "counts": [
+        "Reviews and approvals of AI use cases.",
+        "Impact assessments on people, rights and society.",
+        "Independent model validation before use, as in banks.",
+        "Assessing risks that come from how a system is deployed: scaffolding, tool use, agent behaviour, and unintended actions by third parties or other agents.",
+        "Assessing internal use of a model."
+      ],
+      "does_not_count": [
+        "Testing on its own, with no documented assessment of risks and impacts (Pre-deployment testing and evaluation).",
+        "The organisation-wide system (AI risk management to a recognised standard).",
+        "Structured safety arguments (Safety case)."
+      ],
+      "subtypes": [
+        "Impact assessment",
+        "Use-case approval",
+        "Agentic and deployment-context risk assessment"
+      ]
+    },
+    {
+      "name": "Monitoring AI in production",
+      "definition": "Monitoring AI in production is an operating procedure in which a company runs ongoing checks of a deployed AI system's performance, bias, behaviour or misuse, and responds when the checks show a problem.",
+      "counts": [
+        "Performance and drift monitoring.",
+        "Bias monitoring in deployment.",
+        "Misuse monitoring and account enforcement.",
+        "Real-time monitoring and logging of agents' actions."
+      ],
+      "does_not_count": [
+        "One-off testing before deployment.",
+        "General IT uptime or information-security monitoring.",
+        "Statements that systems are monitored that don't say what is checked."
+      ],
+      "subtypes": [
+        "Performance and drift monitoring",
+        "Bias monitoring",
+        "Misuse monitoring",
+        "Agent monitoring"
+      ]
+    },
+    {
+      "name": "AI incident response and reporting",
+      "definition": "AI incident response and reporting is an operating procedure in which a company sets roles and escalation steps for containing AI incidents, investigates their causes and, for serious incidents, reports them to regulators, affected people or the public.",
+      "counts": [
+        "AI incident response plans.",
+        "Post-incident reviews.",
+        "Reports of serious incidents to authorities.",
+        "Public incident reports."
+      ],
+      "does_not_count": [
+        "General cybersecurity incident response that doesn't mention AI.",
+        "Data-breach notices that don't involve AI."
+      ],
+      "subtypes": [
+        "Incident response plan",
+        "Serious incident reporting"
+      ]
+    },
+    {
+      "name": "AI supply chain risk management",
+      "definition": "AI supply chain risk management is an operating procedure in which a company checks, contracts with and monitors the vendors, model providers, data sources and components its AI depends on, before acquisition and during use.",
+      "counts": [
+        "Due diligence on AI vendors.",
+        "Contract terms on AI for suppliers.",
+        "Monitoring upstream models.",
+        "Bills of materials for AI components."
+      ],
+      "does_not_count": [
+        "General procurement.",
+        "The company's own guidance to its downstream customers (AI use policies and downstream guidance)."
+      ],
+      "subtypes": []
+    },
+    {
+      "name": "Reducing AI's environmental footprint",
+      "definition": "Reducing AI's environmental footprint is an operating procedure in which a company estimates, tracks, reports or reduces the energy and water use, carbon emissions and hardware effects of training and running its AI systems, or sets targets for them.",
+      "counts": [
+        "AI-specific measurement, disclosure or targets for energy, emissions or water.",
+        "Measured efficiency gains for AI workloads.",
+        "Concrete measures taken to cut the environmental footprint of AI, such as cooling for AI hardware or more efficient chips or models, where the company states that environmental aim or reports the reduction achieved."
+      ],
+      "does_not_count": [
+        "General corporate sustainability reporting that doesn't single out AI.",
+        "Renewable energy purchases not tied to AI.",
+        "Claims that AI hardware or data centres are energy efficient, with no environmental aim stated and no measured result; these may only be cost saving.",
+        "General data-storage or IT efficiency."
+      ],
+      "subtypes": []
+    },
+    {
+      "name": "Privacy-preserving AI data handling",
+      "definition": "Privacy-preserving AI data handling is a technical safeguard in which a company trains or runs AI so that personal data stays protected, through data minimisation, removing personal data from training data, on-device processing, confidential computing, encryption or federated learning.",
+      "counts": [
+        "On-device AI.",
+        "Confidential computing and secure enclaves, such as Apple's Private Cloud Compute.",
+        "Federated learning.",
+        "Differential privacy in training.",
+        "Removing personal data from training data.",
+        "Collecting only the personal data an AI system needs, stated as a rule for AI."
+      ],
+      "does_not_count": [
+        "General data-security statements.",
+        "Statements that privacy safeguards are used in training, with no method described.",
+        "Not storing or keeping data after processing, and limits on how long data is kept.",
+        "A commitment not to train on customer data (No training on customer data)."
+      ],
+      "subtypes": []
+    },
+    {
+      "name": "Safety tools offered to others",
+      "definition": "Safety tools offered to others are an ecosystem contribution in which a company releases or sells tools, datasets or benchmarks that help other organisations test or reduce AI risk, such as bias-testing services, guardrail services or safety evaluation frameworks.",
+      "counts": [
+        "Bias-testing APIs.",
+        "Guardrail and moderation services sold to customers.",
+        "Open safety evaluation frameworks, benchmarks and datasets.",
+        "Tools that detect AI-generated content."
+      ],
+      "does_not_count": [
+        "Research papers with no tool or dataset.",
+        "Products whose main purpose is not reducing AI risk.",
+        "The company's own use of such tools, and safety features built into its own AI products, such as watermarks on its own outputs; tag the matching practice instead."
+      ],
+      "subtypes": []
+    },
+    {
+      "name": "Safety case",
+      "definition": "A safety case is a risk assessment in which a company builds a structured, evidence-backed argument that an AI system is acceptably safe to train or deploy in a given context, and may share it with regulators.",
+      "counts": [
+        "Safety cases, assurance cases and structured safety arguments for a model or system."
+      ],
+      "does_not_count": [
+        "Risk assessments without a structured argument (Pre-deployment risk and impact assessment).",
+        "Model cards.",
+        "A framework that only promises safety cases, with no safety case described for a specific system (Safety framework for advanced AI)."
+      ],
+      "subtypes": []
+    },
+    {
+      "name": "Whistleblowing channel for AI concerns",
+      "definition": "A whistleblowing channel for AI concerns is a reporting channel in which a company gives its staff secure, often anonymous ways to report AI safety risks or violations, inside or outside the company, and protects them from retaliation.",
+      "counts": [
+        "AI-specific concern channels.",
+        "Whistleblower policies that name AI.",
+        "Releasing staff from non-disparagement agreements for safety disclosures."
+      ],
+      "does_not_count": [
+        "General ethics hotlines that don't mention AI.",
+        "Whistleblower laws, which governments make.",
+        "Tag only the company's own channel."
+      ],
+      "subtypes": []
+    },
+    {
+      "name": "Appeal and human review for affected people",
+      "definition": "Appeal and human review for affected people is a redress channel in which a company lets people affected by an AI decision challenge it, have a person review it and get a remedy, or opt out of the automated decision.",
+      "counts": [
+        "Appeal routes for AI decisions in credit, hiring, insurance or content moderation.",
+        "Opting out with a human alternative."
+      ],
+      "does_not_count": [
+        "General customer service or complaints.",
+        "Human review the company does on its own initiative (Human approval for consequential AI actions)."
+      ],
+      "subtypes": [
+        "Appeal or contest",
+        "Opt-out with a human alternative"
+      ]
+    },
+    {
+      "name": "Shutdown and fallback plan",
+      "definition": "A shutdown and fallback plan is an operating procedure in which a company uses prepared ways to halt or isolate an AI system and fall back to a manual process or another system, when it misbehaves, is compromised or fails.",
+      "counts": [
+        "Kill switches.",
+        "Rolling back to an earlier model.",
+        "Manual fallback processes.",
+        "Prepared ways to take an AI system offline or isolate it."
+      ],
+      "does_not_count": [
+        "Routine model updates.",
+        "Planned retirement of AI systems.",
+        "Investigating an incident afterwards (AI incident response and reporting)."
+      ],
+      "subtypes": [
+        "Kill switch",
+        "Manual fallback"
+      ]
+    },
+    {
+      "name": "Red lines and risk thresholds",
+      "definition": "Red lines and risk thresholds are an organisational policy in which a company publicly rules out specific AI uses or capabilities, or sets testable risk or capability levels in advance and commits to the safeguards or pause each level triggers.",
+      "counts": [
+        "Self-imposed bans on serious uses of AI, such as not using AI for domestic surveillance.",
+        "Red lines for AI development.",
+        "Capability thresholds and commitments to pause."
+      ],
+      "does_not_count": [
+        "Prohibitions the company places on customers, and rules on how its staff may use AI tools at work (AI use policies and downstream guidance).",
+        "Statements that AI supports staff in a routine business task and does not replace them, such as 'AI will not be used to automate underwriting'."
+      ],
+      "subtypes": [
+        "Self-imposed use restriction",
+        "Capability or risk threshold",
+        "Commitment to pause"
+      ]
+    },
+    {
+      "name": "Fair treatment of data workers",
+      "definition": "Fair treatment of data workers is an organisational policy in which a company commits to fair pay, working conditions and wellbeing for the people who label data, rate outputs or moderate content for its AI, including those its suppliers employ.",
+      "counts": [
+        "Commitments or programmes on pay, conditions or wellbeing for AI data workers."
+      ],
+      "does_not_count": [
+        "General supplier codes of conduct that don't mention AI data work."
+      ],
+      "subtypes": []
+    }
+  ]
+}

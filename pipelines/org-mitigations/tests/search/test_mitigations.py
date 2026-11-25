@@ -27,7 +27,7 @@ def _result(code: str, mitigations: list[Mitigation]) -> SearchResult:
             match_id=f"Example_Bank__{code}",
             has_mitigation=bool(mitigations),
             reason=None,
-            classifications=mitigations,
+            mitigations=mitigations,
         ),
         model="google/gemini-3.5-flash",
         usage=None,
@@ -36,10 +36,12 @@ def _result(code: str, mitigations: list[Mitigation]) -> SearchResult:
 
 def _mitigation(name: str, *excerpts: int) -> Mitigation:
     return Mitigation(
-        mitigation=name,
-        evidence=[
+        name=name,
+        quotes=[
             Quote(
-                excerpt=excerpt, quote=f"Quote from {excerpt}", strength=Strength.STATED
+                excerpt_number=excerpt,
+                quote=f"Quote from {excerpt}",
+                strength=Strength.STATED,
             )
             for excerpt in excerpts
         ],
@@ -60,6 +62,7 @@ class TestFoundMitigations:
         assert mitigations_from_results(results, CONTEXTS) == [
             FoundMitigation(
                 mitigation_id="Example_Bank__2.2__1",
+                context_id="Example_Bank",
                 company_id="recA",
                 domain_code="2.2",
                 name="Board oversight",
@@ -74,6 +77,7 @@ class TestFoundMitigations:
             ),
             FoundMitigation(
                 mitigation_id="Example_Bank__2.2__2",
+                context_id="Example_Bank",
                 company_id="recA",
                 domain_code="2.2",
                 name="AI policy",

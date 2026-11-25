@@ -10,14 +10,14 @@ class Strength(StrEnum):
 
 
 class Quote(BaseModel):
-    excerpt: int
+    excerpt_number: int
     quote: str
     strength: Strength
 
 
 class Mitigation(BaseModel):
-    mitigation: str
-    evidence: list[Quote]
+    name: str
+    quotes: list[Quote]
     reasoning: str
 
 
@@ -25,4 +25,4 @@ class Answer(BaseModel):
     match_id: str
     has_mitigation: bool
     reason: str | None
-    classifications: list[Mitigation]
+    mitigations: list[Mitigation]

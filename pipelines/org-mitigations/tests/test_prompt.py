@@ -3,9 +3,20 @@ from pathlib import Path
 import pytest
 
 from org_mitigations.domain_taxonomy import DOMAIN_TAXONOMY_PATH, render_domain_taxonomy
-from org_mitigations.search.prompt import Prompt, load_prompt
+from org_mitigations.instrument_taxonomy import (
+    INSTRUMENT_TAXONOMY_PATH,
+    render_instrument_taxonomy,
+)
+from org_mitigations.practice_list import (
+    PRACTICE_LIST_PATH,
+    load_practice_list,
+    render_practice_list,
+)
+from org_mitigations.prompt import Prompt, load_prompt
 
-PROMPT_PATH = Path(__file__).parent.parent.parent / "prompts" / "search_v1.0.md"
+SEARCH_PROMPT_PATH = Path(__file__).parent.parent / "prompts" / "search.md"
+PRACTICES_PROMPT_PATH = Path(__file__).parent.parent / "prompts" / "practices.md"
+INSTRUMENTS_PROMPT_PATH = Path(__file__).parent.parent / "prompts" / "instruments.md"
 
 TEMPLATE = """\
 <!-- SYSTEM -->
@@ -65,15 +76,21 @@ class TestLoadPrompt:
         with pytest.raises(ValueError, match="system section has placeholders"):
             load_prompt(path, taxonomy="")
 
-    def test_rejects_an_unknown_placeholder(self, tmp_path: Path) -> None:
-        path = _write(tmp_path, TEMPLATE.replace("$company", "$sector"))
-
-        with pytest.raises(ValueError, match="user section has placeholders"):
-            load_prompt(path, taxonomy="")
-
-    def test_loads_the_pipelines_prompt(self) -> None:
+    def test_loads_the_search_prompt(self) -> None:
         assert load_prompt(
-            PROMPT_PATH, taxonomy=render_domain_taxonomy(DOMAIN_TAXONOMY_PATH)
+            SEARCH_PROMPT_PATH, taxonomy=render_domain_taxonomy(DOMAIN_TAXONOMY_PATH)
+        )
+
+    def test_loads_the_practices_prompt(self) -> None:
+        assert load_prompt(
+            PRACTICES_PROMPT_PATH,
+            practices=render_practice_list(load_practice_list(PRACTICE_LIST_PATH)),
+        )
+
+    def test_loads_the_instruments_prompt(self) -> None:
+        assert load_prompt(
+            INSTRUMENTS_PROMPT_PATH,
+            instruments=render_instrument_taxonomy(INSTRUMENT_TAXONOMY_PATH),
         )
 
 
@@ -106,3 +123,17 @@ class TestRenderUser:
         )
 
         assert "Fees rose by $code million." in user
+
+    def test_rejects_values_that_differ_from_the_placeholders(
+        self, tmp_path: Path
+    ) -> None:
+        path = _write(tmp_path, TEMPLATE.replace("$company", "$sector"))
+        prompt = load_prompt(path, taxonomy="")
+
+        with pytest.raises(ValueError, match="user section has placeholders"):
+            prompt.render_user(
+                company="Example Bank",
+                context="<document>...</document>",
+                code="2.1",
+                match_id="Example_Bank__2.1",
+            )

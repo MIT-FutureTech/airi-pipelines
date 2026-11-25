@@ -13,7 +13,7 @@ def _result(code: str, *, model: str) -> SearchResult:
             match_id=f"Example_Bank__{code}",
             has_mitigation=False,
             reason=None,
-            classifications=[],
+            mitigations=[],
         ),
         model=model,
         usage=None,

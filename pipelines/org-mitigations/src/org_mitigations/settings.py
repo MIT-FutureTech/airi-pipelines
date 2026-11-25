@@ -1,12 +1,60 @@
+from enum import StrEnum
 from pathlib import Path
 
-from pydantic import Field
+from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings
 
 from toolbox.llm import ReasoningEffort
 
 _PIPELINE_DIR = Path(__file__).parent.parent.parent
 DEFAULT_MAX_CHARS = 75_000
+
+
+class PipelineStage(StrEnum):
+    SEARCH = "search"
+    PRACTICES = "practices"
+    INSTRUMENTS = "instruments"
+
+
+class StageSettings(BaseModel):
+    prompt_path: Path
+    model: str = Field(
+        default="google/gemini-3.5-flash",
+        description="The LLM to call",
+    )
+    temperature: float = Field(
+        default=1.0,
+        description="Sampling temperature",
+    )
+    reasoning_effort: ReasoningEffort = Field(
+        default="medium",
+        description="How much the LLM reasons before answering",
+    )
+    output_token_limit: int = Field(
+        default=16_000,
+        description="Most tokens in one answer",
+    )
+
+
+class SearchSettings(StageSettings):
+    prompt_path: Path = Field(
+        default=_PIPELINE_DIR / "prompts" / "search.md",
+        description="The prompt template",
+    )
+
+
+class PracticesSettings(StageSettings):
+    prompt_path: Path = Field(
+        default=_PIPELINE_DIR / "prompts" / "practices.md",
+        description="The prompt template",
+    )
+
+
+class InstrumentsSettings(StageSettings):
+    prompt_path: Path = Field(
+        default=_PIPELINE_DIR / "prompts" / "instruments.md",
+        description="The prompt template",
+    )
 
 
 class PipelineSettings(
@@ -20,13 +68,15 @@ class PipelineSettings(
 ):
     r"""
     Ask an LLM which mitigations each company's documents describe, with quotes
-    as evidence.
+    as evidence, then which practices each mitigation shows and which
+    instrument it uses.
 
     Example usage:
 
       uv run --env-file=.env python -m org_mitigations \
         --export-dir /path/to/exports/ \
         --output-dir /path/to/output/ \
+        --stages search,practices,instruments \
         --company-names "Example Bank" --company-names "Example Retail"
     """
 
@@ -38,25 +88,28 @@ class PipelineSettings(
         default=...,
         description="Where to write each call's result and log.txt",
     )
+    stages: list[PipelineStage] = Field(
+        default=...,
+        description="""
+            The stages to run, comma-separated. They run in pipeline order,
+            whatever order they're given in.
+        """,
+    )
     company_names: list[str] | None = Field(
         default=None,
         description="The companies to include. Default: every company",
     )
-    prompt_path: Path = Field(
-        default=_PIPELINE_DIR / "prompts" / "search_v1.0.md",
-        description="The prompt template",
+    search: SearchSettings = Field(
+        default_factory=SearchSettings,
+        description="The search's prompt and LLM settings",
     )
-    model: str = Field(
-        default="google/gemini-3.5-flash",
-        description="The LLM to call",
+    practices: PracticesSettings = Field(
+        default_factory=PracticesSettings,
+        description="The practices stage's prompt and LLM settings",
     )
-    temperature: float = Field(
-        default=1.0,
-        description="Sampling temperature",
-    )
-    reasoning_effort: ReasoningEffort = Field(
-        default="medium",
-        description="How much the LLM reasons before answering",
+    instruments: InstrumentsSettings = Field(
+        default_factory=InstrumentsSettings,
+        description="The instruments stage's prompt and LLM settings",
     )
     max_chars: int = Field(
         default=DEFAULT_MAX_CHARS,
@@ -64,10 +117,6 @@ class PipelineSettings(
             Most characters of excerpts in one call. A company's documents are
             split into groups that fit.
         """,
-    )
-    output_token_limit: int = Field(
-        default=8_000,
-        description="Most tokens in one answer",
     )
     concurrency: int = Field(
         default=5,

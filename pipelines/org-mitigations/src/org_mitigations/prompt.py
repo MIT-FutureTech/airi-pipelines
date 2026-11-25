@@ -5,28 +5,22 @@ from pydantic import BaseModel
 
 _SYSTEM_MARKER = "<!-- SYSTEM -->"
 _USER_MARKER = "<!-- USER -->"
-_SYSTEM_PLACEHOLDERS = {"taxonomy"}
-_USER_PLACEHOLDERS = {"company", "context", "code", "match_id"}
 
 
 class Prompt(BaseModel):
     system: str
     user_template: str
 
-    def render_user(
-        self, *, company: str, context: str, code: str, match_id: str
-    ) -> str:
-        return Template(self.user_template).substitute(
-            company=company, context=context, code=code, match_id=match_id
-        )
+    def render_user(self, **values: str) -> str:
+        _check_placeholders("user", self.user_template, set(values))
+        return Template(self.user_template).substitute(values)
 
 
-def load_prompt(path: Path, *, taxonomy: str) -> Prompt:
+def load_prompt(path: Path, **system_values: str) -> Prompt:
     system, user = _split_sections(path.read_text(encoding="utf-8"))
-    _check_placeholders("system", system, _SYSTEM_PLACEHOLDERS)
-    _check_placeholders("user", user, _USER_PLACEHOLDERS)
+    _check_placeholders("system", system, set(system_values))
     return Prompt(
-        system=Template(system).substitute(taxonomy=taxonomy),
+        system=Template(system).substitute(system_values),
         user_template=user,
     )
 
