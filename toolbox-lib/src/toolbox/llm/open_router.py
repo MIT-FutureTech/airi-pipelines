@@ -1,5 +1,6 @@
 import os
 
+from toolbox.llm.data_types import ReasoningEffort
 from toolbox.llm.openai import OpenAIClient
 
 OPEN_ROUTER_BASE_URL = "https://openrouter.ai/api/v1"
@@ -26,6 +27,7 @@ class OpenRouterClient(OpenAIClient):
         base_url: str | None = OPEN_ROUTER_BASE_URL,
         timeout: float = 60.0,
         temperature: float | None = None,
+        reasoning_effort: ReasoningEffort | None = None,
         output_token_limit: int | None = None,
     ) -> None:
         if api_key is None:
@@ -37,5 +39,6 @@ class OpenRouterClient(OpenAIClient):
             base_url=base_url,
             timeout=timeout,
             temperature=temperature,
+            reasoning_effort=reasoning_effort,
             output_token_limit=output_token_limit,
         )

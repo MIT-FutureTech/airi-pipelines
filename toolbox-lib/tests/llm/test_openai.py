@@ -3,10 +3,10 @@ from unittest.mock import AsyncMock
 
 import pytest
 from httpx import Request, Response
-from openai import RateLimitError
-from pydantic import BaseModel
+from openai import Omit, RateLimitError
+from pydantic import BaseModel, ValidationError
 
-from toolbox.llm import Message, OpenAIClient
+from toolbox.llm import Message, OpenAIClient, ToolboxLLMInvalidResponseError
 
 from .helpers import (
     FAKE_MODEL,
@@ -22,6 +22,17 @@ class Sentiment(BaseModel):
 
 
 SENTIMENT_RESPONSE = Sentiment(label="positive", score=0.95)
+TRUNCATED_RESPONSE_ERROR = ValidationError.from_exception_data(
+    "Sentiment",
+    [
+        {
+            "type": "json_invalid",
+            "loc": (),
+            "input": '{"label": "pos',
+            "ctx": {"error": "EOF while parsing a string"},
+        }
+    ],
+)
 
 
 class TestGenerate:
@@ -49,6 +60,23 @@ class TestGenerate:
             call_kwargs = mock_create.call_args.kwargs
             assert call_kwargs["temperature"] == 0.5
             assert call_kwargs["max_output_tokens"] == 200
+
+    async def test_passes_reasoning_effort(self) -> None:
+        response = make_unstructured_response("ok")
+        async with make_mock_openai_client([response]) as client:
+            client._reasoning_effort = "medium"
+            await client.generate([Message(role="user", content="test")])
+
+            mock_create = cast(AsyncMock, client._client.responses.create)
+            assert mock_create.call_args.kwargs["reasoning"] == {"effort": "medium"}
+
+    async def test_omits_reasoning_by_default(self) -> None:
+        response = make_unstructured_response("ok")
+        async with make_mock_openai_client([response]) as client:
+            await client.generate([Message(role="user", content="test")])
+
+            mock_create = cast(AsyncMock, client._client.responses.create)
+            assert isinstance(mock_create.call_args.kwargs["reasoning"], Omit)
 
     async def test_handles_empty_text_string(self) -> None:
         response = make_unstructured_response("")
@@ -100,6 +128,18 @@ class TestGenerateStructured:
             assert call_kwargs["temperature"] == 0.5
             assert call_kwargs["max_output_tokens"] == 200
 
+    async def test_passes_reasoning_effort(self) -> None:
+        response = make_structured_response(SENTIMENT_RESPONSE)
+        async with make_mock_openai_client([response]) as client:
+            client._reasoning_effort = "medium"
+            await client.generate_structured(
+                messages=[Message(role="user", content="test")],
+                schema=Sentiment,
+            )
+
+            mock_parse = cast(AsyncMock, client._client.responses.parse)
+            assert mock_parse.call_args.kwargs["reasoning"] == {"effort": "medium"}
+
     async def test_sends_json_schema_response_format(self) -> None:
         response = make_structured_response(SENTIMENT_RESPONSE)
         async with make_mock_openai_client([response]) as client:
@@ -145,6 +185,33 @@ class TestGenerateStructured:
             assert result.model == FAKE_MODEL
             mock_parse = cast(AsyncMock, client._client.responses.parse)
             assert mock_parse.call_count == 2
+
+    async def test_retries_if_the_response_does_not_match_the_schema(self) -> None:
+        response = make_structured_response(SENTIMENT_RESPONSE)
+        async with make_mock_openai_client(
+            [TRUNCATED_RESPONSE_ERROR, response]
+        ) as client:
+            result = await client.generate_structured(
+                [Message(role="user", content="I love this!")],
+                Sentiment,
+            )
+
+            assert result.value == SENTIMENT_RESPONSE
+            mock_parse = cast(AsyncMock, client._client.responses.parse)
+            assert mock_parse.call_count == 2
+
+    async def test_raises_an_invalid_response_error_if_no_response_matches(
+        self,
+    ) -> None:
+        async with make_mock_openai_client([TRUNCATED_RESPONSE_ERROR] * 5) as client:
+            with pytest.raises(ToolboxLLMInvalidResponseError, match="Sentiment"):
+                await client.generate_structured(
+                    [Message(role="user", content="I love this!")],
+                    Sentiment,
+                )
+
+            mock_parse = cast(AsyncMock, client._client.responses.parse)
+            assert mock_parse.call_count == 5
 
 
 class Capital(BaseModel):

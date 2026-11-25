@@ -1,6 +1,7 @@
 from toolbox.llm.client import LLMClient
 from toolbox.llm.data_types import (
     Message,
+    ReasoningEffort,
     StructuredResult,
     TextResult,
     TokenUsage,
@@ -15,6 +16,7 @@ __all__ = [
     "Message",
     "OpenAIClient",
     "OpenRouterClient",
+    "ReasoningEffort",
     "StructuredResult",
     "TextResult",
     "TokenUsage",

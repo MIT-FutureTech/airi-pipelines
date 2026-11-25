@@ -2,14 +2,22 @@ import json
 import logging
 from collections.abc import Sequence
 from types import TracebackType
-from typing import Self, TypeVar
+from typing import Self, TypeVar, override
 
-from openai import APIConnectionError, APITimeoutError, AsyncOpenAI, RateLimitError
+from openai import (
+    APIConnectionError,
+    APITimeoutError,
+    AsyncOpenAI,
+    Omit,
+    RateLimitError,
+    omit,
+)
 from openai.types.responses import (
     EasyInputMessageParam,
     ResponseInputParam,
     ResponseUsage,
 )
+from openai.types.shared_params import Reasoning
 from pydantic import BaseModel, ValidationError
 from tenacity import (
     after_log,
@@ -19,8 +27,10 @@ from tenacity import (
     wait_exponential,
 )
 
+from toolbox.llm.client import LLMClient
 from toolbox.llm.data_types import (
     Message,
+    ReasoningEffort,
     StructuredResult,
     TextResult,
     TokenUsage,
@@ -37,7 +47,6 @@ _RETRYABLE_EXCEPTIONS = (
     APITimeoutError,
     RateLimitError,
     ToolboxLLMInvalidResponseError,
-    ValidationError,
 )
 _GENERATION_RETRY_CONFIG = retry(
     retry=retry_if_exception_type(_RETRYABLE_EXCEPTIONS),
@@ -48,7 +57,7 @@ _GENERATION_RETRY_CONFIG = retry(
 )
 
 
-class OpenAIClient:
+class OpenAIClient(LLMClient):
     """LLM client using the OpenAI library.
 
     Works with OpenAI directly and with OpenAI-compatible APIs like OpenRouter by
@@ -62,6 +71,7 @@ class OpenAIClient:
 
     _model: str
     _temperature: float | None
+    _reasoning_effort: ReasoningEffort | None
     _output_token_limit: int | None
     _client: AsyncOpenAI
     _rate_limiter: RateLimiter
@@ -75,10 +85,12 @@ class OpenAIClient:
         base_url: str | None = None,
         timeout: float = 60.0,
         temperature: float | None = None,
+        reasoning_effort: ReasoningEffort | None = None,
         output_token_limit: int | None = None,
     ) -> None:
         self._model = model
         self._temperature = temperature
+        self._reasoning_effort = reasoning_effort
         self._output_token_limit = output_token_limit
         self._client = AsyncOpenAI(
             api_key=api_key,
@@ -87,6 +99,7 @@ class OpenAIClient:
         )
         self._rate_limiter = RateLimiter(rate_limit_rps)
 
+    @override
     @_GENERATION_RETRY_CONFIG
     async def generate(
         self,
@@ -99,6 +112,7 @@ class OpenAIClient:
             input=_to_api_messages(messages),
             model=self._model,
             temperature=self._temperature,
+            reasoning=_to_api_reasoning(self._reasoning_effort),
             max_output_tokens=self._output_token_limit,
             text={"format": {"type": "text"}},
         )
@@ -108,6 +122,7 @@ class OpenAIClient:
             usage=_extract_usage(response.usage),
         )
 
+    @override
     @_GENERATION_RETRY_CONFIG
     async def generate_structured(
         self,
@@ -117,13 +132,19 @@ class OpenAIClient:
         if self._rate_limiter:
             await self._rate_limiter.acquire()
 
-        response = await self._client.responses.parse(
-            input=_to_api_messages(messages),
-            model=self._model,
-            temperature=self._temperature,
-            max_output_tokens=self._output_token_limit,
-            text_format=schema,
-        )
+        try:
+            response = await self._client.responses.parse(
+                input=_to_api_messages(messages),
+                model=self._model,
+                temperature=self._temperature,
+                reasoning=_to_api_reasoning(self._reasoning_effort),
+                max_output_tokens=self._output_token_limit,
+                text_format=schema,
+            )
+        except ValidationError as error:
+            raise ToolboxLLMInvalidResponseError(
+                f"Response from {self._model} does not match {schema.__name__}"
+            ) from error
         if (value := response.output_parsed) is None:
             serialized_messages = json.dumps(
                 [msg.model_dump_json() for msg in messages],
@@ -142,12 +163,15 @@ class OpenAIClient:
             usage=_extract_usage(response.usage),
         )
 
+    @override
     async def close(self) -> None:
         await self._client.close()
 
+    @override
     async def __aenter__(self) -> Self:
         return self
 
+    @override
     async def __aexit__(
         self,
         exc_type: type[BaseException] | None,
@@ -168,6 +192,12 @@ def _to_api_messages(messages: Sequence[Message]) -> ResponseInputParam:
         )
         for m in messages
     ]
+
+
+def _to_api_reasoning(effort: ReasoningEffort | None) -> Reasoning | Omit:
+    if effort is None:
+        return omit
+    return Reasoning(effort=effort)
 
 
 def _extract_usage(usage: ResponseUsage | None) -> TokenUsage | None:

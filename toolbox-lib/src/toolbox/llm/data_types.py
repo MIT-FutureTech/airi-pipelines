@@ -12,6 +12,9 @@ class ToolboxLLMInvalidResponseError(ToolboxLLMError):
     pass
 
 
+ReasoningEffort = Literal["none", "minimal", "low", "medium", "high", "xhigh"]
+
+
 class Message(BaseModel, frozen=True):
     role: Literal["user", "assistant", "system"]
     content: str
