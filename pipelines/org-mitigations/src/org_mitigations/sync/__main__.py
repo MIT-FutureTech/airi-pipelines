@@ -28,6 +28,12 @@ from org_mitigations.sync.quotes import QUOTE_FIELD_TYPES, quote_records
 from org_mitigations.sync.record_ids import record_ids_by_key
 from org_mitigations.sync.schema import FieldType, field_mismatches
 from org_mitigations.sync.settings import SyncSettings
+from org_mitigations.table_names import (
+    CODES_TABLE,
+    MITIGATIONS_TABLE,
+    PASSAGES_TABLE,
+    QUOTES_TABLE,
+)
 from toolbox.airtable import AirtableClient, Record, Table
 from toolbox.airtable.table import BATCH_SIZE
 from toolbox.log import configure_logging
@@ -35,10 +41,6 @@ from toolbox.results import ResultStore
 
 logger = logging.getLogger(__name__)
 
-CODES_TABLE = "Mitigation Codes"
-MITIGATIONS_TABLE = "Mitigations"
-QUOTES_TABLE = "Mitigation Quotes"
-PASSAGES_TABLE = "Passages"
 _AIRTABLE_TIMEOUT = 30.0
 
 

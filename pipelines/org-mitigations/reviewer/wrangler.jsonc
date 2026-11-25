@@ -2,9 +2,26 @@
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "org-mitigations-reviewer",
   "account_id": "dee3a047356fdb8bb892c9cf407d4554",
+  "main": "./api/worker.ts",
   "compatibility_date": "2026-10-18",
   "preview_urls": true,
+  "observability": {
+    "enabled": true,
+    "logs": {
+      "enabled": true
+    }
+  },
   "assets": {
-    "directory": "./dist"
+    "run_worker_first": ["/api/*"]
+  },
+  "vars": {
+    "AIRTABLE_BASE_ID": "appHrhJQHkZz4c82U",
+    "AIRTABLE_JUDGEMENTS_TABLE": "Mitigation Judgements",
+    // Declared here so that `npm run dev` passes the value from
+    // .env when running locally.
+    "LOCAL_USER_EMAIL": ""
+  },
+  "secrets": {
+    "required": ["AIRTABLE_PAT"]
   }
 }

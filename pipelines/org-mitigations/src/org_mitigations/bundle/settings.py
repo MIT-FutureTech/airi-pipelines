@@ -3,8 +3,6 @@ from pathlib import Path
 from pydantic import Field
 from pydantic_settings import BaseSettings
 
-from org_mitigations.settings import DEFAULT_MAX_CHARS
-
 
 class BundleSettings(
     BaseSettings,
@@ -15,17 +13,15 @@ class BundleSettings(
     cli_prog_name="org_mitigations.bundle",
 ):
     r"""
-    Bundle a run's evidence for the reviewer app.
+    Bundle the mitigations in Airtable, with their quotes and the codes they're
+    tagged with, for the reviewer app.
+
+    Needs the AIRTABLE_TOKEN environment variable.
 
     Example usage:
 
       uv run python -m org_mitigations.bundle \
         --export-dir /path/to/exports/ \
-        --run-dir /path/to/output/ \
-        --prompt-file search.md \
-        --temperature 1 \
-        --reasoning-effort medium \
-        --company-names Amazon --company-names Apple \
         --output-path pipelines/org-mitigations/reviewer/public/data/bundle.json
     """
 
@@ -33,29 +29,10 @@ class BundleSettings(
         default=...,
         description="A folder with companies.csv, documents.csv and passages.csv",
     )
-    run_dir: Path = Field(
-        default=...,
-        description="The run's output folder, which the pipeline's --output-dir named",
-    )
-    max_chars: int = Field(
-        default=DEFAULT_MAX_CHARS,
-        description="The --max-chars the run used",
-    )
-    prompt_file: str = Field(
-        default=...,
-        description="The name of the prompt file the run used",
-    )
-    temperature: float = Field(
-        default=...,
-        description="The temperature the run used",
-    )
-    reasoning_effort: str = Field(
-        default=...,
-        description="The reasoning effort the run used",
-    )
-    company_names: list[str] = Field(
-        default=...,
-        description="The companies to include",
+    airtable_base_id: str = Field(
+        default="appHrhJQHkZz4c82U",
+        description="The Airtable base that holds the export's companies,"
+        + " documents and passages",
     )
     output_path: Path = Field(
         default=...,

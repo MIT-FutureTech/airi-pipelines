@@ -1,62 +1,60 @@
 import { Stack, Table, Text, Tooltip, UnstyledButton } from "@mantine/core";
-import { type CellSelection, cellKey } from "@/lib/cells";
-import {
-  type Decision,
-  DISCLOSURE_LABELS,
-  DISCLOSURE_MARKS,
-  type Disclosure,
-} from "@/lib/decisions";
+import type { Decision, Judgement } from "@shared/judgements";
+import { type CellSelection, cellKey, cellQuotes } from "@/lib/cells";
+import { type CodeGroup, fullLabel, shortLabel } from "@/lib/codes";
+import { DECISION_LABELS, DECISION_MARKS } from "@/lib/judgements";
 import { STRENGTH_COLORS, strongest } from "@/lib/strength";
-import type { Company, Domain, LocatedEvidence, Locus } from "@/lib/types";
+import type { Code, Company, Mitigation, Quote } from "@/lib/types";
 
 interface EvidenceGridProps {
   companies: Company[];
-  taxonomy: Locus[];
-  cells: Map<string, LocatedEvidence[]>;
-  decisions: Map<string, Decision>;
+  groups: CodeGroup[];
+  cells: Map<string, Mitigation[]>;
+  quotes: Map<string, Quote[]>;
+  judgements: Map<string, Judgement>;
   selection: CellSelection | null;
   onSelect: (selection: CellSelection) => void;
 }
 
 export function EvidenceGrid({
   companies,
-  taxonomy,
+  groups,
   cells,
-  decisions,
+  quotes,
+  judgements,
   selection,
   onSelect,
 }: EvidenceGridProps) {
-  const domains = taxonomy.flatMap((locus) => locus.domains);
+  const codes = groups.flatMap((group) => group.codes);
+  const isGrouped = groups.some((group) => group.name !== null);
   return (
     <Table.ScrollContainer minWidth={1100}>
       <Table withTableBorder withColumnBorders>
         <Table.Thead>
+          {isGrouped && (
+            <Table.Tr>
+              <Table.Th rowSpan={2}>Company</Table.Th>
+              {groups.map((group) => (
+                <Table.Th
+                  key={group.codes[0].record_id}
+                  colSpan={group.codes.length}
+                  ta="center"
+                >
+                  {group.name}
+                </Table.Th>
+              ))}
+            </Table.Tr>
+          )}
           <Table.Tr>
-            <Table.Th rowSpan={2}>Company</Table.Th>
-            {taxonomy.map((locus) => (
+            {!isGrouped && <Table.Th>Company</Table.Th>}
+            {codes.map((code) => (
               <Tooltip
-                key={locus.code}
-                label={<LocusDefinition locus={locus} />}
+                key={code.record_id}
+                label={<CodeDefinition code={code} />}
                 multiline
                 w={360}
               >
-                <Table.Th colSpan={locus.domains.length} ta="center">
-                  {locus.name}
-                </Table.Th>
-              </Tooltip>
-            ))}
-          </Table.Tr>
-          <Table.Tr>
-            {domains.map((domain) => (
-              <Tooltip
-                key={domain.code}
-                label={<DomainDefinition domain={domain} />}
-                multiline
-                w={360}
-              >
-                <Table.Th fw="normal">
-                  {`${domain.code} ${domain.short_name}`}
-                </Table.Th>
+                <Table.Th fw="normal">{shortLabel(code)}</Table.Th>
               </Tooltip>
             ))}
           </Table.Tr>
@@ -65,19 +63,25 @@ export function EvidenceGrid({
           {companies.map((company) => (
             <Table.Tr key={company.company_id}>
               <Table.Th scope="row">{company.name}</Table.Th>
-              {domains.map((domain) => {
-                const key = cellKey(company.company_id, domain.code);
+              {codes.map((code) => {
+                const key = cellKey(company.company_id, code.record_id);
+                const mitigations = cells.get(key);
                 return (
                   <GridCell
-                    key={domain.code}
-                    evidence={cells.get(key)}
-                    disclosure={decisions.get(key)?.disclosure ?? null}
+                    key={code.record_id}
+                    mitigations={mitigations}
+                    quotes={
+                      mitigations === undefined
+                        ? []
+                        : cellQuotes(mitigations, quotes)
+                    }
+                    decision={judgements.get(key)?.decision ?? null}
                     isSelected={
                       selection?.company.company_id === company.company_id &&
-                      selection.domain.code === domain.code
+                      selection.code.record_id === code.record_id
                     }
-                    onSelect={(evidence) =>
-                      onSelect({ company, domain, evidence })
+                    onSelect={(selected) =>
+                      onSelect({ company, code, mitigations: selected })
                     }
                   />
                 );
@@ -93,28 +97,30 @@ export function EvidenceGrid({
 const SELECTED_OUTLINE = "inset 0 0 0 3px currentColor";
 
 interface GridCellProps {
-  evidence: LocatedEvidence[] | undefined;
-  disclosure: Disclosure | null;
+  mitigations: Mitigation[] | undefined;
+  quotes: Quote[];
+  decision: Decision | null;
   isSelected: boolean;
-  onSelect: (evidence: LocatedEvidence[]) => void;
+  onSelect: (mitigations: Mitigation[]) => void;
 }
 
 function GridCell({
-  evidence,
-  disclosure,
+  mitigations,
+  quotes,
+  decision,
   isSelected,
   onSelect,
 }: GridCellProps) {
-  if (evidence === undefined) {
+  if (mitigations === undefined) {
     return <Table.Td />;
   }
-  const strength = strongest(evidence);
-  const quotes =
-    evidence.length === 1 ? "1 quote" : `${evidence.length} quotes`;
+  const strength = strongest(quotes);
+  const count =
+    mitigations.length === 1
+      ? "1 mitigation"
+      : `${mitigations.length} mitigations`;
   const decided =
-    disclosure === null
-      ? "undecided"
-      : `decided ${DISCLOSURE_LABELS[disclosure]}`;
+    decision === null ? "undecided" : `decided ${DECISION_LABELS[decision]}`;
   return (
     <Table.Td
       p={0}
@@ -129,32 +135,25 @@ function GridCell({
         fz="sm"
         ta="center"
         aria-pressed={isSelected}
-        aria-label={`${quotes}, strongest ${strength}, ${decided}`}
-        onClick={() => onSelect(evidence)}
+        aria-label={`${count}, strongest quote ${strength}, ${decided}`}
+        onClick={() => onSelect(mitigations)}
       >
-        {disclosure === null
-          ? evidence.length
-          : `${evidence.length} ${DISCLOSURE_MARKS[disclosure]}`}
+        {decision === null
+          ? mitigations.length
+          : `${mitigations.length} ${DECISION_MARKS[decision]}`}
       </UnstyledButton>
     </Table.Td>
   );
 }
 
-function LocusDefinition({ locus }: { locus: Locus }) {
+function CodeDefinition({ code }: { code: Code }) {
   return (
     <Stack gap={4}>
-      <Text fw={600}>{locus.name}</Text>
-      <Text>{locus.definition}</Text>
-    </Stack>
-  );
-}
-
-function DomainDefinition({ domain }: { domain: Domain }) {
-  return (
-    <Stack gap={4}>
-      <Text fw={600}>{`${domain.code} ${domain.name}`}</Text>
-      <Text>{domain.definition}</Text>
-      <Text>{`Examples: ${domain.examples.join("; ")}`}</Text>
+      <Text fw={600}>{fullLabel(code)}</Text>
+      <Text>{code.definition}</Text>
+      {code.details !== null && (
+        <Text style={{ whiteSpace: "pre-line" }}>{code.details}</Text>
+      )}
     </Stack>
   );
 }

@@ -1,14 +1,38 @@
-import { Alert, AppShell, Loader, Stack, Title } from "@mantine/core";
+import {
+  Alert,
+  AppShell,
+  Group,
+  Loader,
+  SegmentedControl,
+  Stack,
+  Text,
+  Title,
+} from "@mantine/core";
 import { useHotkeys } from "@mantine/hooks";
 import { Suspense, use, useState } from "react";
 import { ErrorBoundary, type FallbackProps } from "react-error-boundary";
 import { EvidenceGrid } from "@/components/EvidenceGrid";
 import { EvidencePanel } from "@/components/EvidencePanel";
-import { MockupNotice } from "@/components/MockupNotice";
+import { ShortcutsHelp } from "@/components/ShortcutsHelp";
 import { StrengthLegend } from "@/components/StrengthLegend";
-import { getBundle } from "@/lib/api";
-import { type CellSelection, cellKey, evidenceByCell } from "@/lib/cells";
-import { type Decision, NO_DECISION } from "@/lib/decisions";
+import { getBundle, getJudgements } from "@/lib/api";
+import {
+  type CellSelection,
+  cellKey,
+  type Direction,
+  mitigationsByCell,
+  nextCodeWithMitigations,
+  quotesByMitigation,
+} from "@/lib/cells";
+import {
+  codeGroups,
+  parseTaxonomy,
+  TAXONOMIES,
+  TAXONOMY_LABELS,
+} from "@/lib/codes";
+import { emptyJudgement } from "@/lib/judgements";
+import type { Code, Taxonomy } from "@/lib/types";
+import { useJudgements } from "@/lib/useJudgements";
 
 export function App() {
   return (
@@ -21,8 +45,14 @@ export function App() {
 }
 
 function Reviewer() {
-  const bundle = use(getBundle());
-  const cells = evidenceByCell(bundle.evidence, bundle.documents);
+  const bundleRequest = getBundle();
+  const judgementsRequest = getJudgements();
+  const bundle = use(bundleRequest);
+  const saved = use(judgementsRequest);
+  const [taxonomy, setTaxonomy] = useState<Taxonomy>("Domain");
+  const cells = mitigationsByCell(bundle.mitigations, taxonomy);
+  const quotes = quotesByMitigation(bundle.quotes);
+  const groups = codeGroups(bundle.codes, taxonomy);
   const documents = new Map(
     bundle.documents.map((document) => [document.document_id, document]),
   );
@@ -30,11 +60,39 @@ function Reviewer() {
     bundle.excerpts.map((excerpt) => [excerpt.excerpt_id, excerpt]),
   );
   const [selection, setSelection] = useState<CellSelection | null>(null);
-  const [decisions, setDecisions] = useState(() => new Map<string, Decision>());
-  useHotkeys([["Escape", () => setSelection(null)]]);
+  const { judgements, saveStatuses, change, save } = useJudgements(
+    saved.judgements,
+  );
+  useHotkeys([["Escape", () => setSelection(null)]], ["TEXTAREA"]);
+
+  const codes = groups.flatMap((group) => group.codes);
+  const neighbour = (direction: Direction) =>
+    selection &&
+    nextCodeWithMitigations(
+      codes,
+      cells,
+      selection.company.company_id,
+      selection.code.record_id,
+      direction,
+    );
+  const selectCode = (code: Code) => {
+    if (selection === null) {
+      return;
+    }
+    const mitigations = cells.get(
+      cellKey(selection.company.company_id, code.record_id),
+    );
+    if (mitigations === undefined) {
+      throw new Error(
+        `${selection.company.name} has no ${code.key} mitigations`,
+      );
+    }
+    setSelection({ company: selection.company, code, mitigations });
+  };
 
   const selectedKey =
-    selection && cellKey(selection.company.company_id, selection.domain.code);
+    selection &&
+    cellKey(selection.company.company_id, selection.code.record_id);
   const isPanelClosed = selection === null;
   return (
     <AppShell
@@ -47,18 +105,33 @@ function Reviewer() {
     >
       <AppShell.Main>
         <Stack>
-          <Title order={2}>Organization Mitigations Reviewer</Title>
-          <MockupNotice
-            run={bundle.run}
-            companyCount={bundle.companies.length}
-            codeCount={bundle.taxonomy.flatMap((locus) => locus.domains).length}
-          />
+          <Group gap="md" wrap="nowrap">
+            <Title order={2}>Organization Mitigations Reviewer</Title>
+            <ShortcutsHelp />
+          </Group>
+          <Text>
+            Click a shaded cell to see the mitigations and quotes behind it,
+            then record your judgement.
+          </Text>
           <StrengthLegend />
+          <SegmentedControl
+            aria-label="Taxonomy"
+            data={TAXONOMIES.map((value) => ({
+              value,
+              label: TAXONOMY_LABELS[value],
+            }))}
+            value={taxonomy}
+            onChange={(value) => {
+              setTaxonomy(parseTaxonomy(value));
+              setSelection(null);
+            }}
+          />
           <EvidenceGrid
             companies={bundle.companies}
-            taxonomy={bundle.taxonomy}
+            groups={groups}
             cells={cells}
-            decisions={decisions}
+            quotes={quotes}
+            judgements={judgements}
             selection={selection}
             onSelect={setSelection}
           />
@@ -69,13 +142,23 @@ function Reviewer() {
           <EvidencePanel
             key={selectedKey}
             selection={selection}
+            quotes={quotes}
             documents={documents}
             excerpts={excerpts}
-            decision={decisions.get(selectedKey) ?? NO_DECISION}
-            onDecisionChange={(decision) =>
-              setDecisions((current) =>
-                new Map(current).set(selectedKey, decision),
+            judgement={
+              judgements.get(selectedKey) ??
+              emptyJudgement(
+                selection.company.company_id,
+                selection.code.record_id,
               )
+            }
+            saveStatus={saveStatuses.get(selectedKey) ?? null}
+            previousCode={neighbour("previous")}
+            nextCode={neighbour("next")}
+            onSelectCode={selectCode}
+            onJudgementChange={change}
+            onJudgementSave={(judgement) =>
+              save(judgement, selection.company.name, selection.code.key)
             }
             onClose={() => setSelection(null)}
           />
